@@ -42,7 +42,8 @@ struct NMItem: Codable, Identifiable, Equatable {
         case .sender: return (title.isEmpty ? appLabel : title, title.isEmpty ? nil : appLabel)
         case .full:
             let second = [subtitle, body].filter { !$0.isEmpty }.joined(separator: " · ")
-            return (title.isEmpty ? appLabel : title, second.isEmpty ? appLabel : second)
+            if !second.isEmpty { return (title.isEmpty ? appLabel : title, second) }
+            return (title.isEmpty ? appLabel : title, title.isEmpty ? nil : appLabel)
         }
     }
 }
