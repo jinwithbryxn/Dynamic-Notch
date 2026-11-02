@@ -276,7 +276,7 @@ private struct LocalAPITab: View {
             AIDevBox {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(T("예시 (터미널)", "Example (Terminal)")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
-                    Text(#"echo '{"command":"show","title":"Build done","token":"…"}' | nc 127.0.0.1 \#(port)"#)
+                    Text(verbatim: #"echo '{"command":"show","title":"Build done","token":"…"}' | nc 127.0.0.1 \#(port)"#)
                         .font(.system(size: 10.5, design: .monospaced)).lineLimit(2).textSelection(.enabled)
                     Text(T("명령: status · show · activity.set · activity.clear (줄바꿈 JSON, HTTP 아님)", "Commands: status · show · activity.set · activity.clear (newline JSON, not HTTP)"))
                         .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))

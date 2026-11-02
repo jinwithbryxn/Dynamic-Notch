@@ -145,7 +145,7 @@ private struct TerminalTab: View {
                     AIDevPill(title: T("다시 시작", "Restart"), symbol: "arrow.clockwise", role: .primary) { controller.restart() }
                 case .running:
                     AIDevPill(title: T("붙여넣기", "Paste"), symbol: "doc.on.clipboard", help: T("클립보드 글자를 셸에 보냄 (⌘V)", "Send clipboard text to the shell (⌘V)")) { controller.view.paste(nil) }
-                    AIDevPill(title: T("끝내기", "End"), symbol: "xmark", help: T("셸과 그 안의 프로그램에 종료 신호(SIGHUP)를 보냄", "Send SIGHUP to the shell and its programs")) { controller.stop(); controller.view.needsDisplay = true }
+                    AIDevPill(title: T("끝내기", "End"), symbol: "xmark", help: T("셸과 그 안의 프로그램에 종료 신호(SIGHUP)를 보냅니다", "Send SIGHUP to the shell and its programs")) { controller.stop(); controller.view.needsDisplay = true }
                 case .idle:
                     AIDevPill(title: T("시작", "Start"), symbol: "play.fill", role: .primary) { controller.restart() }
                 }
@@ -173,10 +173,10 @@ private struct TerminalTab: View {
     @ViewBuilder private var overlay: some View {
         switch controller.status {
         case .failed(let msg):
-            AIDevUnsupported(title: T("셸을 띄우지 못함", "Couldn't start the shell"), reason: msg, alternative: T("설정에서 셸 경로를 확인하거나 터미널 앱을 쓰자.", "Check the shell path in Settings or use the Terminal app."))
+            AIDevUnsupported(title: T("셸을 시작하지 못했습니다", "Couldn't start the shell"), reason: msg, alternative: T("설정에서 셸 경로를 확인하거나 터미널 앱을 사용하세요.", "Check the shell path in Settings or use the Terminal app."))
                 .frame(maxWidth: 420)
         case .idle where controller.session == nil:
-            Text(T("셸이 멈춰 있음. 시작을 누르자.", "The shell is stopped. Press Start."))
+            Text(T("셸이 멈춰 있습니다. 시작을 누르세요.", "The shell is stopped. Press Start."))
                 .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.6))
         default:
             EmptyView()
@@ -198,13 +198,13 @@ private struct TerminalSettings: View {
                 TextField(T("셸 경로 (비우면 로그인 셸 \(TerminalSession.loginShell))", "Shell path (empty = login shell \(TerminalSession.loginShell))"), text: $shell)
                     .onSubmit { ModuleDefaults(module: "terminal").set(shell.isEmpty ? nil : shell, "shell") }
                 if !shell.isEmpty, !FileManager.default.isExecutableFile(atPath: shell) {
-                    Text(T("실행할 수 없는 경로라 로그인 셸을 쓴다.", "Not an executable path, so the login shell is used.")).font(.caption).foregroundStyle(.orange)
+                    Text(T("실행할 수 없는 경로라 로그인 셸을 사용합니다.", "Not an executable path, so the login shell is used.")).font(.caption).foregroundStyle(.orange)
                 }
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(T("셸은 탭을 처음 열 때 홈 폴더에서 로그인 셸(-l)로 뜨고, 탭을 오가도 계속 돈다. 기능을 끄면 셸과 그 안의 프로그램에 종료 신호를 보낸다.",
+                    Text(T("셸은 탭을 처음 열 때 홈 폴더에서 로그인 셸(-l)로 시작하고, 탭을 오가도 계속 실행됩니다. 기능을 끄면 셸과 그 안의 프로그램에 종료 신호를 보냅니다.",
                            "The shell starts as a login shell (-l) in your home folder the first time you open the tab and keeps running across tab switches. Turning the feature off sends a hangup to the shell and its programs."))
-                    Text(T("지원: 기본 ANSI·256색·트루컬러, 전체 화면 프로그램(vim·less·top), 한글 입력, ⌘V 붙여넣기, 드래그 선택 후 ⌘C, 스크롤백 1000줄. 마우스 보고와 탭 여러 개는 없음.",
+                    Text(T("지원: 기본 ANSI·256색·트루컬러, 전체 화면 프로그램(vim·less·top), 한글 입력, ⌘V 붙여넣기, 드래그 선택 후 ⌘C, 스크롤백 1000줄. 마우스 보고와 여러 탭은 지원하지 않습니다.",
                            "Supported: basic ANSI, 256 colours and true colour, full-screen programs (vim, less, top), Korean input, ⌘V paste, drag to select then ⌘C, 1000 lines of scrollback. No mouse reporting and no multiple tabs."))
                 }
                 .font(.caption).foregroundStyle(.secondary)

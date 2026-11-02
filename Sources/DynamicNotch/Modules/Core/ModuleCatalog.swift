@@ -10,6 +10,7 @@ enum ModuleCatalog {
             ShellActivityModule(),
             TerminalModule(),
             AITextModule(),
+            AskAIModule(),
         ]
     }
 }

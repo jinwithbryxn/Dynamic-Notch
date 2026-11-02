@@ -68,28 +68,28 @@ enum AITextEngine {
 
     /// 지금 이 Mac에서 쓸 수 있는지 (+ 이유와 대안)
     static func availability() -> State {
-        let alt = T("대안: 글을 선택하고 우클릭 > 글쓰기 도구, 또는 'Claude에게 묻기' 탭(Anthropic API 키 필요).",
+        let alt = T("대안: 글을 선택하고 우클릭 > 글쓰기 도구를 쓰거나, 'Claude에게 묻기' 탭(Anthropic API 키 필요)을 사용하세요.",
                     "Alternative: select text and right-click > Writing Tools, or use the Ask Claude tab (needs an Anthropic API key).")
         #if canImport(FoundationModels)
         if #available(macOS 26, *) {
             switch SystemLanguageModel.default.availability {
             case .available:
                 if !SystemLanguageModel.default.supportsLocale(Locale.current) {
-                    return .unsupported(reason: T("Apple 모델이 지금 언어(\(Locale.current.identifier))를 지원하지 않음.", "The Apple model doesn't support the current language (\(Locale.current.identifier))."), alternative: alt)
+                    return .unsupported(reason: T("Apple 모델이 지금 언어(\(Locale.current.identifier))를 지원하지 않습니다.", "The Apple model doesn't support the current language (\(Locale.current.identifier))."), alternative: alt)
                 }
                 return .available
             case .unavailable(.deviceNotEligible):
-                return .unsupported(reason: T("이 Mac은 Apple Intelligence를 지원하지 않음 (Apple 실리콘 필요).", "This Mac doesn't support Apple Intelligence (needs Apple silicon)."), alternative: alt)
+                return .unsupported(reason: T("이 Mac은 Apple Intelligence를 지원하지 않습니다 (Apple 실리콘 필요).", "This Mac doesn't support Apple Intelligence (needs Apple silicon)."), alternative: alt)
             case .unavailable(.appleIntelligenceNotEnabled):
-                return .unsupported(reason: T("Apple Intelligence가 꺼져 있음. 시스템 설정 > Apple Intelligence 및 Siri에서 켜자.", "Apple Intelligence is off. Turn it on in System Settings > Apple Intelligence & Siri."), alternative: alt)
+                return .unsupported(reason: T("Apple Intelligence가 꺼져 있습니다. 시스템 설정 > Apple Intelligence 및 Siri에서 켜세요.", "Apple Intelligence is off. Turn it on in System Settings > Apple Intelligence & Siri."), alternative: alt)
             case .unavailable(.modelNotReady):
-                return .unsupported(reason: T("모델을 아직 내려받는 중. 잠시 뒤 다시 열자.", "The model is still downloading. Try again in a while."), alternative: alt)
+                return .unsupported(reason: T("모델을 아직 내려받는 중입니다. 잠시 뒤 다시 여세요.", "The model is still downloading. Try again in a while."), alternative: alt)
             case .unavailable:
-                return .unsupported(reason: T("Apple 모델을 지금 쓸 수 없음.", "The Apple model is unavailable right now."), alternative: alt)
+                return .unsupported(reason: T("지금은 Apple 모델을 사용할 수 없습니다.", "The Apple model is unavailable right now."), alternative: alt)
             }
         }
         #endif
-        return .unsupported(reason: T("macOS 26 이상의 온디바이스 Apple 모델(Foundation Models)이 필요함.", "Needs the on-device Apple model (Foundation Models) in macOS 26 or later."), alternative: alt)
+        return .unsupported(reason: T("macOS 26 이상의 온디바이스 Apple 모델(Foundation Models)이 필요합니다.", "Needs the on-device Apple model (Foundation Models) in macOS 26 or later."), alternative: alt)
     }
 
     enum RunError: LocalizedError {
@@ -97,8 +97,8 @@ enum AITextEngine {
         var errorDescription: String? {
             switch self {
             case .unavailable(let r): return r
-            case .tooLong: return T("글이 모델이 한 번에 읽을 수 있는 길이를 넘음. 나눠서 하자.", "The text is longer than the model can read at once. Try a shorter part.")
-            case .refused: return T("모델이 이 글은 바꿀 수 없다고 함 (안전 규칙).", "The model declined to transform this text (safety rules).")
+            case .tooLong: return T("모델이 한 번에 읽을 수 있는 길이를 넘었습니다. 나눠서 시도하세요.", "The text is longer than the model can read at once. Try a shorter part.")
+            case .refused: return T("모델이 안전 규칙에 따라 이 글을 바꾸지 않았습니다.", "The model declined to transform this text (safety rules).")
             case .failed(let m): return m
             }
         }
@@ -123,6 +123,6 @@ enum AITextEngine {
             }
         }
         #endif
-        throw RunError.unavailable(T("Foundation Models 없음", "Foundation Models missing"))
+        throw RunError.unavailable(T("Foundation Models를 사용할 수 없습니다", "Foundation Models missing"))
     }
 }

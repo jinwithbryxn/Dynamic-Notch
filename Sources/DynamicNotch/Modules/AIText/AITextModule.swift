@@ -17,7 +17,7 @@ final class AITextModel: ObservableObject {
 
     func loadClipboard() {
         guard let s = NSPasteboard.general.string(forType: .string), !s.isEmpty else {
-            error = T("클립보드에 글이 없음", "No text on the clipboard")
+            error = T("클립보드에 글이 없습니다", "No text on the clipboard")
             return
         }
         input = s
@@ -26,7 +26,7 @@ final class AITextModel: ObservableObject {
 
     func run(_ tool: AITextTool) {
         let (text, cut) = AITextEngine.clip(input.trimmingCharacters(in: .whitespacesAndNewlines))
-        guard !text.isEmpty else { error = T("다듬을 글을 넣거나 클립보드에서 가져오자", "Type text or load it from the clipboard"); return }
+        guard !text.isEmpty else { error = T("다듬을 글을 입력하거나 클립보드에서 가져오세요", "Type text or load it from the clipboard"); return }
         task?.cancel()
         running = tool
         error = nil
@@ -115,12 +115,12 @@ private struct AITextTab: View {
             HStack(spacing: 6) {
                 Image(systemName: "wand.and.stars").font(.system(size: 11, weight: .semibold))
                 Text(T("AI 글 다듬기", "AI Text Tools")).font(.system(size: 12, weight: .semibold))
-                Text(T("온디바이스 · 네트워크 안 씀", "On device · no network")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                Text(T("온디바이스 · 네트워크 사용 안 함", "On device · no network")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
                 Spacer()
             }
             switch model.state {
             case .unsupported(let reason, let alternative):
-                AIDevUnsupported(title: T("이 Mac에서는 아직 못 씀", "Not available on this Mac yet"), reason: reason, alternative: alternative)
+                AIDevUnsupported(title: T("이 Mac에서는 사용할 수 없습니다", "Not available on this Mac yet"), reason: reason, alternative: alternative)
                 Spacer(minLength: 0)
             case .available:
                 tools
@@ -158,7 +158,7 @@ private struct AITextTab: View {
                     .scrollContentBackground(.hidden)
                     .onTapGesture { focus() }
                 if model.input.isEmpty {
-                    Text(T("여기에 붙여넣거나 아래 버튼으로 클립보드 글을 가져오자", "Paste here or load the clipboard below"))
+                    Text(T("여기에 붙여넣거나 아래 버튼으로 클립보드 글을 가져오세요", "Paste here or load the clipboard below"))
                         .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.35)).padding(.top, 1).padding(.leading, 5)
                         .allowsHitTesting(false)
                 }
@@ -190,7 +190,7 @@ private struct AITextTab: View {
                     } else if model.running != nil {
                         Text(T("온디바이스 모델이 쓰는 중…", "The on-device model is writing…")).foregroundStyle(.white.opacity(0.5))
                     } else if model.output.isEmpty {
-                        Text(T("위에서 도구를 고르면 결과가 여기 나옴. 원문은 그대로 남음.", "Pick a tool above. The result shows here and the original stays as is."))
+                        Text(T("위에서 도구를 고르면 결과가 여기에 나옵니다. 원문은 그대로 남습니다.", "Pick a tool above. The result shows here and the original stays as is."))
                             .foregroundStyle(.white.opacity(0.35))
                     } else {
                         Text(model.output).textSelection(.enabled)
@@ -206,7 +206,7 @@ private struct AITextTab: View {
                     AIDevPill(title: T("결과 복사", "Copy Result"), symbol: "doc.on.doc", role: .primary, help: T("복사한 뒤 원래 앱에서 ⌘V", "Copy, then press ⌘V in your app")) { AIDevPasteboard.copy(model.output) }
                 }
                 if model.clipped {
-                    Text(T("앞 \(AITextEngine.maxChars)자만 씀", "Used the first \(AITextEngine.maxChars) characters")).font(.system(size: 10)).foregroundStyle(.orange)
+                    Text(T("앞 \(AITextEngine.maxChars)자만 사용함", "Used the first \(AITextEngine.maxChars) characters")).font(.system(size: 10)).foregroundStyle(.orange)
                 }
             }
         }
