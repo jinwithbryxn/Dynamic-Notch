@@ -45,9 +45,14 @@ build() {
 
 running() { pgrep -f "/$NAME.app/Contents/MacOS/$EXE" >/dev/null; }
 
+# 설정·권한 창은 같은 번들 ID의 도우미 프로세스라 종료 요청이 도우미에 먼저 갈 수 있다.
+# 본 앱과 도우미가 모두 끝날 때까지 2초마다 다시 요청한다 (최대 15초).
 quit_app() {
-  osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true
-  for _ in $(seq 1 40); do running || return 0; sleep 0.25; done
+  for i in $(seq 0 59); do
+    running || return 0
+    [ $((i % 8)) -eq 0 ] && { osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true; }
+    sleep 0.25
+  done
   echo "error: $NAME did not quit; nothing was replaced" >&2
   exit 1
 }

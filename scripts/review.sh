@@ -52,9 +52,13 @@ build() {
 
 running() { pgrep -f "$1.app/Contents/MacOS/" >/dev/null; }
 
+# 설정·권한 창 도우미도 같은 번들 ID라 종료 요청이 그쪽에 먼저 갈 수 있다. 모두 끝날 때까지 2초마다 다시 요청한다.
 quit_app() {
-  osascript -e "tell application id \"$1\" to quit" >/dev/null 2>&1 || true
-  for _ in $(seq 1 40); do running "$2" || return 0; sleep 0.25; done
+  for i in $(seq 0 59); do
+    running "$2" || return 0
+    [ $((i % 8)) -eq 0 ] && { osascript -e "tell application id \"$1\" to quit" >/dev/null 2>&1 || true; }
+    sleep 0.25
+  done
   echo "warning: $2 did not quit" >&2
 }
 
