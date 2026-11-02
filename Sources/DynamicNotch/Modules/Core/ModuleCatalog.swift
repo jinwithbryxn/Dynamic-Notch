@@ -14,6 +14,9 @@ enum ModuleCatalog {
             DesktopLyricsModule(),
             YouTubeMusicModule(),
             BluetoothBatteryModule(),
+            ClipboardModule(),
+            SnippetsModule(),
+            ColorToolsModule(),
         ]
     }
 }
