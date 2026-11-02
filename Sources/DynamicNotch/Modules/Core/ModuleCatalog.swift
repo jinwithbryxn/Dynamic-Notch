@@ -34,6 +34,11 @@ enum ModuleCatalog {
             TextSelectionModule(),
             DictationModule(),
             SpacesModule(),
+            CalendarModule(),
+            RemindersModule(),
+            TodoModule(),
+            AppleNotesModule(),
+            WeatherModule(),
         ]
     }
 }
