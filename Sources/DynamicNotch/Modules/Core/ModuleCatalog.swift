@@ -11,6 +11,8 @@ enum ModuleCatalog {
             ActivityRingModule(),
             ScreenTimeModule(),
             BreakReminderModule(),
+            FocusSwitchModule(),
+            TypingSoundsModule(),
         ]
     }
 }
