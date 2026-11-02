@@ -109,7 +109,15 @@ struct ModuleDefaults {
     func data(_ name: String) -> Data? { UserDefaults.standard.data(forKey: key(name)) }
 
     /// 값을 저장하고 다른 프로세스(본 앱·설정 도우미)에 알린다.
+    /// 값이 그대로면 쓰지도 알리지도 않는다. 알림을 받은 기능이 settingsChanged()에서 같은 값을 다시 저장하면
+    /// 알림 → 저장 → 알림이 끝없이 되풀이되기 때문이다.
     func set(_ value: Any?, _ name: String) {
+        let old = UserDefaults.standard.object(forKey: key(name))
+        switch (old, value) {
+        case (nil, nil): return
+        case let (old?, value?) where (old as AnyObject).isEqual(value): return
+        default: break
+        }
         if let value { UserDefaults.standard.set(value, forKey: key(name)) } else { UserDefaults.standard.removeObject(forKey: key(name)) }
         DistributedNotificationCenter.default().postNotificationName(
             Self.changedNotification, object: module, userInfo: nil, deliverImmediately: true)
