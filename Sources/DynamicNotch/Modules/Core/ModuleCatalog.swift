@@ -43,6 +43,17 @@ enum ModuleCatalog {
             DrivesModule(),
             PackagesModule(),
             AppDataModule(),
+            // 타이머·집중·웰빙·데스크톱 위젯
+            PomodoroModule(),
+            StopwatchModule(),
+            FocusSoundsModule(),
+            KeepAwakeModule(),
+            ActivityRingModule(),
+            ScreenTimeModule(),
+            BreakReminderModule(),
+            FocusSwitchModule(),
+            TypingSoundsModule(),
+            DesktopWidgetsModule(),
         ]
     }
 }
