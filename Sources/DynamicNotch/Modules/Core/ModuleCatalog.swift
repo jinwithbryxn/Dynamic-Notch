@@ -13,6 +13,7 @@ enum ModuleCatalog {
             BreakReminderModule(),
             FocusSwitchModule(),
             TypingSoundsModule(),
+            DesktopWidgetsModule(),
         ]
     }
 }
