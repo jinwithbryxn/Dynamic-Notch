@@ -64,3 +64,15 @@
 - 실제 화면 캡처: 셸에 화면 기록 권한이 없고, 화면 조작 도구는 `/Applications` 밖의 검토용 앱을 대상으로 잡지 못했다. 화면 모양은 2절의 자체 그리기 PNG로만 확인했다.
 - 권한·하드웨어가 필요한 경로: `UNSUPPORTED.md` 5절 목록(화면 기록, 손쉬운 사용, 입력 모니터링, 마이크, 위치, 캘린더·미리 알림, 외장 디스플레이, USB 기기, 외장 드라이브, 실제 통화, API 키, 실제 에이전트 세션 등).
 - macOS 14·15: 이 Mac(macOS 26)에서만 빌드·실행했다.
+
+## 6. 설치
+
+| 항목 | 결과 |
+|---|---|
+| 방법 | `scripts/install-local.sh install` (2026-11-02 14:31 KST, 커밋 `70db2eb`) |
+| 백업 | `~/.local/share/dynamic-notch-agent/backups/20261102-143114`: 이전 앱(1.0.8 + 로컬 패치), `settings.plist`, `installed-commit.txt`. 이전 앱은 지우지 않고 옮겼다 |
+| 되돌리기 | `scripts/install-local.sh restore ~/.local/share/dynamic-notch-agent/backups/20261102-143114` |
+| 서명 | `codesign --verify --deep --strict` 통과, 지정 요구사항 `identifier "com.dynamicnotch.app"`(이전 앱과 같아 권한 유지) |
+| 설정 | 이전 설정 7개 키가 모두 같은 값으로 남음 |
+| 실행 | 설치 직후 CPU 0.1%(10회 중 8회, 나머지 2.1–2.9%), 메모리 약 70MB, 오류(fault) 기록 없음, 첫 안내 창 안 뜸 |
+| 노치 창 위치 | CGWindowList로 x 345, 폭 821pt (물리 노치 가운데 755.5에 맞춤, 호버 윤곽 수정 유지) |
