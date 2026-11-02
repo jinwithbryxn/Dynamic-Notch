@@ -68,5 +68,19 @@
 	<string>Used to show the name (SSID) of the connected Wi-Fi network.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to show the name (SSID) of the connected Wi-Fi network.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Used to show and add Apple Reminders in the notch.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Used to show and add Apple Reminders in the notch.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Used to show the caller's name and photo for incoming calls.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Used for the input level meter and on-device dictation when you turn them on.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Used for on-device dictation and teleprompter voice tracking when you turn them on.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Used for the audio spectrum and per-app volume when you turn them on.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Used for local weather when you choose your current location.</string>
 </dict>
 </plist>

@@ -1,1 +1,8 @@
 "CFBundleDisplayName" = "Dynamic Notch";
+"NSRemindersFullAccessUsageDescription" = "Used to show and add Apple Reminders in the notch.";
+"NSRemindersUsageDescription" = "Used to show and add Apple Reminders in the notch.";
+"NSContactsUsageDescription" = "Used to show the caller's name and photo for incoming calls.";
+"NSMicrophoneUsageDescription" = "Used for the input level meter and on-device dictation when you turn them on.";
+"NSSpeechRecognitionUsageDescription" = "Used for on-device dictation and teleprompter voice tracking when you turn them on.";
+"NSAudioCaptureUsageDescription" = "Used for the audio spectrum and per-app volume when you turn them on.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Used for local weather when you choose your current location.";

@@ -15,7 +15,7 @@ Notchy 기능을 옮길 때 모든 기능은 이 규칙을 따르는 모듈로 �
   - `KeychainStore`: API 키·토큰. UserDefaults·로그·파일에 남기지 않는다.
   - `ModuleServices.previousApp`, `paste(_:)`, `pasteCurrentClipboard()`: 노치를 열기 전 앱에 붙여넣기 (손쉬운 사용 권한 필요, 없으면 클립보드에만).
   - `HotKeyCenter.shared.register(id, shortcut) { }`: 전역 단축키 (Carbon, 권한 불필요).
-- 활동 종류(`ActivityKind`)에 확장 기능용 `notice, stopwatch, pomodoro, caffeinate, stocks, shell, privacy, system, agentApproval`이 있다. 상시 표시(`setPersistent`)는 종류마다 하나다.
+- 활동 종류(`ActivityKind`)에 확장 기능용 `notice, stopwatch, pomodoro, caffeinate, stocks, shell, privacy, system, agentApproval, notification`이 있다. 상시 표시(`setPersistent`)는 종류마다 하나다.
 - `NotchActivity.moduleTab`: 누르면 그 탭을 연다. `NotchActivity.actions`: 상세 카드 버튼.
 
 ## 2. 동작 원칙

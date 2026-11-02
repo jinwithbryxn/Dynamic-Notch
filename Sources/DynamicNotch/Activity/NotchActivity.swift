@@ -6,6 +6,7 @@ enum ActivityKind: String, Hashable {
     case notice          // 일회성 안내 (복사 저장, 변환 완료, 로컬 API 메시지 등)
     case stopwatch, pomodoro, caffeinate, stocks, shell, privacy, system
     case agentApproval   // 코딩 에이전트의 실제 권한 요청 (허용·거부 버튼)
+    case notification    // 다른 앱 알림 미러링·읽지 않은 개수
 }
 
 /// 상세 카드에 붙는 버튼 (에이전트 승인 허용·거부, 알림의 열기 등).

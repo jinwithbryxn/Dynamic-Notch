@@ -110,7 +110,7 @@ final class NotifyMirrorModule: NotchModule {
         workspaceTokens = []
         scanGeneration &+= 1
         scanPending = false
-        if badgePosted { context?.center.removePersistent(.notice); badgePosted = false }
+        if badgePosted { context?.center.removePersistent(.notification); badgePosted = false }
         saveWork?.cancel()
         // 사용자가 기능을 끈 경우(앱 종료가 아님): 사본은 휴지통으로, 키는 지운다
         let userDisabled = !defaults.bool("enabled", default: enabledByDefault)
@@ -271,7 +271,7 @@ final class NotifyMirrorModule: NotchModule {
         fresh.id = itemID
         state.items[i] = fresh
         scheduleSave()
-        if !locked { context?.center.update(.notice) { a in
+        if !locked { context?.center.update(.notification) { a in
             guard a.moduleTab == self.id else { return }
             let lines = fresh.lines(self.privacy)
             a.title = lines.0
@@ -294,7 +294,7 @@ final class NotifyMirrorModule: NotchModule {
             actions.append(ActivityAction(id: "dismiss", title: T("닫기", "Dismiss")) { [weak self] in self?.closeBanner(item.id, attempt: 0) })
         }
         ctx.center.post(NotchActivity(
-            kind: .notice, priority: ActivityPriority.info, presentation: compactStyle ? .compact : .detail,
+            kind: .notification, priority: ActivityPriority.info, presentation: compactStyle ? .compact : .detail,
             symbol: "bell.badge.fill", tint: .white, value: compactStyle ? .text(item.app) : .none,
             title: lines.0, subtitle: lines.1, wing: NotchActivity.compactWing,
             artwork: NMAppIcons.icon(for: item.app), moduleTab: id, actions: actions))
@@ -353,12 +353,12 @@ final class NotifyMirrorModule: NotchModule {
         guard let ctx = context else { return }
         if unreadBadge, state.unread > 0, !locked {
             ctx.center.setPersistent(NotchActivity(
-                kind: .notice, priority: ActivityPriority.pinned, symbol: "bell.badge.fill", tint: .white,
+                kind: .notification, priority: ActivityPriority.pinned, symbol: "bell.badge.fill", tint: .white,
                 value: .text("\(state.unread)"), title: T("읽지 않은 알림", "Unread notifications"),
                 wing: NotchActivity.compactWing, moduleTab: id))
             badgePosted = true
         } else if badgePosted {
-            ctx.center.removePersistent(.notice)
+            ctx.center.removePersistent(.notification)
             badgePosted = false
         }
     }
