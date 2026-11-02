@@ -84,7 +84,10 @@ final class NotifyMirrorModule: NotchModule {
         let dnc = DistributedNotificationCenter.default()
         lockTokens = [
             dnc.addObserver(forName: .init("com.apple.screenIsLocked"), object: nil, queue: .main) { [weak self] _ in self?.locked = true },
-            dnc.addObserver(forName: .init("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in self?.locked = false },
+            dnc.addObserver(forName: .init("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
+                self?.locked = false
+                self?.recountUnread()   // 잠금 중 쌓인 읽지 않은 개수를 다시 보인다
+            },
         ]
         let ws = NSWorkspace.shared.notificationCenter
         workspaceTokens = [
@@ -221,10 +224,13 @@ final class NotifyMirrorModule: NotchModule {
             }
             guard seen[b.signature] == nil else { continue }
             seen[b.signature] = now
+            // '5분 전'처럼 지금이 아닌 시각이 붙은 것은 알림 센터 목록의 예전 알림이다
+            if b.isFresh == false { continue }
             if isOwnApp(b.appName) { continue }
             handleNew(b, at: now)
         }
-        seen = seen.filter { now.timeIntervalSince($0.value) < 6 * 3600 }
+        // 같은 내용이 다시 오면(예: 같은 사람의 "ok") 30분 뒤부터는 새 알림으로 본다
+        seen = seen.filter { now.timeIntervalSince($0.value) < 30 * 60 }
     }
 
     private func contentLength(_ b: NMBanner) -> Int { b.title.count + b.subtitle.count + b.body.count }
@@ -255,7 +261,8 @@ final class NotifyMirrorModule: NotchModule {
         guard !locked, !isMuted else { return }
         let presented = present(item, banner: b)
         // '노치에만' 방식: 노치에 띄운 경우에만 macOS 배너를 닫는다 (실패하면 배너를 그대로 둔다)
-        if presented, notchOnly { closeBanner(item.id, attempt: 0) }
+        // 답장할 수 있는 배너는 닫으면 답장이 불가능해지므로 그대로 둔다
+        if presented, notchOnly, !b.canReply { closeBanner(item.id, attempt: 0) }
     }
 
     private func update(itemID: UUID, with b: NMBanner) {
@@ -510,6 +517,10 @@ enum NMSelfTest {
         // ⑥ 시각 글자 판별
         check("timestamps", ["now", "5분 전", "3m ago", "오후 3:12", "9:41 AM"].allSatisfy { NMBannerReader.isTimestamp(text($0)) }
               && !NMBannerReader.isTimestamp(text("Lunch at 12?")))
+        // ⑥-2 '5분 전'이 붙은 알림은 새 알림이 아님
+        let old = NMNode(role: "AXGroup", subrole: "AXNotificationCenterBanner", children: [text("Kim", id: "title"), text("5분 전"), text("hi", id: "body")])
+        check("old timestamp not fresh", NMBannerReader.parse([NMNode(role: "AXWindow", children: [old])]).banners.first?.isFresh == false
+              && sa.banners[0].isFresh == true)
         // ⑦ 동작 이름
         check("action label", NMBannerReader.actionLabel("Name:Close\nTarget:0x0\nSelector:(null)") == "close")
         // ⑧ 같은 내용 = 같은 해시

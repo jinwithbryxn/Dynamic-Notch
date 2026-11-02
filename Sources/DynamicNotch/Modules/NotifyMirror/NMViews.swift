@@ -327,8 +327,8 @@ struct NMSettings: View {
                 Text(T("노치에만 (macOS 배너 닫기)", "Notch only (dismiss macOS banner)")).tag("notchOnly")
             }
             .onChange(of: delivery) { _, v in d.set(v, "delivery") }
-            Text(T("노치에만: 노치에 띄운 뒤에만 배너를 닫고, 닫기 실패나 표시 실패 때는 배너를 그대로 둔다.",
-                   "Notch only: the banner is dismissed only after the notch shows it; on failure the banner stays."))
+            Text(T("노치에만: 노치에 띄운 뒤에만 배너를 닫고, 닫기 실패나 표시 실패 때는 배너를 그대로 둔다. 답장할 수 있는 배너는 답장할 수 있도록 닫지 않는다.",
+                   "Notch only: the banner is dismissed only after the notch shows it; on failure the banner stays. Banners you can reply to stay open so replies still work."))
                 .font(.caption).foregroundStyle(.secondary)
 
             Picker(T("노치 표시", "Notch style"), selection: $style) {

@@ -36,6 +36,8 @@ struct NMBanner {
     var reply: NMAction? = nil
     /// 답장 동작이 보였는지 (자체 검사용 트리에서도 표시됨)
     var replySeen = false
+    /// 시각 글자로 본 새 알림 여부: '지금'이면 true, '5분 전'·'오후 3:12'면 false, 시각 글자가 없으면 nil
+    var isFresh: Bool? = nil
 
     var canReply: Bool { reply != nil }
     /// 같은 알림인지 가리는 값 (내용은 남기지 않고 해시만 쓴다)
@@ -190,8 +192,12 @@ enum NMBannerReader {
         var allLabels: [String] = []
         func walk(_ n: NMNode, depth: Int) {
             if depth > 0, isBannerRole(n) { return }
-            if n.role == kAXStaticTextRole as String, !n.value.isEmpty, !isTimestamp(n) {
-                texts.append((n.identifier.lowercased(), n.value.trimmingCharacters(in: .whitespacesAndNewlines)))
+            if n.role == kAXStaticTextRole as String, !n.value.isEmpty {
+                if isTimestamp(n) {
+                    if b.isFresh == nil { b.isFresh = isNow(n.value) }
+                } else {
+                    texts.append((n.identifier.lowercased(), n.value.trimmingCharacters(in: .whitespacesAndNewlines)))
+                }
             }
             if n.role == kAXButtonRole as String { buttons.append(n) }
             allLabels.append(contentsOf: [n.title, n.desc, n.value, n.identifier] + customActions(n).map(actionLabel))
@@ -257,10 +263,14 @@ enum NMBannerReader {
         let id = n.identifier.lowercased()
         if id.contains("date") || id.contains("time") { return true }
         let v = n.value.trimmingCharacters(in: .whitespaces).lowercased()
-        if ["now", "지금", "방금", "just now"].contains(v) { return true }
+        if isNow(v) { return true }
         let patterns = [#"^\d+\s?(m|min|h|d)\s?ago$"#, #"^\d+\s?(분|시간|일)\s?전$"#,
                         #"^(오전|오후)?\s?\d{1,2}:\d{2}(\s?(am|pm))?$"#, #"^\d{1,2}:\d{2}\s?(am|pm)?$"#]
         return patterns.contains { v.range(of: $0, options: .regularExpression) != nil }
+    }
+
+    static func isNow(_ value: String) -> Bool {
+        ["now", "지금", "방금", "just now"].contains(value.trimmingCharacters(in: .whitespaces).lowercased())
     }
 
     /// 설명이 "앱, 제목, …"이면 앱 이름을 돌려준다.
