@@ -23,6 +23,15 @@ enum ModuleServices {
         for handler in urlHandlers.values where handler(url) { return }
     }
 
+    /// 기능이 screencapture로 직접 찍기를 마쳤을 때 본 앱이 부르는 처리 (녹화 오감지 거두기).
+    static var captureDidFinish: (() -> Void)?
+
+    /// screencapture -i 같은 영역 선택이 끝나면 기능이 부른다 (찍었든 취소했든). 어느 스레드에서 불러도 된다.
+    /// 스크린샷 폴더 밖 임시 파일로 찍으면 스크린샷 감지가 못 보므로, 영역 선택 화면을 녹화로 잘못 본 것을 여기서 거둔다.
+    static func captureFinished() {
+        DispatchQueue.main.async { captureDidFinish?() }
+    }
+
     /// 노치에 입력하기 전 앞에 있던 앱 (이 앱 제외)
     private(set) static var previousApp: NSRunningApplication?
     private static var observer: NSObjectProtocol?

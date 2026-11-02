@@ -1,13 +1,13 @@
-"NSAppleEventsUsageDescription" = "Apple Music과 Spotify의 재생 정보를 가져오고 제어하는 데 사용합니다.";
+"NSAppleEventsUsageDescription" = "Apple Music과 Spotify의 재생 정보를 가져오고 제어하는 데, 그리고 켜 둔 기능이 다른 앱과 함께 동작할 때(브라우저 탭 제목, 메모에 저장, 회의 통화 제어) 사용합니다.";
 "NSBluetoothAlwaysUsageDescription" = "블루투스 액세서리 연결과 배터리를 표시하는 데 사용합니다.";
-"NSCalendarsFullAccessUsageDescription" = "노치에 오늘 일정을 표시하는 데 사용합니다.";
-"NSCalendarsUsageDescription" = "노치에 오늘 일정을 표시하는 데 사용합니다.";
+"NSCalendarsFullAccessUsageDescription" = "노치에 일정을 표시하고, 캘린더 기능을 켜면 일정을 추가하는 데 사용합니다.";
+"NSCalendarsUsageDescription" = "노치에 일정을 표시하고, 캘린더 기능을 켜면 일정을 추가하는 데 사용합니다.";
 "NSCameraUsageDescription" = "노치의 카메라(거울) 기능에 사용합니다.";
 "NSDesktopFolderUsageDescription" = "스크린샷을 저장하고 감지하는 데 사용합니다.";
 "NSDownloadsFolderUsageDescription" = "브라우저 다운로드 진행률을 표시하는 데 사용합니다.";
 "NSFocusStatusUsageDescription" = "집중 모드가 켜지고 꺼질 때 노치에 표시하는 데 사용합니다.";
 "NSLocationUsageDescription" = "연결된 Wi-Fi 이름(SSID)을 표시하는 데 사용합니다.";
-"NSLocationWhenInUseUsageDescription" = "연결된 Wi-Fi 이름(SSID)을 표시하는 데 사용합니다.";
+"NSLocationWhenInUseUsageDescription" = "연결된 Wi-Fi 이름(SSID)을 표시하고, 현재 위치 날씨를 고르면 그 위치를 찾는 데 사용합니다.";
 "CFBundleDisplayName" = "Dynamic Notch";
 "NSRemindersFullAccessUsageDescription" = "노치에서 미리 알림을 보고 추가하는 데 사용합니다.";
 "NSRemindersUsageDescription" = "노치에서 미리 알림을 보고 추가하는 데 사용합니다.";

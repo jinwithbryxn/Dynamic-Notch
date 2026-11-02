@@ -457,6 +457,7 @@ enum FTEngine {
             ?? FileManager.default.temporaryDirectory.appendingPathComponent("qr-\(UUID().uuidString).png")
         let args = fullScreen ? ["-x", "-m", "-t", "png", tmp.path] : ["-i", "-x", "-o", "-t", "png", tmp.path]
         _ = processes.run("/usr/sbin/screencapture", args, timeout: 300)
+        ModuleServices.captureFinished()
         defer { try? FileManager.default.removeItem(at: tmp) }   // 이 기능이 만든 임시 캡처
         guard FileManager.default.fileExists(atPath: tmp.path) else { return nil }
         return loadImage(tmp, maxPixel: 4096)?.image

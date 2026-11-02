@@ -236,6 +236,9 @@ final class CalendarController: ObservableObject {
     private func checkAlerts() {
         let minutes = settings.calendarAlertMinutes
         guard minutes > 0 else { return }
+        // 확장 기능 '캘린더'의 일정 카운트다운이 켜져 있으면 그쪽이 알린다
+        if ModuleRegistry.shared.running.contains("calendar"),
+           ModuleDefaults(module: "calendar").bool("countdown", default: true) { return }
         let now = Date()
         for e in events where !e.allDay && !alerted.contains(e.id) {
             let lead = e.start.timeIntervalSince(now)

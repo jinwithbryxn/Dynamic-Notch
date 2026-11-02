@@ -340,6 +340,15 @@ struct SettingsView: View {
         case "hotspot": return T("핫스팟 연결", "Hotspot")
         case "focusPinned": return T("집중 모드", "Focus")
         case "aiUsage": return T("AI 사용량", "AI Usage")
+        case "privacy": return T("카메라·마이크 사용", "Camera & Mic in Use")
+        case "cleaning": return T("키보드 잠금·청소", "Keyboard Lock & Cleaning")
+        case "pomodoro": return T("포모도로", "Pomodoro")
+        case "stopwatch": return T("스톱워치", "Stopwatch")
+        case "caffeinate": return T("잠자기 방지", "Keep Awake")
+        case "calendar": return T("다음 일정", "Next Event")
+        case "notification": return T("알림 미러링", "Notification Mirror")
+        case "system": return T("시스템 상태", "System Monitor")
+        case "stocks": return T("주식", "Stocks")
         default: return key
         }
     }
@@ -355,6 +364,15 @@ struct SettingsView: View {
         case "hotspot": return "personalhotspot"
         case "focusPinned": return "moon"
         case "aiUsage": return "gauge.medium"
+        case "privacy": return "video.fill"
+        case "cleaning": return "keyboard"
+        case "pomodoro": return "brain.head.profile"
+        case "stopwatch": return "stopwatch"
+        case "caffeinate": return "cup.and.saucer"
+        case "calendar": return "calendar"
+        case "notification": return "bell.badge"
+        case "system": return "cpu"
+        case "stocks": return "chart.line.uptrend.xyaxis"
         default: return "circle"
         }
     }

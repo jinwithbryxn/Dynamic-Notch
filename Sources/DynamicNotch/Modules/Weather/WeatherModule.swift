@@ -45,6 +45,22 @@ final class WeatherModule: NotchModule {
     func settingsChanged() { model.settingsChanged() }
 
     func tabView() -> AnyView? { AnyView(WeatherTab(model: model)) }
+
+    /// 홈 대시보드 카드 (켜져 있을 때만)
+    func homeCard() -> AnyView? {
+        guard context != nil else { return nil }
+        return AnyView(WeatherHomeCard(model: model))
+    }
+
+    /// 잠금 화면 카드용 현재 값. 꺼져 있거나 아직 받지 못했으면 nil.
+    func lockCardWeather() -> LCWeather? {
+        guard context != nil, let f = model.forecast else { return nil }
+        let fahrenheit = model.unit == "f"
+        return LCWeather(temperature: fahrenheit ? f.current.temp * 9 / 5 + 32 : f.current.temp,
+                         unit: fahrenheit ? "°F" : "°C",
+                         symbol: WxCode.symbol(f.current.code, isDay: f.current.isDay),
+                         summary: WxCode.text(f.current.code), place: model.placeName, updated: f.fetched)
+    }
     var tabContentSize: CGSize { CGSize(width: 600, height: 250) }
 
     func paletteActions() -> [PaletteAction] {
@@ -547,6 +563,34 @@ final class WeatherModel: ObservableObject {
 }
 
 // MARK: - 탭
+
+/// 홈 대시보드의 날씨 카드: 현재 기온·상태·최고/최저. 아직 받지 못했으면 빈 상태.
+private struct WeatherHomeCard: View {
+    @ObservedObject var model: WeatherModel
+
+    var body: some View {
+        if let s = model.summary {
+            HStack(spacing: 10) {
+                Image(systemName: s.symbol).symbolRenderingMode(.multicolor)
+                    .font(.system(size: 24)).frame(width: 34)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("\(s.temperature) \(s.condition)").font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
+                    Text("\(s.place) · \(s.detail)").font(.system(size: 11)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                }
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(.white)
+        } else {
+            VStack(alignment: .leading, spacing: 4) {
+                Label(T("날씨", "Weather"), systemImage: "cloud.sun")
+                    .font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                Text(model.place == nil && model.mode == "city" ? T("설정에서 도시를 고르세요", "Pick a city in Settings")
+                                                                 : (model.loading ? T("불러오는 중…", "Loading…") : T("아직 정보 없음", "No data yet")))
+                    .font(.system(size: 12)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+            }
+        }
+    }
+}
 
 private struct WeatherTab: View {
     @ObservedObject var model: WeatherModel

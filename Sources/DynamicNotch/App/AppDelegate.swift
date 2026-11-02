@@ -209,6 +209,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             openTab: { [weak self] id in self?.vm.openModule(id) },
             collapse: { [weak self] in self?.vm.collapse() },
             focusInput: { [weak self] in self?.notch?.panel.makeKey() })
+        // 기능 사이 연결: 자연어 '5분 타이머'는 기본 타이머로, 기능이 직접 찍은 캡처는 녹화 감지로, 날씨는 잠금 화면 카드로
+        NaturalCommandsModule.startTimerHook = { [weak self] seconds in self?.timer.start(seconds: seconds) }
+        ModuleServices.captureDidFinish = { [weak self] in self?.recording.screenshotTaken() }
+        let weather = ModuleRegistry.shared.modules.first { $0.id == "weather" } as? WeatherModule
+        LockCardHooks.weather = { [weak weather] in weather?.lockCardWeather() }
         ModuleRegistry.shared.activate(context: context)
         applyPaletteHotKey()
         DistributedNotificationCenter.default().addObserver(

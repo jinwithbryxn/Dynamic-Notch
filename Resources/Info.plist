@@ -47,13 +47,13 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Used to read and control playback in Apple Music and Spotify.</string>
+	<string>Used to read and control playback in Apple Music and Spotify, and for features you turn on that work with other apps (browser tab titles, saving to Notes, meeting controls).</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Used to show Bluetooth accessory connections and battery levels.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Used to show today's events in the notch.</string>
+	<string>Used to show your events in the notch and, when you turn on the Calendar feature, to add events.</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Used to show today's events in the notch.</string>
+	<string>Used to show your events in the notch and, when you turn on the Calendar feature, to add events.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Used for the camera (mirror) in the notch.</string>
 	<key>NSDesktopFolderUsageDescription</key>
@@ -67,7 +67,7 @@
 	<key>NSLocationUsageDescription</key>
 	<string>Used to show the name (SSID) of the connected Wi-Fi network.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used to show the name (SSID) of the connected Wi-Fi network.</string>
+	<string>Used to show the name (SSID) of the connected Wi-Fi network and, when you choose it, weather for your current location.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>Used to show and add Apple Reminders in the notch.</string>
 	<key>NSRemindersUsageDescription</key>

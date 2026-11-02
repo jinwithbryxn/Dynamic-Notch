@@ -39,7 +39,7 @@ final class CleaningModule: NotchModule {
         screen.close()
         tick?.invalidate()
         tick = nil
-        context?.center.removePersistent(.system)
+        context?.center.removePersistent(.cleaning)
         state.lockedUntil = nil
         state.screenOn = false
         keyboard.onUnlock = nil
@@ -99,7 +99,7 @@ final class CleaningModule: NotchModule {
         guard let until = state.lockedUntil else { return }
         let left = max(0, Int(until.timeIntervalSinceNow.rounded()))
         context?.center.setPersistent(NotchActivity(
-            kind: .system, priority: ActivityPriority.info, symbol: "keyboard", tint: .orange,
+            kind: .cleaning, priority: ActivityPriority.info, symbol: "keyboard", tint: .orange,
             value: .text(String(format: "%d:%02d", left / 60, left % 60)),
             title: T("키보드 청소 잠금 · ⌘Esc로 해제", "Keyboard locked · ⌘Esc to unlock"),
             wing: NotchActivity.compactWing, moduleTab: id))
@@ -109,7 +109,7 @@ final class CleaningModule: NotchModule {
         tick?.invalidate()
         tick = nil
         state.lockedUntil = nil
-        context?.center.removePersistent(.system)
+        context?.center.removePersistent(.cleaning)
         CPSounds.play(.cleaningDone)
         let why: String
         switch reason {

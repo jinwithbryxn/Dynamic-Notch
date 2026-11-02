@@ -176,7 +176,19 @@ final class AppSettings: ObservableObject {
 
     /// 상시 표시 항목 우선순위 (앞일수록 먼저 노치에 표시)
     @Published var persistentOrder: [String] { didSet { save(persistentOrder, "persistentOrder") } }
-    static let defaultPersistentOrder = ["call", "recording", "timer", "airdrop", "download", "media", "aiUsage", "hotspot", "focusPinned"]
+    static let defaultPersistentOrder = ["call", "recording", "privacy", "cleaning", "timer", "pomodoro", "stopwatch", "caffeinate",
+                                         "calendar", "airdrop", "download", "media", "aiUsage", "hotspot", "focusPinned",
+                                         "notification", "system", "stocks"]
+
+    /// 저장된 순서에 새로 생긴 항목을 기본 순서상 바로 앞 항목 뒤에 끼워 넣는다 (통화처럼 맨 앞 항목은 맨 위로).
+    static func mergedPersistentOrder(_ saved: [String]) -> [String] {
+        var order = saved.filter { defaultPersistentOrder.contains($0) }
+        for (i, key) in defaultPersistentOrder.enumerated() where !order.contains(key) {
+            let before = defaultPersistentOrder[..<i].last { order.contains($0) }
+            order.insert(key, at: before.flatMap { order.firstIndex(of: $0) }.map { $0 + 1 } ?? 0)
+        }
+        return order
+    }
 
     // 미디어 (5.7)
     @Published var mediaSource: MediaSource { didSet { save(mediaSource.rawValue, "mediaSource") } }
@@ -333,10 +345,7 @@ final class AppSettings: ObservableObject {
         focusStyle = AlertStyle(rawValue: value("focusStyle", "")) ?? .compact
         batteryStyle = AlertStyle(rawValue: value("batteryStyle", "")) ?? .compact
         let savedOrder: [String] = value("persistentOrder", AppSettings.defaultPersistentOrder)
-        // 새로 생긴 항목은 기본 순서대로 뒤에 붙인다.
-        persistentOrder = (savedOrder.contains("call") ? [] : ["call"])   // 통화는 기존 사용자도 맨 위로
-            + savedOrder.filter { AppSettings.defaultPersistentOrder.contains($0) }
-            + AppSettings.defaultPersistentOrder.filter { !savedOrder.contains($0) && $0 != "call" }
+        persistentOrder = AppSettings.mergedPersistentOrder(savedOrder)
 
         lockNotchEnabled = value("lockNotchEnabled", true)
         lockMediaWidget = value("lockMediaWidget", true)
@@ -453,10 +462,7 @@ final class AppSettings: ObservableObject {
         focusStyle = AlertStyle(rawValue: value("focusStyle", "")) ?? .compact
         batteryStyle = AlertStyle(rawValue: value("batteryStyle", "")) ?? .compact
         let savedOrder: [String] = value("persistentOrder", AppSettings.defaultPersistentOrder)
-        // 새로 생긴 항목은 기본 순서대로 뒤에 붙인다.
-        persistentOrder = (savedOrder.contains("call") ? [] : ["call"])   // 통화는 기존 사용자도 맨 위로
-            + savedOrder.filter { AppSettings.defaultPersistentOrder.contains($0) }
-            + AppSettings.defaultPersistentOrder.filter { !savedOrder.contains($0) && $0 != "call" }
+        persistentOrder = AppSettings.mergedPersistentOrder(savedOrder)
 
         lockNotchEnabled = value("lockNotchEnabled", true)
         lockMediaWidget = value("lockMediaWidget", true)

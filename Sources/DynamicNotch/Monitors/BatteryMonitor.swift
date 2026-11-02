@@ -69,6 +69,8 @@ final class BatteryMonitor: ObservableObject {
         let old = snapshot
         snapshot = new
         guard let old else { return }
+        // 확장 기능 '배터리'가 켜져 있으면 연결·부족·완충 알림은 그 기능의 설정대로 그쪽이 띄운다
+        guard !ModuleRegistry.shared.running.contains("batteryhealth") else { return }
 
         // 충전기 연결 (빠르게 뺐다 꽂는 경우 2초 디바운스)
         if new.onAC != old.onAC {

@@ -122,6 +122,7 @@ final class CaptureToolsModule: NotchModule {
             guard let self else { return }
             self.process = nil
             self.state.busy = false
+            ModuleServices.captureFinished()
             self.finish(mode, target: target, pasteboardChanged: NSPasteboard.general.changeCount != pbCount)
         }
         if process == nil {
