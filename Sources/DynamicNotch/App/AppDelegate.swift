@@ -400,7 +400,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// `dynamicnotch://` 링크 (확장 기능이 처리기를 등록한다)
     func application(_ application: NSApplication, open urls: [URL]) {
-        urls.forEach(ModuleServices.handle)
+        // dynamicnotch://show?… 는 딥링크 알림 기능(켜져 있을 때)이, 나머지는 기능별 처리기가 받는다
+        for url in urls where !DeepLinkModule.handle(url) { ModuleServices.handle(url) }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

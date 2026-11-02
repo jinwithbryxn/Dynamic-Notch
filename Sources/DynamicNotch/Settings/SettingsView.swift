@@ -345,6 +345,8 @@ struct SettingsView: View {
         case "pomodoro": return T("포모도로", "Pomodoro")
         case "stopwatch": return T("스톱워치", "Stopwatch")
         case "caffeinate": return T("잠자기 방지", "Keep Awake")
+        case "agent": return T("코딩 에이전트", "Coding Agents")
+        case "shell": return T("터미널 명령", "Terminal Commands")
         case "calendar": return T("다음 일정", "Next Event")
         case "notification": return T("알림 미러링", "Notification Mirror")
         case "system": return T("시스템 상태", "System Monitor")
@@ -369,6 +371,8 @@ struct SettingsView: View {
         case "pomodoro": return "brain.head.profile"
         case "stopwatch": return "stopwatch"
         case "caffeinate": return "cup.and.saucer"
+        case "agent": return "terminal.fill"
+        case "shell": return "apple.terminal"
         case "calendar": return "calendar"
         case "notification": return "bell.badge"
         case "system": return "cpu"

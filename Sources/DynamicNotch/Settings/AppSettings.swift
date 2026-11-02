@@ -177,7 +177,7 @@ final class AppSettings: ObservableObject {
     /// 상시 표시 항목 우선순위 (앞일수록 먼저 노치에 표시)
     @Published var persistentOrder: [String] { didSet { save(persistentOrder, "persistentOrder") } }
     static let defaultPersistentOrder = ["call", "recording", "privacy", "cleaning", "timer", "pomodoro", "stopwatch", "caffeinate",
-                                         "calendar", "airdrop", "download", "media", "aiUsage", "hotspot", "focusPinned",
+                                         "agent", "shell", "calendar", "airdrop", "download", "media", "aiUsage", "hotspot", "focusPinned",
                                          "notification", "system", "stocks"]
 
     /// 저장된 순서에 새로 생긴 항목을 기본 순서상 바로 앞 항목 뒤에 끼워 넣는다 (통화처럼 맨 앞 항목은 맨 위로).
