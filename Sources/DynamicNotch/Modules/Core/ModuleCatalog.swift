@@ -7,6 +7,10 @@ enum ModuleCatalog {
             PomodoroModule(),
             StopwatchModule(),
             FocusSoundsModule(),
+            KeepAwakeModule(),
+            ActivityRingModule(),
+            ScreenTimeModule(),
+            BreakReminderModule(),
         ]
     }
 }
