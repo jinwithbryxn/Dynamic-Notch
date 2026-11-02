@@ -9,6 +9,7 @@ enum ModuleCatalog {
             LocalUsageModule(),
             ShellActivityModule(),
             TerminalModule(),
+            AITextModule(),
         ]
     }
 }
