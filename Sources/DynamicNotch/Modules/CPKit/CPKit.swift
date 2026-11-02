@@ -372,3 +372,8 @@ extension NSScreen {
         return screens.first { NSMouseInRect(p, $0.frame, false) } ?? main
     }
 }
+
+/// 앞에 있지 않은 패널에서도 첫 클릭이 바로 버튼에 닿게 한다
+final class CPHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+}

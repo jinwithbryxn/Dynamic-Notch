@@ -327,6 +327,7 @@ private struct CaptureTab: View {
             }
         }
         .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear { state.screenGranted = CPPermission.screenRecording.granted }
     }
 }

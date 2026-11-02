@@ -1,5 +1,6 @@
 import AppKit
 import CoreImage
+import SwiftUI
 import Vision
 
 /// 기기 안 Vision 처리: 글자 인식(OCR)과 QR·바코드 읽기. 네트워크를 쓰지 않는다.
@@ -104,6 +105,22 @@ enum CPTestImages {
         let h = image.height
         ctx.draw(image, in: CGRect(x: -x, y: -(h - 1 - y), width: image.width, height: h))
         return (Int(buf[0]), Int(buf[1]), Int(buf[2]), Int(buf[3]))
+    }
+
+    /// 화면에 띄우지 않은 창에서 SwiftUI 화면을 PNG로 그린다 (DMN_TEST_OUT이 있을 때만)
+    static func renderView<V: View>(_ view: V, size: CGSize, name: String) -> String? {
+        guard ProcessInfo.processInfo.environment["DMN_TEST_OUT"] != nil else { return nil }
+        _ = NSApplication.shared
+        let host = NSHostingView(rootView: AnyView(view.frame(width: size.width, height: size.height).environment(\.colorScheme, .dark)))
+        host.frame = CGRect(origin: .zero, size: size)
+        let window = NSWindow(contentRect: host.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        window.backgroundColor = .darkGray
+        window.contentView = host
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        host.layoutSubtreeIfNeeded()
+        guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return nil }
+        host.cacheDisplay(in: host.bounds, to: rep)
+        return write(rep.cgImage, name)
     }
 
     /// 자체 검사 결과 PNG를 남길 폴더 (환경 변수 DMN_TEST_OUT이 있을 때만)

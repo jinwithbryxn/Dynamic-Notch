@@ -6,6 +6,13 @@ enum ModuleCatalog {
             // 캡처·발표·개인정보 묶음
             CaptureToolsModule(),
             MarkupModule(),
+            TeleprompterModule(),
+            PresenterModule(),
+            CleaningModule(),
+            WindowWatchModule(),
+            PrivacyModule(),
+            MeetingModule(),
+            MenuBarIconsModule(),
             NoticeSoundsModule(),
         ]
     }

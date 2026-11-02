@@ -159,6 +159,7 @@ private struct MarkupTab: View {
             }
         }
         .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
