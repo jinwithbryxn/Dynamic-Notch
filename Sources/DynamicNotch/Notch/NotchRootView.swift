@@ -45,6 +45,7 @@ struct NotchRootView: View {
                     .compositingGroup()
                     .clipShape(shape)
             }
+            .opacity(vm.idlePillHidden ? 0 : 1)
             .modifier(ShakeEffect(animatableData: vm.shakeTrigger))
             .scaleEffect(x: vm.stretch.width, y: vm.stretch.height, anchor: .top)
             // 두 번째 활동: 노치 오른쪽에 떨어진 동그라미 (노치 가장자리에서 갈라져 나오듯 등장)
@@ -112,7 +113,19 @@ struct NotchRootView: View {
         let appear: AnyTransition = vm.isShrinking(to: vm.targetSize) ? .notchContentInPlace : .notchContent
         switch state {
         case .idle:
-            Color.clear
+            if vm.idlePillClock {
+                // 노치 없는 화면의 쉬는 알약 가운데 시계
+                TimelineView(.everyMinute) { ctx in
+                    Text(ctx.date, format: .dateTime.hour().minute())
+                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(.white.opacity(0.85))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .transition(.opacity)
+            } else {
+                Color.clear
+            }
         case .compact:
             if let a = vm.center.displayed {
                 CompactActivityView(activity: a, notchSize: vm.notchSize)

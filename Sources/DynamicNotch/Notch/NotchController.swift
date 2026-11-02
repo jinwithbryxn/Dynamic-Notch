@@ -32,6 +32,7 @@ final class NotchController: NotchGestureDelegate {
     // 호버
     private var hoverOpenWork: DispatchWorkItem?
     private var peekWork: DispatchWorkItem?
+    private var autoCollapseWork: DispatchWorkItem?
     /// 이번 누름이 오른쪽 두 번째 활동 동그라미에서 시작됐는지
     private var bubblePressed = false
 
@@ -142,6 +143,7 @@ final class NotchController: NotchGestureDelegate {
         vm.notchSize = notch.size
         vm.hasPhysicalNotch = NotchGeometry.hasPhysicalNotch(screen)
         vm.floatingPillEnabled = IslandSettings.floatingPill
+        vm.idlePillStyle = IslandSettings.idlePill
         panel.sharingType = IslandSettings.hideFromCapture ? .none : .readOnly
         lockPanel.sharingType = panel.sharingType
         var size = NotchGeometry.panelSize
@@ -234,7 +236,18 @@ final class NotchController: NotchGestureDelegate {
         if inside, settings.hoverToOpen, !vm.isExpanded {
             let work = DispatchWorkItem { [weak self] in self?.expand(haptic: false) }
             hoverOpenWork = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
+            DispatchQueue.main.asyncAfter(deadline: .now() + IslandSettings.hoverDelay, execute: work)
+        }
+        // 커서가 떠나면 접기 (설정했을 때만, 열림 고정·글자 입력 중에는 안 접음)
+        autoCollapseWork?.cancel()
+        let collapseDelay = IslandSettings.autoCollapse
+        if !inside, vm.isExpanded, collapseDelay >= 0, !vm.pinnedOpen, !vm.isFileDragging {
+            let work = DispatchWorkItem { [weak self] in
+                guard let self, !self.vm.isHovering, !self.vm.pinnedOpen, !self.panel.isKeyWindow else { return }
+                self.collapse()
+            }
+            autoCollapseWork = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + max(0.05, collapseDelay), execute: work)
         }
         // 음악 호버 미리보기: 잠깐 머물면 미니 플레이어로 펼친다 (커서가 나가면 접힘)
         peekWork?.cancel()
@@ -263,6 +276,8 @@ final class NotchController: NotchGestureDelegate {
 
     private func expand(haptic: Bool) {
         guard !isLocked(), !vm.isExpanded, Date().timeIntervalSince(lastCollapse) > 0.3 else { return }
+        // 알림 전용 모드: 펼치지 않는다
+        if IslandSettings.alertsOnly { vm.endPress(); return }
         // 알림은 확장 화면 대신 앱이 처리한다 (컴팩트 → 상세 카드, 상세 → 반응 없음)
         if let decide = vm.longPressShouldExpand, !decide(vm.center.displayed) {
             vm.endPress()
@@ -329,6 +344,13 @@ final class NotchController: NotchGestureDelegate {
         }
         let wasPressing = pressOrigin != nil
         let leftSide = (pressOrigin?.x ?? panel.frame.midX) < panel.frame.midX
+        // 더블클릭으로 펼치기
+        if event.clickCount == 2, IslandSettings.doubleClickOpen, !vm.isExpanded {
+            cancelPress()
+            vm.endPress()
+            expand(haptic: true)
+            return
+        }
         cancelPress()
         guard !vm.isExpanded else { return }
         vm.endPress()

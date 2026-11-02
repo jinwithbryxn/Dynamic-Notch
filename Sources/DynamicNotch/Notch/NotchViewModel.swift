@@ -351,6 +351,12 @@ final class NotchViewModel: ObservableObject {
     /// 떠 있는 알약이 화면 위 가장자리에서 떨어진 거리
     var floatingInset: CGFloat { floatingPill ? 5 : 0 }
 
+    /// 노치 없는 화면에서 쉬는 알약 모양 ("show" | "clock" | "hidden"), NotchController가 알려 줌
+    @Published var idlePillStyle = "show"
+    /// 쉬는 알약을 숨길지 (커서를 올리면 보임)
+    var idlePillHidden: Bool { floatingPill && idlePillStyle == "hidden" && state == .idle && !isHovering }
+    var idlePillClock: Bool { floatingPill && idlePillStyle == "clock" && state == .idle }
+
     /// 노치와 동그라미 사이 간격
     static let bubbleGap: CGFloat = 7
 

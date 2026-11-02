@@ -19,6 +19,8 @@
 | 화면 공유·녹화에서 노치 숨기기 요청 (`sharingType = .none`, 보장 안 됨) | `Notch/NotchController.swift` | M-A-047 |
 | 홈 대시보드: 음악 · 타이머 · 다음 일정 · 확장 기능 카드 | `Features/Home/DashboardPage.swift` | M-A-022(일부) |
 | 설정 → 확장 기능: 아일랜드 옵션, 팔레트 단축키, 기능별 켜기·독 고정·세부 설정 | `Modules/Core/PaletteSupport.swift`, `Settings/SettingsView.swift` | M-L-024 |
+| 호버로 열기 지연(0–1.5초), 더블클릭으로 펼치기, 커서가 떠나면 접기(끔/즉시/0.5/1/2초), 알림 전용 모드 | `Notch/NotchController.swift`, `IslandExtras.swift` | M-A-011, M-A-013, M-A-032 |
+| 노치 없는 화면의 쉬는 알약: 보이기 / 시계 / 커서를 올릴 때만 | `Notch/NotchRootView.swift`, `NotchViewModel.swift` | M-A-029, M-A-040 |
 | 노치 창 크기 720×300 → 820×440 (넓은 탭) | `Notch/NotchGeometry.swift` | M-A-023 |
 
 ## 기존 기능 보존·안전 (P2)

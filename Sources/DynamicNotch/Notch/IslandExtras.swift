@@ -16,6 +16,17 @@ enum IslandSettings {
     /// 화면 공유·녹화에서 노치 창을 빼 달라고 시스템에 요청한다 (모든 캡처 방식에서 보장되지는 않음)
     static var hideFromCapture: Bool { d.bool("hideFromCapture", default: false) }
 
+    /// '호버만으로 열기'의 지연(초)
+    static var hoverDelay: Double { d.double("hoverDelay", default: 0.35) }
+    /// 더블클릭으로 펼치기
+    static var doubleClickOpen: Bool { d.bool("doubleClickOpen", default: false) }
+    /// 커서가 떠나면 접기까지의 시간(초). 음수면 끔 (바깥을 눌러야 접힘)
+    static var autoCollapse: Double { d.double("autoCollapse", default: -1) }
+    /// 알림 전용: 클릭·호버·길게누르기로 펼치지 않는다 (명령 팔레트 단축키는 동작)
+    static var alertsOnly: Bool { d.bool("alertsOnly", default: false) }
+    /// 노치 없는 화면에서 쉬는 알약: "show" | "clock" | "hidden"(커서를 올릴 때만)
+    static var idlePill: String { d.string("idlePill", default: "show") }
+
     static func set(_ value: Any?, _ name: String) { d.set(value, name) }
 }
 
@@ -122,6 +133,11 @@ struct IslandSettingsSection: View {
     @State private var delay = IslandSettings.peekDelay
     @State private var pill = IslandSettings.floatingPill
     @State private var hideCapture = IslandSettings.hideFromCapture
+    @State private var hoverDelay = IslandSettings.hoverDelay
+    @State private var doubleClick = IslandSettings.doubleClickOpen
+    @State private var autoCollapse = IslandSettings.autoCollapse
+    @State private var alertsOnly = IslandSettings.alertsOnly
+    @State private var idlePill = IslandSettings.idlePill
 
     var body: some View {
         Section {
@@ -129,6 +145,32 @@ struct IslandSettingsSection: View {
                 .onChange(of: bubble) { _, v in IslandSettings.set(v, "secondaryBubble") }
             Toggle(T("노치 없는 화면에서는 떠 있는 알약으로", "Floating pill on displays without a notch"), isOn: $pill)
                 .onChange(of: pill) { _, v in IslandSettings.set(v, "floatingPill") }
+            if pill {
+                Picker(T("쉬는 알약", "Idle pill"), selection: $idlePill) {
+                    Text(T("보이기", "Show")).tag("show")
+                    Text(T("시계", "Clock")).tag("clock")
+                    Text(T("커서를 올릴 때만", "Only on hover")).tag("hidden")
+                }
+                .onChange(of: idlePill) { _, v in IslandSettings.set(v, "idlePill") }
+            }
+            HStack {
+                Text(T("호버로 열기 지연", "Hover-open delay"))
+                Slider(value: $hoverDelay, in: 0...1.5, step: 0.05)
+                Text(String(format: T("%.2f초", "%.2fs"), hoverDelay)).monospacedDigit().frame(width: 52, alignment: .trailing)
+            }
+            .onChange(of: hoverDelay) { _, v in IslandSettings.set(v, "hoverDelay") }
+            Toggle(T("더블클릭으로 펼치기", "Double-click to open"), isOn: $doubleClick)
+                .onChange(of: doubleClick) { _, v in IslandSettings.set(v, "doubleClickOpen") }
+            Picker(T("커서가 떠나면 접기", "Collapse when the pointer leaves"), selection: $autoCollapse) {
+                Text(T("끔 (바깥 클릭)", "Off (click outside)")).tag(-1.0)
+                Text(T("바로", "Immediately")).tag(0.0)
+                Text(T("0.5초 뒤", "After 0.5 s")).tag(0.5)
+                Text(T("1초 뒤", "After 1 s")).tag(1.0)
+                Text(T("2초 뒤", "After 2 s")).tag(2.0)
+            }
+            .onChange(of: autoCollapse) { _, v in IslandSettings.set(v, "autoCollapse") }
+            Toggle(T("알림 전용 (클릭·호버로 펼치지 않음)", "Alerts only (don't open on click or hover)"), isOn: $alertsOnly)
+                .onChange(of: alertsOnly) { _, v in IslandSettings.set(v, "alertsOnly") }
             Toggle(T("화면 공유·녹화에서 노치 숨기기 요청", "Ask macOS to hide the notch from screen sharing and recording"), isOn: $hideCapture)
                 .onChange(of: hideCapture) { _, v in IslandSettings.set(v, "hideFromCapture") }
             Toggle(T("음악 위에 커서를 올리면 미니 플레이어", "Hover over music to peek a mini player"), isOn: $peek)
