@@ -35,6 +35,9 @@ protocol NotchModule: AnyObject {
     /// 설정 도우미가 이 기능의 설정을 바꿨을 때 본 앱에서 불린다.
     func settingsChanged()
 
+    /// 홈 대시보드 카드 (약 210×68pt). nil이면 카드가 없다.
+    func homeCard() -> AnyView?
+
     /// 진행 중인 작업(내려받기·녹음·실행 중인 명령 등)이 있어 앱이 스스로 다시 시작하면 안 되는지
     var isBusy: Bool { get }
 
@@ -53,6 +56,7 @@ extension NotchModule {
     func settingsChanged() {}
     func selfTest() -> [String] { ["no self test"] }
     var isBusy: Bool { false }
+    func homeCard() -> AnyView? { nil }
 }
 
 /// 기능이 본 앱에 요청할 수 있는 일

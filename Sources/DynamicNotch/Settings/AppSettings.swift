@@ -250,7 +250,7 @@ final class AppSettings: ObservableObject {
     @Published var homeOrder: [String] { didSet { save(homeOrder, "homeOrder") } }
     @Published var homeDisabled: [String] { didSet { save(homeDisabled, "homeDisabled") } }
     @Published var trayMode: TrayMode { didSet { save(trayMode.rawValue, "trayMode") } }
-    static let defaultHomeOrder = ["camera", "timer", "usage", "memo", "calendar", "tray"]
+    static let defaultHomeOrder = ["dashboard", "camera", "timer", "usage", "memo", "calendar", "tray"]
 
     func isHomeFeatureOn(_ key: String) -> Bool {
         key == "tray" ? trayMode != .off : !homeDisabled.contains(key)
@@ -355,7 +355,10 @@ final class AppSettings: ObservableObject {
         agentStyle = AlertStyle(rawValue: value("agentStyle", "")) ?? .detail
         // 새로 생긴 홈 기능은 기본 순서대로 뒤에 붙인다
         let savedHome: [String] = value("homeOrder", AppSettings.defaultHomeOrder)
-        homeOrder = savedHome.filter(AppSettings.defaultHomeOrder.contains) + AppSettings.defaultHomeOrder.filter { !savedHome.contains($0) }
+        // 새로 생긴 대시보드는 맨 앞에, 나머지 새 항목은 뒤에 붙인다
+        homeOrder = (savedHome.contains("dashboard") ? [] : ["dashboard"])
+            + savedHome.filter(AppSettings.defaultHomeOrder.contains)
+            + AppSettings.defaultHomeOrder.filter { !savedHome.contains($0) && $0 != "dashboard" }
         homeDisabled = value("homeDisabled", [String]())
         trayMode = TrayMode(rawValue: value("trayMode", "")) ?? .on
 
@@ -472,7 +475,10 @@ final class AppSettings: ObservableObject {
         agentStyle = AlertStyle(rawValue: value("agentStyle", "")) ?? .detail
         // 새로 생긴 홈 기능은 기본 순서대로 뒤에 붙인다
         let savedHome: [String] = value("homeOrder", AppSettings.defaultHomeOrder)
-        homeOrder = savedHome.filter(AppSettings.defaultHomeOrder.contains) + AppSettings.defaultHomeOrder.filter { !savedHome.contains($0) }
+        // 새로 생긴 대시보드는 맨 앞에, 나머지 새 항목은 뒤에 붙인다
+        homeOrder = (savedHome.contains("dashboard") ? [] : ["dashboard"])
+            + savedHome.filter(AppSettings.defaultHomeOrder.contains)
+            + AppSettings.defaultHomeOrder.filter { !savedHome.contains($0) && $0 != "dashboard" }
         homeDisabled = value("homeDisabled", [String]())
         trayMode = TrayMode(rawValue: value("trayMode", "")) ?? .on
 

@@ -80,6 +80,7 @@ enum ModuleDevTools {
                                                               collapse: { vm.collapse() }, focusInput: {}))
         switch state {
         case "home": vm.expand(page: .home)
+        case "dashboard": vm.selectHomeOption(.dashboard); vm.expand(page: .home)
         case "palette": vm.expand(page: .palette)
         case let s where s.hasPrefix("module:"): vm.expand(page: .module(String(s.dropFirst(7))))
         case "detail-actions":

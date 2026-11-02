@@ -156,7 +156,10 @@ struct ExpandedView: View {
             memo: AnyView(MemoPage(store: features.memo,
                                    active: vm.state == .expanded && vm.expandedPage == .home && vm.homeOption == .memo)),
             calendar: AnyView(CalendarPage(calendar: features.calendar)),
-            tray: AnyView(TrayPage(store: features.tray, vm: vm))
+            tray: AnyView(TrayPage(store: features.tray, vm: vm)),
+            dashboard: AnyView(DashboardPage(media: features.media, timer: timer, calendar: features.calendar,
+                                             homeTimerOn: vm.settings.homeEnabled(.timer),
+                                             homeCalendarOn: vm.settings.homeEnabled(.calendar)))
         )
     }
 

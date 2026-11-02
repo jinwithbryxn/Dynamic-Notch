@@ -12,8 +12,17 @@ extension ModuleContext {
     }
 }
 
-/// 여러 기능이 함께 쓰는 macOS 도우미: 이전 앱 기억과 붙여넣기.
+/// 여러 기능이 함께 쓰는 macOS 도우미: 이전 앱 기억과 붙여넣기, 딥링크.
 enum ModuleServices {
+    /// `dynamicnotch://` 링크 처리기. 기능이 start()에서 등록하고 stop()에서 지운다. 처리했으면 true.
+    static var urlHandlers: [String: (URL) -> Bool] = [:]
+
+    /// 앱이 받은 링크를 등록된 처리기에 차례로 넘긴다
+    static func handle(_ url: URL) {
+        guard url.scheme?.lowercased() == "dynamicnotch" else { return }
+        for handler in urlHandlers.values where handler(url) { return }
+    }
+
     /// 노치에 입력하기 전 앞에 있던 앱 (이 앱 제외)
     private(set) static var previousApp: NSRunningApplication?
     private static var observer: NSObjectProtocol?

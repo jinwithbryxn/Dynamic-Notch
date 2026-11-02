@@ -393,6 +393,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if disabled.contains("timer"), timer.isActive { timer.cancel() }
     }
 
+    /// `dynamicnotch://` 링크 (확장 기능이 처리기를 등록한다)
+    func application(_ application: NSApplication, open urls: [URL]) {
+        urls.forEach(ModuleServices.handle)
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         ModuleRegistry.shared.stopAll()   // 화면 감마·전원 유지·오디오 등 기능이 바꾼 상태를 되돌린다
         media.stop()
