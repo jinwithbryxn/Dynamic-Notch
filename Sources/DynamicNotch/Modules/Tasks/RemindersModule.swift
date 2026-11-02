@@ -488,6 +488,7 @@ private struct RemindersSettings: View {
                         .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     HStack {
                         SecureField(hasToken ? T("저장됨 (바꾸려면 새로 입력)", "Saved (type to replace)") : T("API 토큰", "API token"), text: $token)
+                            .textFieldStyle(.roundedBorder)
                         Button(T("저장하고 확인", "Save and Check")) { saveToken() }.disabled(token.isEmpty)
                         if hasToken {
                             Button(T("연결 해제", "Disconnect")) {

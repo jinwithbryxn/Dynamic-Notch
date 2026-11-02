@@ -108,9 +108,18 @@ final class CalendarModule: NotchModule {
 
     private func reloadAll() {
         model.reloadUpcoming()
+        pruneMarks()
         model.reloadVisible()
         lastUpcomingLoad = Date()
         tick()
+    }
+
+    /// 끝난 일정의 표시 기록을 버린다
+    private func pruneMarks() {
+        let ids = Set(model.upcoming.map(\.id))
+        countdownClosed.formIntersection(ids)
+        countdownAnnounced.formIntersection(ids)
+        alerted.formIntersection(ids)
     }
 
     private func applySettings() {
@@ -143,6 +152,7 @@ final class CalendarModule: NotchModule {
         let now = Date()
         if now.timeIntervalSince(lastUpcomingLoad) > 10 * 60 {
             model.reloadUpcoming()
+            pruneMarks()
             lastUpcomingLoad = now
             model.refreshFeeds { [weak self] in self?.model.reloadUpcoming() }
         }

@@ -230,11 +230,11 @@ struct CalendarSettings: View {
                  : T("CalDAV 서버나 캘린더 주소(https), 사용자 이름, 앱 전용 비밀번호를 넣으세요. 비밀번호는 키체인에만 저장합니다.",
                      "Enter the CalDAV server or calendar address (https), username and an app-specific password. The password is stored only in the Keychain."))
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            TextField(T("이름 (예: 회사 일정)", "Name (e.g. Work)"), text: $addName)
-            TextField(addKind == .ics ? "webcal://… / https://….ics" : "https://caldav.example.com/", text: $addURL)
+            TextField(T("이름 (예: 회사 일정)", "Name (e.g. Work)"), text: $addName).textFieldStyle(.roundedBorder)
+            TextField(addKind == .ics ? "webcal://… / https://….ics" : "https://caldav.example.com/", text: $addURL).textFieldStyle(.roundedBorder)
             if addKind == .caldav {
-                TextField(T("사용자 이름", "Username"), text: $addUser)
-                SecureField(T("비밀번호 (앱 전용 비밀번호 권장)", "Password (app-specific recommended)"), text: $addPassword)
+                TextField(T("사용자 이름", "Username"), text: $addUser).textFieldStyle(.roundedBorder)
+                SecureField(T("비밀번호 (앱 전용 비밀번호 권장)", "Password (app-specific recommended)"), text: $addPassword).textFieldStyle(.roundedBorder)
             }
             HStack(spacing: 6) {
                 ForEach(PIMColor.palette, id: \.self) { hex in

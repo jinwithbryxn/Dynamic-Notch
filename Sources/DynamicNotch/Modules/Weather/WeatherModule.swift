@@ -738,6 +738,7 @@ private struct WeatherSettings: View {
                 if mode == "city" {
                     Text(T("지금 도시: ", "Current city: ") + (place.map { "\($0.name)\($0.detail.isEmpty ? "" : ", " + $0.detail)" } ?? T("없음", "None")))
                     TextField(T("도시 검색 (예: Seoul, 부산, Paris)", "Search a city (e.g. Seoul, Paris)"), text: $query)
+                        .textFieldStyle(.roundedBorder)
                         .onChange(of: query) { _, q in scheduleSearch(q) }
                     if searching { ProgressView().controlSize(.small) }
                     ForEach(Array(results.enumerated()), id: \.offset) { _, p in

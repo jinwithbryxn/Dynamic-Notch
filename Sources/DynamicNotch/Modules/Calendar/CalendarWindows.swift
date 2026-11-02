@@ -63,8 +63,8 @@ final class CalAlertWindows {
         close()
         switch outcome {
         case .join: join?()
-        case .snooze: snooze?()
-        case .dismiss: dismiss?()
+        case .snooze: snooze?(); ModuleServices.previousApp?.activate()
+        case .dismiss: dismiss?(); ModuleServices.previousApp?.activate()
         }
     }
 
@@ -84,7 +84,7 @@ private final class CalAlertWindow: NSWindow {
     override var canBecomeMain: Bool { true }
 }
 
-private struct CalAlertView: View {
+struct CalAlertView: View {
     let item: CalItem
     let preview: Bool
     /// 버튼은 주 화면에만 크게, 나머지 화면에는 제목만

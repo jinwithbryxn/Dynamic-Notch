@@ -122,8 +122,10 @@ final class CalDAVClient: NSObject, URLSessionTaskDelegate {
             guard let self, !self.cancelled else { return }
             switch result {
             case .failure(let e):
-                // 서버 루트면 .well-known 주소로 한 번 더
-                if self.base.path.isEmpty || self.base.path == "/", let wk = URL(string: "/.well-known/caldav", relativeTo: self.base)?.absoluteURL {
+                // 서버 루트면 .well-known 주소로 한 번 더 (인증 실패는 그대로 알린다)
+                var authFailed = false
+                if case CalFeedError.http(let code) = e, code == 401 || code == 403 { authFailed = true }
+                if !authFailed, self.base.path.isEmpty || self.base.path == "/", let wk = URL(string: "/.well-known/caldav", relativeTo: self.base)?.absoluteURL {
                     self.propfind(wk, depth: 0) { r2 in
                         switch r2 {
                         case .failure: completion(.failure(e))
