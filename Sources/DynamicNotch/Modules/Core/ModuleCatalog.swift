@@ -4,6 +4,7 @@ enum ModuleCatalog {
         [
             WorldClockModule(),
             ClipboardModule(),
+            SnippetsModule(),
         ]
     }
 }
