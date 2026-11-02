@@ -5,6 +5,15 @@ enum ModuleCatalog {
             WorldClockModule(),
             NotifyMirrorModule(),
             LockCardsModule(),
+            AudioDevicesModule(),
+            SoundMixerModule(),
+            AudioSpectrumModule(),
+            MusicToolsModule(),
+            ListeningHistoryModule(),
+            MiniPlayerModule(),
+            DesktopLyricsModule(),
+            YouTubeMusicModule(),
+            BluetoothBatteryModule(),
         ]
     }
 }
