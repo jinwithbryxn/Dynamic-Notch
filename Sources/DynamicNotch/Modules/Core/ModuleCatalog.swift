@@ -39,6 +39,10 @@ enum ModuleCatalog {
             TodoModule(),
             AppleNotesModule(),
             WeatherModule(),
+            FileToolsModule(),
+            DrivesModule(),
+            PackagesModule(),
+            AppDataModule(),
         ]
     }
 }
