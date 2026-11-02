@@ -8,6 +8,7 @@ enum ModuleCatalog {
             AgentHubModule(),
             LocalUsageModule(),
             ShellActivityModule(),
+            TerminalModule(),
         ]
     }
 }
