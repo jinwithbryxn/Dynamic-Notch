@@ -3,6 +3,7 @@ enum ModuleCatalog {
     static func makeAll() -> [NotchModule] {
         [
             WorldClockModule(),
+            ClipboardModule(),
         ]
     }
 }
