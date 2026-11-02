@@ -4,6 +4,7 @@ import SwiftUI
 enum SettingsPage: String, CaseIterable, Identifiable {
     case general, priority, interaction
     case basics, network, bluetooth, focus, call, media, download, airdrop, screenshot, recording, battery, hud, lock, aiUsage, agent
+    case modules
     case test, permissions, about
 
     var id: String { rawValue }
@@ -11,7 +12,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
     /// '상호작용' 아래에 펼쳐지는 기능별 페이지
     static let features: [SettingsPage] = [.basics, .network, .bluetooth, .focus, .call, .media, .download, .airdrop,
                                            .screenshot, .recording, .battery, .hud, .lock, .aiUsage, .agent]
-    static let top: [SettingsPage] = [.general, .priority, .interaction, .test, .permissions, .about]
+    static let top: [SettingsPage] = [.general, .priority, .interaction, .modules, .test, .permissions, .about]
 
     var title: String {
         switch self {
@@ -33,6 +34,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .lock: return T("잠금화면", "Lock Screen")
         case .aiUsage: return T("AI 사용량", "AI Usage")
         case .agent: return "Claude Code · Codex"
+        case .modules: return T("확장 기능", "Extensions")
         case .test: return T("테스트", "Test")
         case .permissions: return T("권한 관리", "Permissions")
         case .about: return T("정보", "About")
@@ -59,6 +61,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .lock: return "lock"
         case .aiUsage: return "gauge.medium"
         case .agent: return "terminal"
+        case .modules: return "puzzlepiece.extension"
         case .test: return "play.rectangle"
         case .permissions: return "hand.raised"
         case .about: return "info.circle"
@@ -199,6 +202,7 @@ struct SettingsView: View {
         case .lock: lockPage
         case .aiUsage: aiUsagePage
         case .agent: AgentSettingsPage(settings: settings, preview: preview)
+        case .modules: ModulesSettingsPage()
         case .test: testTab
         case .permissions: PermissionsView(onboarding: false, embedded: true) {}
         case .about: about

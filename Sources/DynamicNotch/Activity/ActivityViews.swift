@@ -302,7 +302,37 @@ struct DetailActivityView: View {
             // 상세 카드도 음악 팝업처럼 가장자리에서 안쪽으로(위쪽 오목 모서리 + 22pt), 남은 높이 가운데에
             .padding(.horizontal, 35)
             .frame(maxHeight: .infinity)
-            .padding(.bottom, 10)
+            .padding(.bottom, activity.actions.isEmpty ? 10 : 0)
+            if !activity.actions.isEmpty {
+                ActivityActionRow(actions: activity.actions)
+                    .padding(.horizontal, 35)
+                    .frame(height: NotchViewModel.actionRowHeight - 6)
+                    .padding(.bottom, 14)
+            }
+        }
+    }
+}
+
+/// 상세 카드 아래 버튼 줄 (허용·거부 등). 주 버튼은 흰 바탕, 위험 버튼은 빨간 글자.
+struct ActivityActionRow: View {
+    var actions: [ActivityAction]
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(actions) { action in
+                Button(action: action.run) {
+                    Text(action.title)
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 28)
+                        .foregroundStyle(action.role == .primary ? Color.black : (action.role == .destructive ? Color.red : Color.white))
+                        .background(Capsule().fill(action.role == .primary ? Color.white : Color.white.opacity(0.14)))
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(action.title)
+            }
         }
     }
 }

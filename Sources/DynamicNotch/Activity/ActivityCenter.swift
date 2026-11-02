@@ -76,14 +76,25 @@ final class ActivityCenter: ObservableObject {
                 return
             }
             if activity.priority < current.priority {
-                pending.append(activity)
-                pending.sort { $0.priority > $1.priority }
-                // 대기열이 쌓이지 않게 최대 4개만 (우선순위 낮은 것부터 버림)
-                if pending.count > 4 { pending.removeLast(pending.count - 4) }
+                enqueue(activity)
                 return
+            }
+            // 더 중요한 알림에 밀려난 알림은 버리지 않고 대기열로 돌린다 (남은 시간이 1초 넘을 때)
+            if let end = expireDate, end.timeIntervalSinceNow > 1 {
+                var requeued = current
+                requeued.duration = max(1.5, end.timeIntervalSinceNow)
+                enqueue(requeued)
             }
         }
         show(activity, restartDetail: true)
+    }
+
+    private func enqueue(_ activity: NotchActivity) {
+        pending.removeAll { $0.id == activity.id }
+        pending.append(activity)
+        pending.sort { $0.priority > $1.priority }
+        // 대기열이 쌓이지 않게 최대 4개만 (우선순위 낮은 것부터 버림)
+        if pending.count > 4 { pending.removeLast(pending.count - 4) }
     }
 
     /// 표시 중인 같은 종류 액티비티의 값만 바꾼다(타이머는 유지).

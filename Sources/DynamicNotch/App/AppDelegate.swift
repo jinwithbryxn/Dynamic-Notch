@@ -120,6 +120,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .store(in: &cancellables)
         usage.start()
         agentObserver = AgentNotify.observe(center: center)
+        startModules()
 
         settings.$showStatusItem
             .sink { [weak self] show in self?.setStatusItem(visible: show) }
@@ -184,6 +185,79 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 #endif
             }
         }
+    }
+
+    // MARK: - 확장 기능 (Modules)
+
+    /// 확장 기능을 켜고, 명령 팔레트·탭 단축키·전역 단축키를 연결한다.
+    private func startModules() {
+        ModuleServices.startTracking()
+        vm.requestKeyFocus = { [weak self] in self?.notch?.panel.makeKey() }
+        vm.corePaletteActions = { [weak self] query in self?.corePaletteActions(query) ?? [] }
+        notch?.panel.onCommandDigit = { [weak self] n in
+            guard let self, self.vm.isExpanded else { return false }
+            self.vm.selectNav(index: n - 1)
+            return true
+        }
+        notch?.panel.onEscape = { [weak self] in
+            guard let self, self.vm.isExpanded else { return false }
+            self.vm.collapse()
+            return true
+        }
+        let context = ModuleContext(
+            center: center,
+            openTab: { [weak self] id in self?.vm.openModule(id) },
+            collapse: { [weak self] in self?.vm.collapse() },
+            focusInput: { [weak self] in self?.notch?.panel.makeKey() })
+        ModuleRegistry.shared.activate(context: context)
+        applyPaletteHotKey()
+        DistributedNotificationCenter.default().addObserver(
+            forName: ModuleDefaults.changedNotification, object: "palette", queue: .main
+        ) { [weak self] _ in self?.applyPaletteHotKey() }
+    }
+
+    /// 명령 팔레트 전역 단축키 (기본 ⌃⌥K, 설정 → 확장 기능에서 바꾸거나 끔)
+    private func applyPaletteHotKey() {
+        let d = ModuleDefaults(module: "palette")
+        guard d.bool("hotkeyEnabled", default: true) else { HotKeyCenter.shared.unregister("palette"); return }
+        let shortcut = PaletteHotKey.current
+        HotKeyCenter.shared.register("palette", shortcut) { [weak self] in
+            guard let self, !(self.notch?.isLocked() ?? false) else { return }
+            if self.vm.isExpanded, self.vm.expandedPage == .palette { self.vm.collapse() } else { self.vm.openPalette() }
+        }
+    }
+
+    /// 명령 팔레트의 본 앱 동작: 탭 열기, 홈 페이지, 타이머, 설정 등
+    private func corePaletteActions(_ query: String) -> [PaletteAction] {
+        var list: [PaletteAction] = []
+        if let seconds = PaletteParser.timerSeconds(query), !settings.homeDisabled.contains("timer") {
+            list.append(PaletteAction(id: "core.timer.start", title: T("타이머 \(TimerController.format(TimeInterval(seconds))) 시작",
+                                                                       "Start a \(TimerController.format(TimeInterval(seconds))) timer"),
+                                      symbol: "timer") { [weak self] in
+                self?.timer.start(seconds: seconds)
+                self?.vm.collapse()
+            })
+        }
+        var fixed: [PaletteAction] = ModuleRegistry.shared.tabs.map { m in
+            PaletteAction(id: "core.tab.\(m.id)", title: m.title, subtitle: T("탭 열기", "Open tab"), symbol: m.symbol,
+                          keywords: [m.id]) { [weak self] in self?.vm.openModule(m.id) }
+        }
+        fixed += vm.homePages.map { option in
+            PaletteAction(id: "core.home.\(option.key)", title: option.title, subtitle: T("홈", "Home"), symbol: option.symbol,
+                          keywords: [option.key]) { [weak self] in self?.vm.selectHomeOption(option) }
+        }
+        fixed += [
+            PaletteAction(id: "core.settings", title: T("설정 열기", "Open Settings"), symbol: "gearshape",
+                          keywords: ["settings", "preferences", "설정"]) { [weak self] in self?.showSettings() },
+            PaletteAction(id: "core.permissions", title: T("권한 관리", "Permissions"), symbol: "hand.raised",
+                          keywords: ["permission", "권한"]) { [weak self] in self?.showPermissions(onboarding: false) },
+            PaletteAction(id: "core.restart", title: T("Dynamic Notch 다시 시작", "Restart Dynamic Notch"),
+                          symbol: "arrow.clockwise", keywords: ["restart", "재시작"]) { [weak self] in self?.restart() },
+        ]
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        // 비어 있을 때는 탭·홈은 위 격자에 있으므로 설정류만
+        if q.isEmpty { return list + fixed.filter { !$0.id.hasPrefix("core.tab.") && !$0.id.hasPrefix("core.home.") } }
+        return list + fixed.filter { a in ([a.title, a.subtitle ?? ""] + a.keywords).contains { $0.lowercased().contains(q) } }
     }
 
     /// 코딩 에이전트(Claude Code·Codex) 작업 완료 알림. 형식: "agent:<claude|codex>|<프로젝트 이름>"
@@ -320,6 +394,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        ModuleRegistry.shared.stopAll()   // 화면 감마·전원 유지·오디오 등 기능이 바꾼 상태를 되돌린다
         media.stop()
         memo.saveNow()   // 쓰던 메모 (다시 시작·메모리 정리 재시작 포함)
     }
@@ -330,12 +405,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// 자동 재시작해도 사용자가 알아채지 못할 때: 노치가 닫혀 있고 알림·조작·진행 중인 작업이 없음.
     /// (음악 재생은 다른 앱에서 계속되므로 막지 않는다)
     private func isIdleForRelaunch() -> Bool {
-        let busyKinds: Set<ActivityKind> = [.download, .airdrop, .recording, .call, .demo, .timer]
+        let busyKinds: Set<ActivityKind> = [.download, .airdrop, .recording, .call, .demo, .timer,
+                                            .stopwatch, .pomodoro, .caffeinate, .shell, .agentApproval]
         return !vm.isExpanded && !vm.isHovering && !vm.isFileDragging
             && center.transient == nil && center.persistentKinds.isDisjoint(with: busyKinds)
             && recording.startedAt == nil && call.state == .idle && !timer.isActive
             && lockScreen?.isLocked != true && helperProcess?.isRunning != true && !FilePicker.isRunning
             && !media.testActive && !call.previewActive && screenshot.shot == nil
+            && !ModuleRegistry.shared.isBusy
     }
 
     /// 길게 누르면 자기 확장 화면이 열리는 활동 (나머지 알림은 확장 화면이 없다)
@@ -344,6 +421,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// 길게누르기·누름 반응이 있는지: 상세로 이미 떠 있는 알림과 HUD는 클릭만 받는다.
     private func hasLongPressAction(_ activity: NotchActivity?) -> Bool {
         guard let a = activity else { return true }   // 빈 노치: 홈 열기
+        if a.moduleTab != nil { return true }
         if Self.pagedKinds.contains(a.kind) { return true }
         if [.hud, .lock].contains(a.kind) { return false }
         if center.transient?.id == a.id { return !center.showingDetail }
@@ -353,6 +431,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// 길게누르기: 확장 화면을 열면 true. 알림은 확장 화면 대신 상세 카드로 바꾼다.
     private func longPress(_ activity: NotchActivity?) -> Bool {
         guard let a = activity, !Self.pagedKinds.contains(a.kind) else { return true }
+        // 확장 기능의 활동: 그 기능 탭을 연다
+        if let tab = a.moduleTab, ModuleRegistry.shared.module(tab) != nil {
+            Haptics.perform()
+            vm.openModule(tab)
+            return false
+        }
         guard hasLongPressAction(a) else { return false }
         // 상시 표시 항목(핫스팟·집중 모드 등): 팝업을 열고 다른 상시 항목을 점·스와이프로 넘겨 본다
         if center.transient?.id != a.id, center.persistentKinds.contains(a.kind) { return true }
@@ -382,13 +466,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleClick(_ activity: NotchActivity?, leftSide: Bool) {
         guard let activity else { return }
+        // 버튼이 달린 카드(에이전트 승인 등)는 버튼으로만 처리한다
+        if !activity.actions.isEmpty, center.transient?.id == activity.id, center.showingDetail { return }
+        // 확장 기능의 알림·활동: 그 기능 탭을 연다
+        if let tab = activity.moduleTab, ModuleRegistry.shared.module(tab) != nil {
+            if center.transient?.id == activity.id { center.dismissTransient() }
+            vm.openModule(tab)
+            return
+        }
         switch activity.kind {
         case .battery:
             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Battery-Settings.extension")!)
         case .timer:
             vm.expand(page: .activity(.timer))
         case .media:
-            media.openSourceApp()
+            // 미니 플레이어로 펼쳐 있을 때는 안의 버튼이 처리한다
+            if !vm.isPeeking { media.openSourceApp() }
         case .download:
             downloads.revealLastCompleted()
         case .recording:

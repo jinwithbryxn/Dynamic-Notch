@@ -2,7 +2,7 @@ import AppKit
 
 enum NotchGeometry {
     /// 노치 패널 윈도우 고정 크기. 내부 SwiftUI 도형만 애니메이션한다 (가이드라인 2.1).
-    static let panelSize = CGSize(width: 720, height: 300)
+    static let panelSize = CGSize(width: 820, height: 440)
 
     /// 표시할 화면을 고른다. 내장 화면 설정이면 노치가 있는 화면을 우선한다.
     static func targetScreen(for target: DisplayTarget) -> NSScreen? {

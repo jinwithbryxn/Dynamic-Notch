@@ -44,10 +44,24 @@ struct NotchRootView: View {
             }
             .modifier(ShakeEffect(animatableData: vm.shakeTrigger))
             .scaleEffect(x: vm.stretch.width, y: vm.stretch.height, anchor: .top)
+            // 두 번째 활동: 노치 오른쪽에 떨어진 동그라미 (노치 가장자리에서 갈라져 나오듯 등장)
+            .overlay(alignment: .topTrailing) {
+                if let bubble = vm.secondaryBubble {
+                    SecondaryBubble(activity: bubble, diameter: vm.bubbleDiameter)
+                        .id(bubble.kind)
+                        .offset(x: NotchViewModel.bubbleGap + vm.bubbleDiameter)
+                        .transition(vm.reduceMotion ? .opacity :
+                            .asymmetric(insertion: .scale(scale: 0.3, anchor: .leading).combined(with: .opacity)
+                                            .combined(with: .offset(x: -vm.bubbleDiameter)),
+                                        removal: .scale(scale: 0.3, anchor: .leading).combined(with: .opacity)
+                                            .combined(with: .offset(x: -vm.bubbleDiameter))))
+                }
+            }
+            .animation(vm.openSpring, value: vm.secondaryBubble?.kind)
 
-            // 페이지 점: 확장된 노치 바깥 아래에 따로 떠 있다.
-            if state == .expanded, vm.expandedPage == .home {
-                PageDots(vm: vm)
+            // 독(홈 점 · 고정 탭 · 검색): 확장된 노치 바깥 아래에 따로 떠 있다.
+            if vm.showsDock {
+                ExpandedDock(vm: vm)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 1)
                     .background(Color.black.opacity(0.8), in: Capsule())
@@ -104,7 +118,9 @@ struct NotchRootView: View {
         case .detail:
             if let a = vm.center.displayed {
                 Group {
-                    if a.kind == .screenshot {
+                    if vm.isPeeking, a.kind == .media, vm.center.transient == nil {
+                        MediaPeekView(media: features.media, notchSize: vm.notchSize)
+                    } else if a.kind == .screenshot {
                         ScreenshotCard(monitor: features.screenshot, notchSize: vm.notchSize)
                     } else if a.kind == .call {
                         CallIncomingCard(monitor: features.call, activity: a, notchSize: vm.notchSize)
@@ -147,6 +163,17 @@ struct ExpandedView: View {
                 switch vm.expandedPage {
                 case .home:
                     HomePager(vm: vm, timer: timer, pages: pages)
+                        .transition(HomePager.pageTransition(forward: vm.pageForward))
+                case .module(let id):
+                    if let view = ModuleRegistry.shared.module(id)?.tabView() {
+                        view
+                            .id("module." + id)
+                            .offset(x: vm.swipeOffset)
+                            .transition(HomePager.pageTransition(forward: vm.pageForward))
+                    }
+                case .palette:
+                    CommandPaletteView(vm: vm)
+                        .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
                 case .activity(let kind):
                     activityPage(kind)
                         .id(kind)

@@ -52,6 +52,16 @@ enum HomeOption: Int, CaseIterable {
 enum ExpandedPage: Equatable {
     case home
     case activity(ActivityKind)
+    /// 확장 기능 탭 (모듈 id)
+    case module(String)
+    /// 명령 팔레트 (모든 도구 + 검색)
+    case palette
+}
+
+/// 확장 패널에서 좌우로 넘기는 한 칸: 홈 페이지 또는 독에 고정한 확장 기능 탭
+enum NavItem: Equatable {
+    case home(HomeOption)
+    case module(String)
 }
 
 /// 노치 크기·상태의 단일 원천. 상태는 액티비티 센터와 확장 여부에서 계산된다 (가이드라인 3장).
@@ -76,6 +86,8 @@ final class NotchViewModel: ObservableObject {
     /// 음량 줄이 더하는 높이
     static let mediaVolumeRowHeight: CGFloat = 26
     @Published var isHovering = false
+    /// 음악 호버 미리보기(미니 플레이어) 중
+    @Published private(set) var isPeeking = false
     /// 길게누르기 진행도 (0...1). 누르는 동안 노치가 최대 6% 부풀어 오른다.
     @Published var pressProgress: CGFloat = 0
     /// 포스터치 stage 1 압력 (0...1).
@@ -140,6 +152,9 @@ final class NotchViewModel: ObservableObject {
         settings.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
+        ModuleRegistry.shared.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
         // 홈 기능을 끄거나 순서를 바꾸면 지금 페이지가 남아 있는지 확인
         settings.$homeOrder.map { _ in () }
             .merge(with: settings.$homeDisabled.map { _ in () }, settings.$trayMode.map { _ in () })
@@ -155,6 +170,7 @@ final class NotchViewModel: ObservableObject {
         if isExpanded { return .expanded }
         guard let a = center.displayed else { return .idle }
         if center.showingDetail, center.transient?.id == a.id { return .detail }
+        if isPeeking, a.kind == .media, center.lockActivity == nil { return .detail }
         return .compact
     }
 
@@ -237,6 +253,11 @@ final class NotchViewModel: ObservableObject {
             if let extra = center.displayed?.detailHeight {
                 return CGSize(width: max(n.width + 190, 390), height: n.height + extra)
             }
+            if isPeeking, center.displayed?.kind == .media, center.transient == nil { return peekSize }
+            // 버튼이 달린 카드(에이전트 승인 등)는 버튼 줄만큼 아래로 더
+            if let a = center.displayed, !a.actions.isEmpty {
+                return CGSize(width: max(n.width + 190, 390), height: n.height + 58 + Self.actionRowHeight)
+            }
             return CGSize(width: max(n.width + 150, 330), height: n.height + 58)
         case .expanded:
             switch expandedPage {
@@ -245,8 +266,19 @@ final class NotchViewModel: ObservableObject {
                 return homeOption == .camera && cameraOn ? cameraSize : expandedBaseSize
             case .activity(let kind):
                 return popupSize(for: kind)
+            case .module(let id):
+                return moduleSize(ModuleRegistry.shared.module(id)?.tabContentSize ?? CGSize(width: 360, height: 160))
+            case .palette:
+                return moduleSize(CommandPaletteView.contentSize)
             }
         }
+    }
+
+    /// 확장 기능 탭 크기: 내용 + 공통 여백 (좌우 위쪽 모서리 + 22, 위 6, 아래 22). 노치보다 좁아지지 않는다.
+    func moduleSize(_ content: CGSize) -> CGSize {
+        let side = 2 * (topRadius + 22)
+        let width = max(content.width + side, notchSize.width + 2 * topRadius + 60)
+        return CGSize(width: width.rounded(), height: (notchSize.height + 6 + content.height + 22).rounded())
     }
 
     /// 상시 표시 항목을 길게 눌렀을 때 뜨는 독립 팝업 크기.
@@ -293,13 +325,40 @@ final class NotchViewModel: ObservableObject {
         CGSize(width: (notchSize.width * 1.08).rounded() + 2 * topRadius, height: ((notchSize.height + 154) * 0.9).rounded())
     }
 
+    /// 상세 카드 버튼 줄 높이
+    static let actionRowHeight: CGFloat = 38
+
     /// 확장 상태에서 노치 바깥 아래에 따로 표시하는 페이지 점 영역 높이.
     static let dotsAreaHeight: CGFloat = 30
+
+    // MARK: - 다이나믹 아일랜드: 두 번째 활동 동그라미 · 음악 미리보기
+
+    /// 노치와 동그라미 사이 간격
+    static let bubbleGap: CGFloat = 7
+
+    /// 노치 오른쪽에 떨어져 보일 두 번째 라이브 활동 (컴팩트 상태에서만)
+    var secondaryBubble: NotchActivity? {
+        guard state == .compact, !isRetracting, center.lockActivity == nil, IslandSettings.secondaryBubble,
+              let main = center.displayed, main.kind != .lock else { return nil }
+        return center.orderedPersistent.first { $0.kind != main.kind && $0.kind != .lock }
+    }
+
+    var bubbleDiameter: CGFloat { notchSize.height }
+
+    /// 음악 미리보기 켜기·끄기 (NotchController가 호버로 부른다)
+    func setPeeking(_ on: Bool) {
+        guard on != isPeeking else { return }
+        withAnimation(on ? openSpring : closeSpring) { isPeeking = on }
+    }
+
+    var peekSize: CGSize { CGSize(width: max(notchSize.width + 190, 390), height: notchSize.height + 58) }
 
     /// 마우스가 반응해야 하는 영역 (확장 시 바깥 점 포함).
     var interactiveSize: CGSize {
         var size = targetSize
-        if state == .expanded, expandedPage == .home || showsPersistentDots { size.height += Self.dotsAreaHeight }
+        // 오른쪽 동그라미까지 (가운데 기준이라 양쪽으로 같이 넓힌다)
+        if secondaryBubble != nil { size.width += 2 * (Self.bubbleGap + bubbleDiameter) }
+        if state == .expanded, showsDock || showsPersistentDots { size.height += Self.dotsAreaHeight }
         return size
     }
 
@@ -361,6 +420,7 @@ final class NotchViewModel: ObservableObject {
         }
         withAnimation(openSpring) {
             isExpanded = true
+            isPeeking = false
             pressProgress = 0
             forcePressure = 0
         }
@@ -468,8 +528,12 @@ final class NotchViewModel: ObservableObject {
 
     func selectHomeOption(_ option: HomeOption) {
         guard option != homeOption || expandedPage != .home else { return }
-        let pages = homePages
-        pageForward = (pages.firstIndex(of: option) ?? 0) >= (pages.firstIndex(of: homeOption) ?? 0)
+        let items = navItems
+        if let from = currentNav, let a = items.firstIndex(of: from), let b = items.firstIndex(of: .home(option)) {
+            pageForward = b >= a
+        } else {
+            pageForward = true
+        }
         withAnimation(openSpring) {
             homeOption = option
             expandedPage = .home
@@ -495,6 +559,78 @@ final class NotchViewModel: ObservableObject {
         return .activity(a.kind)
     }
 
+    // MARK: - 확장 기능 탭·명령 팔레트
+
+    /// 확장 패널 아래 독(홈 점 · 고정 탭 · 검색)을 보일지
+    var showsDock: Bool {
+        guard state == .expanded else { return false }
+        switch expandedPage {
+        case .home, .module, .palette: return true
+        case .activity: return false
+        }
+    }
+
+    /// 독에 고정한 확장 기능 탭 id
+    var dockTabs: [String] { ModuleRegistry.shared.dockTabs.map(\.id) }
+
+    /// 좌우로 넘기는 순서: 홈 페이지들 → 고정 탭들
+    var navItems: [NavItem] { homePages.map(NavItem.home) + dockTabs.map(NavItem.module) }
+
+    var currentNav: NavItem? {
+        switch expandedPage {
+        case .home: return .home(homeOption)
+        case .module(let id): return .module(id)
+        default: return nil
+        }
+    }
+
+    /// 노치 창을 키 창으로 (글자 입력). AppDelegate가 넣는다.
+    var requestKeyFocus: (() -> Void)?
+    /// 명령 팔레트의 본 앱 동작 (설정 열기, 타이머 등). AppDelegate가 넣는다.
+    var corePaletteActions: ((String) -> [PaletteAction])?
+
+    /// 확장 기능 탭을 연다 (닫혀 있으면 펼치면서)
+    func openModule(_ id: String) {
+        guard ModuleRegistry.shared.module(id) != nil else { return }
+        go(to: ExpandedPage.module(id))
+    }
+
+    func openPalette() {
+        go(to: ExpandedPage.palette)
+        requestKeyFocus?()
+    }
+
+    private func go(to page: ExpandedPage) {
+        guard isExpanded else { expand(page: page); return }
+        guard page != expandedPage else { return }
+        let items = navItems
+        let target: NavItem? = { if case .module(let id) = page { return .module(id) }; return nil }()
+        if let from = currentNav, let to = target, let a = items.firstIndex(of: from), let b = items.firstIndex(of: to) {
+            pageForward = b >= a
+        } else {
+            pageForward = true
+        }
+        withAnimation(openSpring) {
+            expandedPage = page
+            mediaVolumeShown = false
+            swipeOffset = 0
+        }
+    }
+
+    private func go(to item: NavItem) {
+        switch item {
+        case .home(let option): selectHomeOption(option)
+        case .module(let id): go(to: ExpandedPage.module(id))
+        }
+    }
+
+    /// ⌘1–9: 넘기는 순서의 n번째 칸으로
+    func selectNav(index: Int) {
+        let items = navItems
+        guard items.indices.contains(index) else { return }
+        go(to: items[index])
+    }
+
     /// 넘겨 볼 수 있는 상시 표시 항목 (우선순위 순)
     var persistentPages: [ActivityKind] { center.orderedPersistent.map(\.kind) }
 
@@ -518,7 +654,8 @@ final class NotchViewModel: ObservableObject {
 
     /// 스와이프 중 손가락을 따라 콘텐츠를 옮긴다. 양 끝에서는 고무줄처럼 덜 움직인다.
     func dragPage(by contentDX: CGFloat) {
-        if expandedPage != .home {
+        if expandedPage == .palette { swipeOffset = 0; return }
+        if expandedPage != .home, !isModulePage {
             if expandedPage == .activity(.media) {
                 // 음악 팝업은 좌우 스와이프로 곡 이동 → 살짝만 따라 움직임
                 swipeOffset = contentDX * 0.2
@@ -531,8 +668,9 @@ final class NotchViewModel: ObservableObject {
             }
             return
         }
-        let pages = homePages
-        let atEdge = (contentDX > 0 && pages.first == homeOption) || (contentDX < 0 && pages.last == homeOption)
+        let items = navItems
+        let current = currentNav
+        let atEdge = current == nil || (contentDX > 0 && items.first == current) || (contentDX < 0 && items.last == current)
         swipeOffset = atEdge ? contentDX * 0.15 : contentDX * 0.45
     }
 
@@ -550,7 +688,7 @@ final class NotchViewModel: ObservableObject {
             cancelDrag()
             return
         }
-        if expandedPage != .home {
+        if expandedPage != .home, !isModulePage {
             // 상시 항목 팝업: 다른 상시 항목으로 넘긴다 (홈과는 따로)
             if showsPersistentDots, case .activity(let kind) = expandedPage {
                 let pages = persistentPages
@@ -562,13 +700,15 @@ final class NotchViewModel: ObservableObject {
             cancelDrag()
             return
         }
-        let pages = homePages
-        if let i = pages.firstIndex(of: homeOption), pages.indices.contains(i + (forward ? 1 : -1)) {
-            selectHomeOption(pages[i + (forward ? 1 : -1)])
+        let items = navItems
+        if let current = currentNav, let i = items.firstIndex(of: current), items.indices.contains(i + (forward ? 1 : -1)) {
+            go(to: items[i + (forward ? 1 : -1)])
         } else {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { swipeOffset = 0 }
         }
     }
+
+    var isModulePage: Bool { if case .module = expandedPage { return true }; return false }
 
     /// 파일 드래그가 노치에 가까워지면 트레이 페이지로 자동 확장한다.
     func beginFileDrag() {

@@ -33,7 +33,22 @@ final class NotchPanel: NSPanel {
     /// 창이 키 이벤트를 받는 단계에서 처리한다.
     override func sendEvent(_ event: NSEvent) {
         if event.type == .keyDown, handleEditingShortcut(event) { return }
+        if event.type == .keyDown, handlePanelShortcut(event) { return }
         super.sendEvent(event)
+    }
+
+    /// ⌘1–9: 확장 패널의 n번째 칸으로 (처리했으면 true)
+    var onCommandDigit: ((Int) -> Bool)?
+    /// Esc: 입력 칸이 아닐 때 확장 패널 닫기 (처리했으면 true)
+    var onEscape: (() -> Bool)?
+
+    private func handlePanelShortcut(_ event: NSEvent) -> Bool {
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        // 숫자 키 1–9의 가상 키 코드 (자판 배열과 무관)
+        let digits: [UInt16: Int] = [18: 1, 19: 2, 20: 3, 21: 4, 23: 5, 22: 6, 26: 7, 28: 8, 25: 9]
+        if flags == .command, let n = digits[event.keyCode] { return onCommandDigit?(n) ?? false }
+        if event.keyCode == 53, flags.isEmpty, !(firstResponder is NSText) { return onEscape?() ?? false }
+        return false
     }
 
     private func handleEditingShortcut(_ event: NSEvent) -> Bool {

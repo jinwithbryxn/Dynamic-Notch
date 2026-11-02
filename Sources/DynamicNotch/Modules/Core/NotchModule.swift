@@ -35,6 +35,9 @@ protocol NotchModule: AnyObject {
     /// 설정 도우미가 이 기능의 설정을 바꿨을 때 본 앱에서 불린다.
     func settingsChanged()
 
+    /// 진행 중인 작업(내려받기·녹음·실행 중인 명령 등)이 있어 앱이 스스로 다시 시작하면 안 되는지
+    var isBusy: Bool { get }
+
     /// 개발·검증용 자체 검사 (`--module-selftest=<id>`). 실제 macOS 기능을 호출해 결과를 한 줄씩 돌려준다.
     /// 화면이나 사용자 데이터를 바꾸는 검사는 하지 않는다.
     func selfTest() -> [String]
@@ -49,6 +52,7 @@ extension NotchModule {
     func settingsView() -> AnyView? { nil }
     func settingsChanged() {}
     func selfTest() -> [String] { ["no self test"] }
+    var isBusy: Bool { false }
 }
 
 /// 기능이 본 앱에 요청할 수 있는 일

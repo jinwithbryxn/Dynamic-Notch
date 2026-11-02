@@ -25,7 +25,11 @@ final class ModuleRegistry: ObservableObject {
     func setEnabled(_ module: NotchModule, _ on: Bool) {
         ModuleDefaults(module: module.id).set(on, "enabled")
         if context != nil { sync() }
+        objectWillChange.send()
     }
+
+    /// 본 앱에서는 실제로 돌고 있는지, 설정 도우미에서는 켜짐 설정을 본다
+    private func isActive(_ m: NotchModule) -> Bool { context != nil ? running.contains(m.id) : isEnabled(m) }
 
     // MARK: 본 앱
 
@@ -37,6 +41,7 @@ final class ModuleRegistry: ObservableObject {
         ) { [weak self] note in
             guard let self else { return }
             self.sync()
+            self.objectWillChange.send()   // 독 고정·순서가 바뀌었을 수 있다
             if let id = note.object as? String, self.running.contains(id) { self.module(id)?.settingsChanged() }
         }
         sync()
@@ -57,6 +62,9 @@ final class ModuleRegistry: ObservableObject {
         }
     }
 
+    /// 진행 중인 작업이 있어 메모리 지킴이가 다시 시작하면 안 되는지 (기능이 `isBusy`로 알린다)
+    var isBusy: Bool { modules.contains { running.contains($0.id) && $0.isBusy } }
+
     func stopAll() {
         for m in modules where running.contains(m.id) { m.stop() }
         running.removeAll()
@@ -66,7 +74,28 @@ final class ModuleRegistry: ObservableObject {
     var tabs: [NotchModule] {
         let order = UserDefaults.standard.stringArray(forKey: "module.tabOrder") ?? []
         func rank(_ m: NotchModule) -> Int { order.firstIndex(of: m.id) ?? (order.count + (modules.firstIndex { $0 === m } ?? 0)) }
-        return modules.filter { running.contains($0.id) && $0.tabView() != nil }.sorted { rank($0) < rank($1) }
+        return modules.filter { isActive($0) && $0.tabView() != nil }.sorted { rank($0) < rank($1) }
+    }
+
+    /// 독(확장 패널 아래 떠 있는 줄)에 고정한 탭. 고른 적이 없으면 켜진 탭 앞에서 4개.
+    var dockTabs: [NotchModule] {
+        let all = tabs
+        guard let pins = UserDefaults.standard.stringArray(forKey: Self.dockKey) else { return Array(all.prefix(4)) }
+        return pins.compactMap { id in all.first { $0.id == id } }
+    }
+
+    static let dockKey = "module.dockTabs"
+
+    func isDocked(_ id: String) -> Bool { dockTabs.contains { $0.id == id } }
+
+    func setDocked(_ id: String, _ on: Bool) {
+        var pins = dockTabs.map(\.id)
+        pins.removeAll { $0 == id }
+        if on { pins.append(id) }
+        UserDefaults.standard.set(pins, forKey: Self.dockKey)
+        DistributedNotificationCenter.default().postNotificationName(
+            ModuleDefaults.changedNotification, object: "_registry", userInfo: nil, deliverImmediately: true)
+        objectWillChange.send()
     }
 
     /// 명령 팔레트 결과: 입력이 비면 고정 동작 전체, 아니면 이름·별칭이 맞는 동작과 즉석 결과

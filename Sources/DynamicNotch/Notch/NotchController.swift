@@ -31,6 +31,9 @@ final class NotchController: NotchGestureDelegate {
 
     // 호버
     private var hoverOpenWork: DispatchWorkItem?
+    private var peekWork: DispatchWorkItem?
+    /// 이번 누름이 오른쪽 두 번째 활동 동그라미에서 시작됐는지
+    private var bubblePressed = false
 
     // 파일 드래그
     private var dragBaseline = NSPasteboard(name: .drag).changeCount
@@ -224,6 +227,27 @@ final class NotchController: NotchGestureDelegate {
             hoverOpenWork = work
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
         }
+        // 음악 호버 미리보기: 잠깐 머물면 미니 플레이어로 펼친다 (커서가 나가면 접힘)
+        peekWork?.cancel()
+        if inside, !settings.hoverToOpen, !vm.isExpanded, !isLocked(), IslandSettings.mediaPeek,
+           vm.center.displayed?.kind == .media, vm.center.transient == nil {
+            let work = DispatchWorkItem { [weak self] in
+                guard let self, self.vm.isHovering, !self.vm.isExpanded, self.vm.center.displayed?.kind == .media else { return }
+                self.vm.setPeeking(true)
+            }
+            peekWork = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + IslandSettings.peekDelay, execute: work)
+        } else if !inside {
+            vm.setPeeking(false)
+        }
+    }
+
+    /// 오른쪽 두 번째 활동 동그라미의 화면 좌표
+    private var bubbleRect: CGRect? {
+        guard vm.secondaryBubble != nil else { return nil }
+        let f = panel.frame
+        let d = vm.bubbleDiameter
+        return CGRect(x: f.midX + vm.displaySize.width / 2 + NotchViewModel.bubbleGap, y: f.maxY - d, width: d, height: d)
     }
 
     // MARK: - 제스처
@@ -255,6 +279,10 @@ final class NotchController: NotchGestureDelegate {
 
     func pointerDown(_ event: NSEvent) {
         guard !vm.isExpanded else { return }
+        if let r = bubbleRect, r.insetBy(dx: -3, dy: -3).contains(NSEvent.mouseLocation) {
+            bubblePressed = true
+            return
+        }
         pressFired = false
         pressOrigin = NSEvent.mouseLocation
         // 상세 알림처럼 길게누르기가 없는 경우: 누름 반응·길게누르기 없이 클릭만 받는다
@@ -281,6 +309,15 @@ final class NotchController: NotchGestureDelegate {
     }
 
     func pointerUp(_ event: NSEvent) {
+        if bubblePressed {
+            // 동그라미 클릭: 그 활동의 화면을 연다 (확장 기능이면 그 탭)
+            bubblePressed = false
+            guard !isLocked(), !vm.isExpanded, let b = vm.secondaryBubble else { return }
+            Haptics.perform()
+            if let tab = b.moduleTab, ModuleRegistry.shared.module(tab) != nil { vm.openModule(tab) }
+            else { vm.expand(page: .activity(b.kind)) }
+            return
+        }
         let wasPressing = pressOrigin != nil
         let leftSide = (pressOrigin?.x ?? panel.frame.midX) < panel.frame.midX
         cancelPress()
