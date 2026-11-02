@@ -2,6 +2,22 @@ import SwiftUI
 
 enum ActivityKind: String, Hashable {
     case lock, battery, timer, calendar, media, download, airdrop, screenshot, recording, network, hotspot, bluetooth, focus, focusPinned, hud, demo, call, aiUsage, agent
+    // 확장 기능(Modules)이 쓰는 종류
+    case notice          // 일회성 안내 (복사 저장, 변환 완료, 로컬 API 메시지 등)
+    case stopwatch, pomodoro, caffeinate, stocks, shell, privacy, system
+    case agentApproval   // 코딩 에이전트의 실제 권한 요청 (허용·거부 버튼)
+}
+
+/// 상세 카드에 붙는 버튼 (에이전트 승인 허용·거부, 알림의 열기 등).
+/// 같은지 비교할 때는 id와 글자만 본다 (실행 내용은 비교하지 않음).
+struct ActivityAction: Identifiable, Equatable {
+    enum Role { case normal, primary, destructive }
+    var id: String
+    var title: String
+    var role: Role = .normal
+    var run: () -> Void
+
+    static func == (a: ActivityAction, b: ActivityAction) -> Bool { a.id == b.id && a.title == b.title && a.role == b.role }
 }
 
 /// 우선순위: 값이 클수록 먼저 표시된다 (가이드라인 2.3).
@@ -100,4 +116,8 @@ struct NotchActivity: Identifiable, Equatable {
     var startDate: Date? = nil
     /// 커서가 노치 위에 있어도 표시 시간이 흐른다 (메뉴바 근처에서 끝나는 녹화 완료 알림 등)
     var ignoresHoverPause = false
+    /// 누르면 열 확장 기능 탭 (모듈 id)
+    var moduleTab: String? = nil
+    /// 상세 카드 아래쪽 버튼
+    var actions: [ActivityAction] = []
 }
