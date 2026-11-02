@@ -77,6 +77,27 @@ enum AgentHubSelfTest {
         let notifyLine = (try? String(contentsOf: toml, encoding: .utf8))?.split(separator: "\n").first { $0.hasPrefix("notify") }.map(String.init) ?? "(none)"
         out.append("\((try? Data(contentsOf: toml)) == tomlBefore ? "PASS" : "FAIL") Codex notify chain untouched: \(notifyLine.prefix(110))")
 
+        // 설정 화면 '연결' 버튼(AgentHooks)도 사본에서: 알림 스크립트를 알아보고, 넣었다 빼면 글자까지 원래 파일로 돌아온다
+        let legacy = copyReal(".claude/settings.json", as: "legacy/settings.json",
+                              fallback: "{\n  \"model\": \"x\",\n  \"hooks\": {\n    \"Stop\": []\n  }\n}\n")
+        let legacyBefore = try? Data(contentsOf: legacy)
+        let plain = dir.appendingPathComponent("legacy/plain.json")
+        try? Data("{\n  \"model\": \"x\"\n}\n".utf8).write(to: plain)
+        let withScript = dir.appendingPathComponent("legacy/script.json")
+        try? Data("{\n  \"hooks\": {\n    \"Stop\": [\n      {\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"/Users/me/.local/bin/notch-agent-done claude\"\n          }\n        ]\n      }\n    ]\n  }\n}\n".utf8).write(to: withScript)
+        let seen = AgentHooks.usesScript(.claude, file: withScript), notSeen = !AgentHooks.usesScript(.claude, file: plain)
+        out.append("\(seen && notSeen ? "PASS" : "FAIL") settings page Connect: notch-agent-done recognized (\(seen)), plain file not (\(notSeen)); Connect is skipped and hidden when it is there")
+        do {
+            try AgentHooks.installClaude(file: legacy)
+            let added = (try? String(contentsOf: legacy, encoding: .utf8))?.contains("--agent-done=claude") ?? false
+            out.append("\(added ? "PASS" : "FAIL") settings page Connect (Claude Code): hook added to the copy")
+            try AgentHooks.uninstallClaude(file: legacy)
+            let after = try? Data(contentsOf: legacy)
+            out.append("\(after == legacyBefore ? "PASS" : "FAIL") settings page Connect (Claude Code): disconnect restores the copy byte-for-byte (\(after?.count ?? 0) bytes)")
+        } catch {
+            out.append("FAIL settings page Connect (Claude Code): \(error.localizedDescription)")
+        }
+
         // 새 파일 → 설치 → 제거: 키까지 깨끗이
         let fresh = dir.appendingPathComponent("fresh/settings.json")
         try? FileManager.default.createDirectory(at: fresh.deletingLastPathComponent(), withIntermediateDirectories: true)

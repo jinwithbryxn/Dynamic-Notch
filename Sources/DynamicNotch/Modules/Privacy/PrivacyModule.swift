@@ -177,12 +177,24 @@ final class PrivacyModule: NotchModule {
         let mics = CPDeviceUseMonitor.inputDevices().map { CPDeviceUseMonitor.audioName($0) }
         let pids = CPDeviceUseMonitor.audioInputPIDs()
         let names = pids.compactMap { CPDeviceUseMonitor.owningApp($0)?.localizedName }
+        // 장치 목록 알림이 몰려와도 한 번만 맞추고, 그대로인 장치의 알림은 다시 걸지 않는지 (2026-11-02 먹통 재발 방지)
+        let probe = CPDeviceUseMonitor()
+        probe.start()
+        let addsAtStart = probe.listenerAdds
+        let started = Date()
+        for _ in 0..<5000 { probe.deviceListChanged() }
+        let burstTime = Date().timeIntervalSince(started)
+        RunLoop.main.run(until: Date().addingTimeInterval(CPDeviceUseMonitor.syncDelay + 0.7))
+        let burst = "5000 device-list notifications: \(String(format: "%.3f", burstTime)) s, syncs \(probe.syncCount) (start + 1 expected), "
+            + "listener adds \(probe.listenerAdds - addsAtStart) removes \(probe.listenerRemoves) (0 expected), device listeners \(probe.deviceListenerCount)"
+        probe.stop()
         return [
             "camera devices (CoreMediaIO, no permission): \(cams.joined(separator: ", "))",
             "input devices (CoreAudio): \(mics.joined(separator: ", "))",
             "camera in use now: \(s.cameraOn) \(s.cameras)",
             "microphone in use now: \(s.micOn) \(s.mics)",
             "audio processes using input now (macOS 14.2+ API): \(pids.count) \(names)",
+            burst,
             "lock function (SACLockScreenImmediate) found: \(CPScreenLock.privateLockAvailable) (not called)",
             "pmset present: \(FileManager.default.isExecutableFile(atPath: "/usr/bin/pmset")) (not run)",
         ]

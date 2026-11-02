@@ -186,7 +186,16 @@ enum AgentHooks {
         return (try? String(contentsOf: file, encoding: .utf8))?.contains("--agent-done=\(s.rawValue)") ?? false
     }
 
+    /// 따로 쓰는 완료 알림 스크립트(~/.local/bin/notch-agent-done)가 이미 연결돼 있는지.
+    /// 그 스크립트는 백그라운드 작업·하위 에이전트가 끝날 때까지 알림을 미루고 실제 앱 아이콘을 보낸다.
+    /// 앱 훅을 겹쳐 넣으면 알림이 두 번 뜨고 그 거르기도 빠지므로 (2026-11-02), 이때는 연결하지 않는다.
+    static func usesScript(_ s: AgentSource, file: URL? = nil) -> Bool {
+        let file = file ?? (s == .claude ? claudeFile : codexFile)
+        return (try? String(contentsOf: file, encoding: .utf8))?.contains("notch-agent-done") ?? false
+    }
+
     static func install(_ s: AgentSource) throws {
+        guard !usesScript(s) else { return }
         s == .claude ? try installClaude() : try installCodex()
     }
 
@@ -203,45 +212,55 @@ enum AgentHooks {
 
     // Claude Code
 
-    private static func readClaude() throws -> [String: Any] {
-        guard let data = try? Data(contentsOf: claudeFile) else { return [:] }
-        guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+    // 키 순서와 글자 모양을 지키는 OrderedJSON으로 읽고 쓴다. 예전 JSONSerialization은 파일 전체의
+    // 키 순서와 띄어쓰기를 바꿔, 훅 한 줄을 넣고 빼도 원래 파일로 돌아가지 않았다 (2026-11-02).
+
+    private static func readClaude(_ file: URL) throws -> (root: OrderedJSON, text: String?) {
+        guard let text = try? String(contentsOf: file, encoding: .utf8),
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return (.object([]), nil) }
+        guard let root = try? OrderedJSON.parse(text), root.isObject else {
             throw HookError.unreadable(T("~/.claude/settings.json을 읽을 수 없습니다 (JSON 형식 확인)", "Can't read ~/.claude/settings.json (check the JSON)"))
         }
-        return obj
+        return (root, text)
     }
 
-    private static func writeClaude(_ obj: [String: Any]) throws {
-        backup(claudeFile)
-        try FileManager.default.createDirectory(at: claudeFile.deletingLastPathComponent(), withIntermediateDirectories: true)
-        let data = try JSONSerialization.data(withJSONObject: obj, options: [.prettyPrinted, .withoutEscapingSlashes])
-        try data.write(to: claudeFile, options: .atomic)
+    private static func writeClaude(_ root: OrderedJSON, original: String?, to file: URL) throws {
+        var out = root.stringify()
+        if original?.hasSuffix("\n") ?? true { out += "\n" }
+        guard out != original else { return }
+        backup(file)
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(out.utf8).write(to: file, options: .atomic)
     }
 
-    private static func installClaude() throws {
-        guard !isInstalled(.claude) else { return }
-        var obj = try readClaude()
-        var hooks = obj["hooks"] as? [String: Any] ?? [:]
-        var stop = hooks["Stop"] as? [[String: Any]] ?? []
-        stop.append(["hooks": [["type": "command", "command": "\"\(exe)\" --agent-done=claude"]]])
-        hooks["Stop"] = stop
-        obj["hooks"] = hooks
-        try writeClaude(obj)
+    static func installClaude(file: URL = claudeFile) throws {
+        guard !((try? String(contentsOf: file, encoding: .utf8))?.contains("--agent-done=claude") ?? false) else { return }
+        var (root, text) = try readClaude(file)
+        var hooks = root["hooks"].flatMap { $0.isObject ? $0 : nil } ?? .object([])
+        var stop = hooks["Stop"]?.arrayValue ?? []
+        stop.append(.obj([("hooks", .array([.obj([("type", .str("command")), ("command", .str("\"\(exe)\" --agent-done=claude"))])]))]))
+        hooks.set("Stop", .array(stop))
+        root.set("hooks", hooks)
+        try writeClaude(root, original: text, to: file)
     }
 
-    private static func uninstallClaude() throws {
-        var obj = try readClaude()
-        guard var hooks = obj["hooks"] as? [String: Any], let stop = hooks["Stop"] as? [[String: Any]] else { return }
-        let kept = stop.compactMap { group -> [String: Any]? in
+    static func uninstallClaude(file: URL = claudeFile) throws {
+        var (root, text) = try readClaude(file)
+        guard var hooks = root["hooks"], let stop = hooks["Stop"]?.arrayValue else { return }
+        // 이 앱 훅만 빼고, 그 때문에 빈 그룹만 지운다 (다른 그룹은 그대로)
+        let kept = stop.compactMap { group -> OrderedJSON? in
+            guard let list = group["hooks"]?.arrayValue else { return group }
+            let left = list.filter { !($0["command"]?.stringValue ?? "").contains("--agent-done=claude") }
+            if left.count == list.count { return group }
+            if left.isEmpty { return nil }
             var g = group
-            let list = (g["hooks"] as? [[String: Any]] ?? []).filter { !(($0["command"] as? String) ?? "").contains("--agent-done=claude") }
-            if list.isEmpty { return nil }
-            g["hooks"] = list
+            g.set("hooks", .array(left))
             return g
         }
-        if kept.isEmpty { hooks["Stop"] = nil } else { hooks["Stop"] = kept }
-        if hooks.isEmpty { obj["hooks"] = nil } else { obj["hooks"] = hooks }
-        try writeClaude(obj)
+        guard kept != stop else { return }
+        if kept.isEmpty { hooks.remove("Stop") } else { hooks.set("Stop", .array(kept)) }
+        if case .object(let left) = hooks, left.isEmpty { root.remove("hooks") } else { root.set("hooks", hooks) }
+        try writeClaude(root, original: text, to: file)
     }
 
     // Codex

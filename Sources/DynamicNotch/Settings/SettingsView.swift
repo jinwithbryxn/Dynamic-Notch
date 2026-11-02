@@ -1145,18 +1145,24 @@ private struct AgentSettingsPage: View {
             Section {
                 ForEach(AgentSource.allCases) { source in
                     let installed = AgentHooks.isInstalled(source)
+                    // 알림 스크립트로 이미 연결돼 있으면 앱 훅을 겹쳐 넣지 않게 버튼을 두지 않는다
+                    let script = !installed && AgentHooks.usesScript(source)
                     LabeledContent {
                         HStack(spacing: 8) {
-                            Text(installed ? T("연결됨", "Connected") : T("연결 안 됨", "Not connected"))
-                                .foregroundStyle(installed ? .green : .secondary)
-                            Button(installed ? T("연결 해제", "Disconnect") : T("연결", "Connect")) {
-                                do {
-                                    try installed ? AgentHooks.uninstall(source) : AgentHooks.install(source)
-                                    errorState.wrappedValue = nil
-                                } catch {
-                                    errorState.wrappedValue = error.localizedDescription
+                            if script {
+                                Text(T("연결됨 (알림 스크립트)", "Connected (alert script)")).foregroundStyle(.green)
+                            } else {
+                                Text(installed ? T("연결됨", "Connected") : T("연결 안 됨", "Not connected"))
+                                    .foregroundStyle(installed ? .green : .secondary)
+                                Button(installed ? T("연결 해제", "Disconnect") : T("연결", "Connect")) {
+                                    do {
+                                        try installed ? AgentHooks.uninstall(source) : AgentHooks.install(source)
+                                        errorState.wrappedValue = nil
+                                    } catch {
+                                        errorState.wrappedValue = error.localizedDescription
+                                    }
+                                    refresh.wrappedValue += 1
                                 }
-                                refresh.wrappedValue += 1
                             }
                         }
                     } label: {
@@ -1167,8 +1173,8 @@ private struct AgentSettingsPage: View {
                     Text(error).font(.caption).foregroundStyle(.red)
                 }
             } header: { Text(T("세부 설정", "Details")) } footer: {
-                Text(T("연결하면 Claude Code는 ~/.claude/settings.json에 '작업 완료(Stop)' 훅을, Codex는 ~/.codex/config.toml의 notify에 이 앱을 넣습니다. Codex에 이미 notify가 있으면 그 명령도 그대로 이어서 실행되고, 연결 해제 시 원래대로 돌려놓습니다. 처음 바꾸기 전 원본은 .dynamicnotch.bak으로 남깁니다. 새로 시작한 Claude Code·Codex 세션부터 적용됩니다.",
-                       "Connecting adds a Stop hook to ~/.claude/settings.json for Claude Code, and sets notify in ~/.codex/config.toml for Codex. If Codex already has a notify command, it still runs, and disconnecting restores it. The original file is kept as .dynamicnotch.bak before the first change. Applies to new Claude Code and Codex sessions."))
+                Text(T("연결하면 Claude Code는 ~/.claude/settings.json에 '작업 완료(Stop)' 훅을, Codex는 ~/.codex/config.toml의 notify에 이 앱을 넣습니다. Codex에 이미 notify가 있으면 그 명령도 그대로 이어서 실행되고, 연결 해제 시 원래대로 돌려놓습니다. 처음 바꾸기 전 원본은 .dynamicnotch.bak으로 남깁니다. 새로 시작한 Claude Code·Codex 세션부터 적용됩니다. notch-agent-done 알림 스크립트로 이미 연결돼 있으면 알림이 두 번 뜨지 않도록 훅을 더 넣지 않습니다.",
+                       "Connecting adds a Stop hook to ~/.claude/settings.json for Claude Code, and sets notify in ~/.codex/config.toml for Codex. If Codex already has a notify command, it still runs, and disconnecting restores it. The original file is kept as .dynamicnotch.bak before the first change. Applies to new Claude Code and Codex sessions. If the notch-agent-done alert script is already connected, no hook is added, so alerts don't show twice."))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section(T("미리보기", "Preview")) {

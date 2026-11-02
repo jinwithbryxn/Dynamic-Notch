@@ -5,6 +5,10 @@ import Darwin
 
 /// 카메라·마이크가 어느 앱에서든 쓰이는지 장치 플래그로만 본다 (카메라·마이크 권한 불필요, 영상·소리를 읽지 않음).
 /// 폴링 없이 CoreMediaIO·CoreAudio 속성 변경 알림을 받는다.
+///
+/// 장치 목록 알림은 시작할 때 한 번만 건다. 예전처럼 목록 알림 안에서 알림을 모두 떼고 다시 걸면
+/// 카메라 장치가 새로 나타날 때 목록 알림이 끝없이 이어져 메인 스레드가 멈춘 적이 있다 (2026-11-02, CPU 96–99%).
+/// 그래서 목록이 바뀌면 잠시 모아서 한 번만 맞추고, 새로 생긴 장치에만 걸고 빠진 장치에서만 뗀다.
 final class CPDeviceUseMonitor {
     struct Snapshot: Equatable {
         var cameras: [String] = []   // 지금 쓰이는 카메라 이름
@@ -13,67 +17,119 @@ final class CPDeviceUseMonitor {
         var micOn: Bool { !mics.isEmpty }
     }
 
+    /// 목록 알림을 모으는 시간
+    static let syncDelay: TimeInterval = 0.5
+    /// 이 시간 안에 맞추기가 이만큼 일어나면 한동안 쉰다 (알림이 그치지 않을 때 CPU를 지키는 안전장치)
+    static let burstWindow: TimeInterval = 10
+    static let burstLimit = 20
+    static let burstPause: TimeInterval = 30
+
     var onChange: ((Snapshot) -> Void)?
     private(set) var snapshot = Snapshot()
-    private var cmioListeners: [(CMIOObjectID, CMIOObjectPropertyAddress, CMIOObjectPropertyListenerBlock)] = []
-    private var audioListeners: [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
+    private var cameraListListener: CMIOObjectPropertyListenerBlock?
+    private var micListListener: AudioObjectPropertyListenerBlock?
+    private var cameraListeners: [CMIOObjectID: CMIOObjectPropertyListenerBlock] = [:]
+    private var micListeners: [AudioObjectID: AudioObjectPropertyListenerBlock] = [:]
     private var running = false
+    private var syncWork: DispatchWorkItem?
+    private var recentSyncs: [Date] = []
+
+    /// 자체 검사용 셈
+    private(set) var syncCount = 0
+    private(set) var listenerAdds = 0
+    private(set) var listenerRemoves = 0
+    var deviceListenerCount: Int { cameraListeners.count + micListeners.count }
 
     func start() {
         guard !running else { return }
         running = true
-        rebuild()
+        var cameraList = Self.cmioAddress(CMIOObjectPropertySelector(kCMIOHardwarePropertyDevices))
+        let cameraBlock: CMIOObjectPropertyListenerBlock = { [weak self] _, _ in self?.deviceListChanged() }
+        if CMIOObjectAddPropertyListenerBlock(CMIOObjectID(kCMIOObjectSystemObject), &cameraList, DispatchQueue.main, cameraBlock) == 0 {
+            cameraListListener = cameraBlock
+        }
+        var micList = Self.audioAddress(kAudioHardwarePropertyDevices)
+        let micBlock: AudioObjectPropertyListenerBlock = { [weak self] _, _ in self?.deviceListChanged() }
+        if AudioObjectAddPropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject), &micList, DispatchQueue.main, micBlock) == noErr {
+            micListListener = micBlock
+        }
+        sync()
     }
 
     func stop() {
         running = false
-        removeAll()
+        syncWork?.cancel()
+        syncWork = nil
+        recentSyncs.removeAll()
+        if let block = cameraListListener {
+            var a = Self.cmioAddress(CMIOObjectPropertySelector(kCMIOHardwarePropertyDevices))
+            _ = CMIOObjectRemovePropertyListenerBlock(CMIOObjectID(kCMIOObjectSystemObject), &a, DispatchQueue.main, block)
+        }
+        if let block = micListListener {
+            var a = Self.audioAddress(kAudioHardwarePropertyDevices)
+            _ = AudioObjectRemovePropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject), &a, DispatchQueue.main, block)
+        }
+        cameraListListener = nil
+        micListListener = nil
+        for id in Array(cameraListeners.keys) { removeCamera(id) }
+        for id in Array(micListeners.keys) { removeMic(id) }
     }
 
-    private func removeAll() {
-        for (id, addr, block) in cmioListeners {
-            var a = addr
-            _ = CMIOObjectRemovePropertyListenerBlock(id, &a, DispatchQueue.main, block)
+    /// 장치 목록이 바뀌었다는 알림. 몰려와도 syncDelay 뒤 한 번만 맞춘다.
+    func deviceListChanged() {
+        guard running, syncWork == nil else { return }
+        let now = Date()
+        recentSyncs.removeAll { now.timeIntervalSince($0) > Self.burstWindow }
+        let delay = recentSyncs.count >= Self.burstLimit ? Self.burstPause : Self.syncDelay
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.syncWork = nil
+            self.sync()
         }
-        for (id, addr, block) in audioListeners {
-            var a = addr
-            _ = AudioObjectRemovePropertyListenerBlock(id, &a, DispatchQueue.main, block)
-        }
-        cmioListeners.removeAll()
-        audioListeners.removeAll()
+        syncWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
-    /// 장치 목록이 바뀌면 장치별 알림을 다시 건다
-    private func rebuild() {
-        removeAll()
+    /// 새로 생긴 장치에만 "어디선가 실행 중" 알림을 걸고, 빠진 장치에서만 뗀다
+    private func sync() {
         guard running else { return }
-        let refresh: () -> Void = { [weak self] in self?.refresh() }
-        let rebuild: () -> Void = { [weak self] in self?.rebuild() }
-
-        // 카메라: 시스템 장치 목록 + 장치별 "어디선가 실행 중"
-        var devAddr = Self.cmioAddress(CMIOObjectPropertySelector(kCMIOHardwarePropertyDevices))
-        let devBlock: CMIOObjectPropertyListenerBlock = { _, _ in rebuild() }
-        if CMIOObjectAddPropertyListenerBlock(CMIOObjectID(kCMIOObjectSystemObject), &devAddr, DispatchQueue.main, devBlock) == 0 {
-            cmioListeners.append((CMIOObjectID(kCMIOObjectSystemObject), devAddr, devBlock))
-        }
-        for cam in Self.cameraDevices() {
+        syncCount += 1
+        recentSyncs.append(Date())
+        let cameras = Set(Self.cameraDevices())
+        for id in Array(cameraListeners.keys) where !cameras.contains(id) { removeCamera(id) }
+        for id in cameras where cameraListeners[id] == nil {
             var a = Self.cmioAddress(CMIOObjectPropertySelector(kCMIODevicePropertyDeviceIsRunningSomewhere))
-            let b: CMIOObjectPropertyListenerBlock = { _, _ in refresh() }
-            if CMIOObjectAddPropertyListenerBlock(cam, &a, DispatchQueue.main, b) == 0 { cmioListeners.append((cam, a, b)) }
+            let b: CMIOObjectPropertyListenerBlock = { [weak self] _, _ in self?.refresh() }
+            if CMIOObjectAddPropertyListenerBlock(id, &a, DispatchQueue.main, b) == 0 {
+                cameraListeners[id] = b
+                listenerAdds += 1
+            }
         }
-
-        // 마이크: 시스템 장치 목록 + 입력 장치별 "어디선가 실행 중"
-        var audAddr = Self.audioAddress(kAudioHardwarePropertyDevices)
-        let audBlock: AudioObjectPropertyListenerBlock = { _, _ in rebuild() }
-        if AudioObjectAddPropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject), &audAddr, DispatchQueue.main, audBlock) == noErr {
-            audioListeners.append((AudioObjectID(kAudioObjectSystemObject), audAddr, audBlock))
-        }
-        for dev in Self.inputDevices() {
+        let mics = Set(Self.inputDevices())
+        for id in Array(micListeners.keys) where !mics.contains(id) { removeMic(id) }
+        for id in mics where micListeners[id] == nil {
             var a = Self.audioAddress(kAudioDevicePropertyDeviceIsRunningSomewhere)
-            let b: AudioObjectPropertyListenerBlock = { _, _ in refresh() }
-            if AudioObjectAddPropertyListenerBlock(dev, &a, DispatchQueue.main, b) == noErr { audioListeners.append((dev, a, b)) }
+            let b: AudioObjectPropertyListenerBlock = { [weak self] _, _ in self?.refresh() }
+            if AudioObjectAddPropertyListenerBlock(id, &a, DispatchQueue.main, b) == noErr {
+                micListeners[id] = b
+                listenerAdds += 1
+            }
         }
         refresh()
+    }
+
+    private func removeCamera(_ id: CMIOObjectID) {
+        guard let block = cameraListeners.removeValue(forKey: id) else { return }
+        var a = Self.cmioAddress(CMIOObjectPropertySelector(kCMIODevicePropertyDeviceIsRunningSomewhere))
+        _ = CMIOObjectRemovePropertyListenerBlock(id, &a, DispatchQueue.main, block)
+        listenerRemoves += 1
+    }
+
+    private func removeMic(_ id: AudioObjectID) {
+        guard let block = micListeners.removeValue(forKey: id) else { return }
+        var a = Self.audioAddress(kAudioDevicePropertyDeviceIsRunningSomewhere)
+        _ = AudioObjectRemovePropertyListenerBlock(id, &a, DispatchQueue.main, block)
+        listenerRemoves += 1
     }
 
     private func refresh() {

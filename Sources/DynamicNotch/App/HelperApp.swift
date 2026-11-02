@@ -139,6 +139,17 @@ final class HelperDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func present(_ window: NSWindow?) {
+        // 메뉴 막대 전용 앱의 도우미라 macOS가 앞으로 가져오기를 막을 때가 있다 (지금 쓰는 앱 창 뒤에 열려 안 보임, 2026-11-02).
+        // 잠깐 떠 있는 창 높이로 올려 맨 앞에 보이게 하고, 사용자가 창을 눌러 키 창이 되면 보통 높이로 돌린다.
+        if let window, window.level == .normal, !window.isKeyWindow {
+            window.level = .floating
+            var token: NSObjectProtocol?
+            token = NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window,
+                                                           queue: .main) { [weak window] _ in
+                window?.level = .normal
+                if let token { NotificationCenter.default.removeObserver(token) }
+            }
+        }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
         window?.orderFrontRegardless()
