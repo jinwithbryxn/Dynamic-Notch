@@ -38,6 +38,13 @@ enum AgentNotify {
                 try? p.run()
             }
         }
+        // 설정 파일에서 이미 빠진 훅이면 알리지 않는다 (위의 원래 notify 명령은 그대로 실행).
+        // Claude Code·Codex는 세션을 시작할 때 설정을 읽어 두므로, 연결을 해제하거나 되돌린 뒤에도
+        // 그 전에 시작한 세션이 옛 훅을 계속 부른다 (2026-11-02, 알림이 두 번 뜸).
+        guard AgentHooks.isInstalled(source) else {
+            if source == .claude { _ = try? FileHandle.standardInput.readToEnd() }
+            exit(0)
+        }
         // 프로젝트 폴더와 끝난 작업(사용자가 마지막으로 보낸 요청)
         var folder = FileManager.default.currentDirectoryPath
         var task = ""
