@@ -26,6 +26,8 @@ enum IslandSettings {
     static var alertsOnly: Bool { d.bool("alertsOnly", default: false) }
     /// 노치 없는 화면에서 쉬는 알약: "show" | "clock" | "hidden"(커서를 올릴 때만)
     static var idlePill: String { d.string("idlePill", default: "show") }
+    /// 집중 모드 동안 덜 중요한 알림(다운로드·기기 연결·네트워크·곡 바뀜·확장 기능 안내 등)을 띄우지 않는다
+    static var focusQuiet: Bool { d.bool("focusQuiet", default: false) }
 
     static func set(_ value: Any?, _ name: String) { d.set(value, name) }
 }
@@ -138,6 +140,7 @@ struct IslandSettingsSection: View {
     @State private var autoCollapse = IslandSettings.autoCollapse
     @State private var alertsOnly = IslandSettings.alertsOnly
     @State private var idlePill = IslandSettings.idlePill
+    @State private var focusQuiet = IslandSettings.focusQuiet
 
     var body: some View {
         Section {
@@ -171,6 +174,10 @@ struct IslandSettingsSection: View {
             .onChange(of: autoCollapse) { _, v in IslandSettings.set(v, "autoCollapse") }
             Toggle(T("알림 전용 (클릭·호버로 펼치지 않음)", "Alerts only (don't open on click or hover)"), isOn: $alertsOnly)
                 .onChange(of: alertsOnly) { _, v in IslandSettings.set(v, "alertsOnly") }
+            Toggle(T("집중 모드 동안 덜 중요한 알림 줄이기", "Quiet minor alerts during Focus"), isOn: $focusQuiet)
+                .onChange(of: focusQuiet) { _, v in IslandSettings.set(v, "focusQuiet") }
+                .help(T("다운로드, 기기 연결, 네트워크, 곡 바뀜, 확장 기능 안내·알림 미러링을 띄우지 않습니다. 통화, 배터리 부족, 타이머 끝, 에이전트 승인은 그대로 보입니다. 집중 모드 감지가 켜져 있어야 합니다.",
+                        "Skips downloads, device connections, network, track changes, module notices and mirrored notifications. Calls, low battery, timer ends and agent approvals still show. Focus detection must be on."))
             Toggle(T("화면 공유·녹화에서 노치 숨기기 요청", "Ask macOS to hide the notch from screen sharing and recording"), isOn: $hideCapture)
                 .onChange(of: hideCapture) { _, v in IslandSettings.set(v, "hideFromCapture") }
             Toggle(T("음악 위에 커서를 올리면 미니 플레이어", "Hover over music to peek a mini player"), isOn: $peek)

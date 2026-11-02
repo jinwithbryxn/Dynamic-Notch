@@ -66,7 +66,12 @@ final class ActivityCenter: ObservableObject {
 
     // MARK: - 일회성
 
+    /// 집중 모드 동안 줄이는 일회성 알림 종류 (정보 수준 이하만)
+    private static let focusQuietKinds: Set<ActivityKind> = [.download, .bluetooth, .network, .hotspot, .media, .notice, .notification, .stocks]
+
     func post(_ activity: NotchActivity) {
+        if IslandSettings.focusQuiet, FocusMonitor.isOn,
+           Self.focusQuietKinds.contains(activity.kind), activity.priority <= ActivityPriority.info { return }
         if let current = transient {
             if current.kind == activity.kind {
                 // 같은 종류: 새 카드를 띄우지 않고 값만 갱신하고 타이머를 리셋한다.

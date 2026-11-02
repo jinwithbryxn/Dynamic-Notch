@@ -15,7 +15,9 @@ final class FocusMonitor {
     private let center: ActivityCenter
     private let settings = AppSettings.shared
     private var timer: Timer?
-    private var current: Mode?
+    private var current: Mode? { didSet { Self.isOn = current != nil } }
+    /// 집중 모드가 켜져 있는지 (알림 줄이기에서 읽음)
+    private(set) static var isOn = false
     private var initialized = false
 
     private static let dbURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/DoNotDisturb/DB")
