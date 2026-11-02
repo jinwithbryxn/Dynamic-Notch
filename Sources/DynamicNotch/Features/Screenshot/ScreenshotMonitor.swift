@@ -26,6 +26,9 @@ final class ScreenshotMonitor: ObservableObject {
     private var ownChangeCount = -1
     private var timer: Timer?
     private var query: NSMetadataQuery?
+    private var folderWatch: DispatchSourceFileSystemObject?
+    private var folderFiles = Set<String>()
+    private var presentedFiles = Set<String>()
     private let startedAt = Date()
     private(set) var lastSaved: URL?
     /// 실제 스크린샷이 들어왔을 때 (화면 녹화 오감지 정리용, AppDelegate가 연결)
@@ -67,8 +70,11 @@ final class ScreenshotMonitor: ObservableObject {
         if source == .clipboard {
             query?.stop()
             query = nil
+            folderWatch?.cancel()
+            folderWatch = nil
         } else if query == nil {
             startFileQuery()
+            startFolderWatch()
         }
     }
 
@@ -105,16 +111,71 @@ final class ScreenshotMonitor: ObservableObject {
             let added = n.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [NSMetadataItem] ?? []
             for item in added {
                 guard let path = item.value(forAttribute: NSMetadataItemPathKey) as? String else { continue }
-                let url = URL(fileURLWithPath: path)
-                guard let type = UTType(filenameExtension: url.pathExtension), type.conforms(to: .image),
-                      let data = try? Data(contentsOf: url) else { continue }
                 let date = (item.value(forAttribute: NSMetadataItemFSCreationDateKey) as? Date) ?? Date()
                 guard date > self.startedAt else { continue }
-                self.present(Shot(data: data, date: date, fileURL: url, pasteboardCount: nil))
+                self.presentFile(URL(fileURLWithPath: path), date: date)
             }
         }
         q.start()
         query = q
+    }
+
+    /// Spotlight 색인은 새 파일을 1~2초 늦게 알려 준다. 저장 폴더를 직접 지켜보다가 파일이 생기는 즉시 카드를 띄우고,
+    /// 색인 감지는 폴더를 열 수 없을 때를 위한 예비로 남긴다.
+    private func startFolderWatch() {
+        let folder = Self.systemScreenshotFolder
+        let fd = open(folder.path, O_EVTONLY)
+        guard fd >= 0 else { return }
+        folderFiles = Self.fileNames(in: folder)
+        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fd, eventMask: .write, queue: .main)
+        source.setEventHandler { [weak self] in self?.scanFolder(folder) }
+        source.setCancelHandler { close(fd) }
+        source.resume()
+        folderWatch = source
+    }
+
+    private static func fileNames(in folder: URL) -> Set<String> {
+        Set((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? [])
+    }
+
+    private func scanFolder(_ folder: URL) {
+        let names = Self.fileNames(in: folder)
+        let added = names.subtracting(folderFiles)
+        folderFiles = names
+        guard settings.screenshotEnabled, settings.screenshotSource != .clipboard else { return }
+        for name in added where !name.hasPrefix(".") {
+            presentFile(folder.appendingPathComponent(name), date: Date())
+        }
+    }
+
+    /// 스크린샷 도구가 저장한 이미지 파일을 카드로 띄운다. 폴더 감시와 색인 감지가 같은 파일을 두 번 띄우지 않으며,
+    /// 막 생긴 파일은 스크린샷 표시(확장 속성)나 내용이 아직 덜 써졌을 수 있어 잠깐씩 다시 확인한다.
+    private func presentFile(_ url: URL, date: Date, attempt: Int = 0) {
+        guard !presentedFiles.contains(url.path),
+              let type = UTType(filenameExtension: url.pathExtension), type.conforms(to: .image) else { return }
+        guard Self.isScreenCapture(url), let data = try? Data(contentsOf: url), Self.isComplete(data) else {
+            if attempt < 15 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.presentFile(url, date: date, attempt: attempt + 1)
+                }
+            }
+            return
+        }
+        if presentedFiles.count > 100 { presentedFiles.removeAll() }
+        presentedFiles.insert(url.path)
+        present(Shot(data: data, date: date, fileURL: url, pasteboardCount: nil))
+    }
+
+    /// 스크린샷 도구는 저장하는 파일에 kMDItemIsScreenCapture 확장 속성을 붙인다.
+    private static func isScreenCapture(_ url: URL) -> Bool {
+        getxattr(url.path, "com.apple.metadata:kMDItemIsScreenCapture", nil, 0, 0, 0) > 0
+    }
+
+    /// PNG는 IEND 덩어리, JPEG는 FFD9로 끝나야 다 써진 파일이다 (다른 형식은 그대로 둔다).
+    private static func isComplete(_ data: Data) -> Bool {
+        if isPNG(data) { return data.suffix(12).starts(with: [0, 0, 0, 0, 0x49, 0x45, 0x4E, 0x44]) }
+        if data.starts(with: [0xFF, 0xD8]) { return data.suffix(2).elementsEqual([0xFF, 0xD9]) }
+        return !data.isEmpty
     }
 
     /// 시스템 스크린샷 저장 위치 (`com.apple.screencapture location`, 기본 데스크탑).

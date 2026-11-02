@@ -225,8 +225,10 @@ final class NotchViewModel: ObservableObject {
         let n = notchSize
         switch state {
         case .idle:
-            let bump: CGFloat = settings.hoverPreview && isHovering ? 1 : 0
-            return CGSize(width: n.width + 14 * bump, height: n.height + 4 * bump)
+            // 호버 미리보기: 몸통(위쪽 오목 모서리 안쪽)이 물리 노치보다 양옆 1pt씩 넓어야
+            // 물리 노치의 아래 모서리가 도형 밖으로 삐져나와 보이지 않는다.
+            guard settings.hoverPreview && isHovering else { return n }
+            return CGSize(width: n.width + 2 * (topRadius + 1), height: n.height + 4)
         case .compact:
             let wing = NotchActivity.wing(for: center.displayed)
             return CGSize(width: n.width + wing * 2, height: n.height)

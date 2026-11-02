@@ -163,7 +163,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // 설정 도우미 → 본 앱 명령 채널. 분산 알림은 보낸 쪽을 확인할 수 없으므로
-        // 배포 빌드는 해가 없는 명령(정해진 미리보기, 다시 시작)만 받는다. 나머지는 개발 빌드(-DDEV)에서만.
+        // 배포 빌드는 해가 없는 명령(정해진 미리보기, 다시 시작, 코딩 에이전트 완료 알림)만 받는다.
+        // 나머지는 개발 빌드(-DDEV)에서만.
         DistributedNotificationCenter.default().addObserver(
             forName: Helper.commandNotification, object: nil, queue: .main
         ) { [weak self] note in
@@ -175,6 +176,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if let first = parts.first, let id = PreviewID(rawValue: first) {
                     self.featurePreview.run(id, style: parts.count > 1 ? AlertStyle(rawValue: parts[1]) : nil)
                 }
+            case let c where c.hasPrefix("agent:"): self.postAgentDone(String(c.dropFirst(6)))
             case "restart": self.restart()
             default:
                 #if DEV
@@ -182,6 +184,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 #endif
             }
         }
+    }
+
+    /// 코딩 에이전트(Claude Code·Codex) 작업 완료 알림. 형식: "agent:<claude|codex>|<프로젝트 이름>"
+    /// ~/.local/bin/notch-agent-done 이 상위 작업·하위 에이전트·백그라운드 작업이 모두 끝났을 때만 보낸다.
+    /// 보낸 쪽을 확인할 수 없으므로 제목·아이콘은 정해진 값만 쓰고, 프로젝트 이름은 한 줄 40자까지만 받는다.
+    /// 모양(컴팩트·상세)과 켜고 끄기는 앱 설정의 에이전트 알림 항목을 따른다.
+    private func postAgentDone(_ payload: String) {
+        guard settings.agentAlerts else { return }
+        let parts = payload.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
+        guard let source = parts.first.flatMap({ AgentSource(rawValue: String($0)) }) else { return }
+        let project = parts.count > 1 ? String(parts[1].filter { !$0.isNewline }.prefix(40)) : ""
+        var activity = AgentNotify.activity(source, project: project, task: "", target: nil)
+        activity.artwork = agentIcon(source.rawValue)
+        center.post(activity)
+    }
+
+    /// 에이전트 알림 왼쪽 아이콘 캐시 (출처·화면 모드별 72px 한 장)
+    private var agentIcons: [String: NSImage] = [:]
+
+    /// Dock과 같은 앱 아이콘. Codex는 ChatGPT 앱(com.openai.codex) 안의 Codex 전용 그림을 화면 모드에 맞춰 쓴다.
+    /// 앱이 없으면 nil (정해진 심볼로 표시).
+    private func agentIcon(_ source: String) -> NSImage? {
+        let dark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let key = "\(source)-\(dark)"
+        if let cached = agentIcons[key] { return cached }
+        let bundleID = source == "claude" ? "com.anthropic.claudefordesktop" : "com.openai.codex"
+        guard let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return nil }
+        var icon = NSWorkspace.shared.icon(forFile: app.path)
+        if source == "codex" {
+            let name = dark ? "icon-codex-dark-color.png" : "icon-codex-light.png"
+            if let image = NSImage(contentsOf: app.appendingPathComponent("Contents/Resources/\(name)")) { icon = image }
+        }
+        // 아이콘 둘레의 투명 여백(가로세로 약 10%)을 잘라 카드의 둥근 사각형을 꽉 채운다.
+        let px = 72
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: px, pixelsHigh: px, bitsPerSample: 8,
+                                         samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return nil }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        let inset = CGFloat(px) * 0.12
+        icon.draw(in: NSRect(x: -inset, y: -inset, width: CGFloat(px) + 2 * inset, height: CGFloat(px) + 2 * inset))
+        NSGraphicsContext.restoreGraphicsState()
+        let thumb = NSImage(size: NSSize(width: px / 2, height: px / 2))
+        thumb.addRepresentation(rep)
+        agentIcons[key] = thumb
+        return thumb
     }
 
 

@@ -141,7 +141,9 @@ enum AgentNotify {
                          style: AlertStyle? = nil) -> NotchActivity {
         let detailed = (style ?? AppSettings.shared.agentStyle) == .detail
         let title = project.isEmpty ? T("\(source.name) 작업 완료", "\(source.name) Finished") : "\(source.name) · \(project)"
-        let subtitle = task.isEmpty ? T("작업 완료 · 눌러서 열기", "Finished · Click to open") : task
+        let subtitle = task.isEmpty
+            ? (target == nil ? T("작업 완료", "Finished") : T("작업 완료 · 눌러서 열기", "Finished · Click to open"))
+            : task
         return NotchActivity(kind: .agent, priority: ActivityPriority.info, presentation: detailed ? .detail : .compact,
                              duration: detailed ? 7 : 5, symbol: source.symbol, tint: source.tint,
                              value: .text(T("완료", "Done")), title: title, subtitle: subtitle, targetApp: target)

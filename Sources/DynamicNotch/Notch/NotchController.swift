@@ -132,7 +132,11 @@ final class NotchController: NotchGestureDelegate {
         let notch = NotchGeometry.notchRect(on: screen)
         vm.notchSize = notch.size
         vm.hasPhysicalNotch = NotchGeometry.hasPhysicalNotch(screen)
-        let size = NotchGeometry.panelSize
+        var size = NotchGeometry.panelSize
+        // 창 원점은 정수 pt로 내려 놓인다. 노치 가운데가 0.5pt에 걸리면(예: 663~848, 가운데 755.5)
+        // 창이 0.5pt 왼쪽으로 밀려 도형 오른쪽이 물리 노치보다 짧아 보이므로, 그만큼 창 폭을 늘려 가운데를 맞춘다.
+        let originX = notch.midX - size.width / 2
+        size.width += 2 * (originX - originX.rounded(.down))
         let frame = CGRect(x: notch.midX - size.width / 2, y: screen.frame.maxY - size.height,
                            width: size.width, height: size.height)
         panel.setFrame(frame, display: true)

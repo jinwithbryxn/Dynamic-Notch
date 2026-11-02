@@ -352,7 +352,7 @@ final class AppSettings: ObservableObject {
         aiRefreshMinutes = [1.0, 2.0, 5.0, 10.0].contains(value("aiRefreshMinutes", 5.0)) ? value("aiRefreshMinutes", 5.0) : 10
         aiConnected = value("aiConnected", "")
         agentAlerts = value("agentAlerts", true)
-        agentStyle = AlertStyle(rawValue: value("agentStyle", "")) ?? .compact
+        agentStyle = AlertStyle(rawValue: value("agentStyle", "")) ?? .detail
         // 새로 생긴 홈 기능은 기본 순서대로 뒤에 붙인다
         let savedHome: [String] = value("homeOrder", AppSettings.defaultHomeOrder)
         homeOrder = savedHome.filter(AppSettings.defaultHomeOrder.contains) + AppSettings.defaultHomeOrder.filter { !savedHome.contains($0) }
@@ -376,7 +376,7 @@ final class AppSettings: ObservableObject {
         airdropStyle = ProgressStyle(rawValue: value("airdropStyle", "")) ?? .ring
 
         screenshotEnabled = value("screenshotEnabled", true)
-        screenshotSource = ScreenshotSource(rawValue: value("screenshotSource", "")) ?? .clipboard
+        screenshotSource = ScreenshotSource(rawValue: value("screenshotSource", "")) ?? .both
         screenshotFolder = value("screenshotFolder", "")
         screenshotJPEG = value("screenshotJPEG", false)
         screenshotAutoClose = value("screenshotAutoClose", 10.0)
@@ -469,7 +469,7 @@ final class AppSettings: ObservableObject {
         aiRefreshMinutes = [1.0, 2.0, 5.0, 10.0].contains(value("aiRefreshMinutes", 5.0)) ? value("aiRefreshMinutes", 5.0) : 10
         aiConnected = value("aiConnected", "")
         agentAlerts = value("agentAlerts", true)
-        agentStyle = AlertStyle(rawValue: value("agentStyle", "")) ?? .compact
+        agentStyle = AlertStyle(rawValue: value("agentStyle", "")) ?? .detail
         // 새로 생긴 홈 기능은 기본 순서대로 뒤에 붙인다
         let savedHome: [String] = value("homeOrder", AppSettings.defaultHomeOrder)
         homeOrder = savedHome.filter(AppSettings.defaultHomeOrder.contains) + AppSettings.defaultHomeOrder.filter { !savedHome.contains($0) }
@@ -493,7 +493,7 @@ final class AppSettings: ObservableObject {
         airdropStyle = ProgressStyle(rawValue: value("airdropStyle", "")) ?? .ring
 
         screenshotEnabled = value("screenshotEnabled", true)
-        screenshotSource = ScreenshotSource(rawValue: value("screenshotSource", "")) ?? .clipboard
+        screenshotSource = ScreenshotSource(rawValue: value("screenshotSource", "")) ?? .both
         screenshotFolder = value("screenshotFolder", "")
         screenshotJPEG = value("screenshotJPEG", false)
         screenshotAutoClose = value("screenshotAutoClose", 10.0)
