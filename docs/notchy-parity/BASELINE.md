@@ -61,7 +61,7 @@ Notchy 기능 확장 작업을 시작하기 전의 설치 앱, 로컬 커스텀 
 연결 설정:
 
 - `~/.claude/settings.json`: Stop 훅 `/Users/me/.local/bin/notch-agent-done claude 2>/dev/null || true` (async, timeout 10)
-- `~/.codex/config.toml`: `notify = ["/Users/me/.local/bin/notch-agent-done", "codex"]`
+- `~/.codex/config.toml`: Codex Computer Use가 2026-11-01에 `notify`를 고쳐, 지금은 `SkyComputerUseClient turn-ended --previous-notify '["/Users/me/.local/bin/notch-agent-done","codex"]'`이다. Computer Use가 먼저 실행되고 이 스크립트를 이어서 부른다. 처음 연결할 때(2026-10-27)는 반대로 이 스크립트가 notify였고 Computer Use를 먼저 불렀다. 2026-11-02부터 스크립트는 부모 프로세스가 Computer Use이면 Computer Use를 다시 부르지 않는다(그 전에는 턴마다 두 번 불렸다).
 
 ## 4. upstream 비교
 
