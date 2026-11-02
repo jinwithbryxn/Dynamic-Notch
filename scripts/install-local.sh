@@ -81,6 +81,8 @@ install() {
   fi
   ditto "$BUILT" "$TARGET"
   codesign --verify --deep --strict "$TARGET"
+  # 빌드 폴더의 사본이 같은 번들 ID로 등록돼 있으면 'open -b'·시스템 설정이 그쪽을 가리킬 수 있어 등록을 지운다
+  /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -u "$BUILT" 2>/dev/null || true
   echo "backup: $dir"
   launch
 }

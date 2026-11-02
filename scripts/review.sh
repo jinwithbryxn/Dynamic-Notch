@@ -40,6 +40,9 @@ build() {
     || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string $NAME" "$APP/Contents/Info.plist"
   cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
   cp -R Resources/en.lproj Resources/ko.lproj "$APP/Contents/Resources/"
+  # 언어별 표시 이름도 바꿔 시스템 설정(로그인 항목·개인정보 목록)에서 설치 앱과 구별되게 한다
+  sed -i '' "s/\"CFBundleDisplayName\" = \"[^\"]*\";/\"CFBundleDisplayName\" = \"$NAME\";/" \
+    "$APP/Contents/Resources/en.lproj/InfoPlist.strings" "$APP/Contents/Resources/ko.lproj/InfoPlist.strings"
   # 설치 이름을 고정해 빌드 위치가 바뀌어도 같은 바이너리가 나오게 한다
   clang -dynamiclib -fobjc-arc -O2 -arch arm64 -mmacosx-version-min="$MIN_OS" -framework Foundation \
     -install_name @rpath/libMRAdapter.dylib \
@@ -66,6 +69,8 @@ case "${1:-}" in
   build) build ;;
   start)
     [ -d "$APP" ] || build
+    # 검토용 앱에서는 첫 안내(권한 요청·로그인 시 열기)를 띄우지 않는다. 설치 앱과 이름이 같은 항목이 시스템 설정에 생기지 않게.
+    defaults write "$BUNDLE_ID" onboardingDone -bool true
     quit_app "$INSTALLED_ID" "Dynamic Notch"
     open "$APP"
     ;;

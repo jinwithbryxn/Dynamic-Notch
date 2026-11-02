@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 /// 확장 기능 개발·검증용 명령줄 모드. 앱 창을 띄우지 않고 결과를 출력한 뒤 끝난다.
@@ -9,10 +10,20 @@ import SwiftUI
 ///                                          노치 전체를 실제 뷰로 그려 PNG로 저장
 ///   --render-tab=<id> --out=<png> [--start] [--wait=<초>] [--size=<폭>x<높이>]
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
+///   --login-item=off                       이 앱 번들의 '로그인 시 열기' 등록을 지운다 (검토용 앱 정리용)
 enum ModuleDevTools {
     static func handle(_ arguments: [String]) {
         func value(_ name: String) -> String? {
             arguments.first { $0.hasPrefix("--\(name)=") }.map { String($0.dropFirst(name.count + 3)) }
+        }
+        if value("login-item") == "off" {
+            do {
+                try SMAppService.mainApp.unregister()
+                print("login item: unregistered \(Bundle.main.bundleIdentifier ?? "")")
+            } catch {
+                print("login item: \(error.localizedDescription) (status \(SMAppService.mainApp.status.rawValue))")
+            }
+            exit(0)
         }
         if arguments.contains("--list-modules") {
             for m in ModuleCatalog.makeAll() {
