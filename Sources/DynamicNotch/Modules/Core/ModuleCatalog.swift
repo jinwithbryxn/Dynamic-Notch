@@ -54,6 +54,14 @@ enum ModuleCatalog {
             FocusSwitchModule(),
             TypingSoundsModule(),
             DesktopWidgetsModule(),
+            SystemMonitorModule(),
+            NetworkUsageModule(),
+            BatteryHealthModule(),
+            DevicesModule(),
+            KeyHUDModule(),
+            DisplaysModule(),
+            StocksModule(),
+            PortsModule(),
         ]
     }
 }
