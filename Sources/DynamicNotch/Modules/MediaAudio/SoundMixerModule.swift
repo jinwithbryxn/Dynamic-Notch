@@ -331,7 +331,12 @@ final class MBMixerSession {
         var holder: MBTapProcessor?
         tap = try MBTapSession(processes: objects, mute: .mutedWhenTapped, outputUID: outputUID, outputs: true, name: name, queue: queue) {
             _, input, _, output, _ in
-            holder?.render(input: input, output: output)
+            if let h = holder {
+                h.render(input: input, output: output)
+            } else {
+                // 처리기가 붙기 전 몇 프레임은 무음
+                for b in UnsafeMutableAudioBufferListPointer(output) { if let d = b.mData { memset(d, 0, Int(b.mDataByteSize)) } }
+            }
         }
         let p = MBTapProcessor(format: tap.format)
         processor = p

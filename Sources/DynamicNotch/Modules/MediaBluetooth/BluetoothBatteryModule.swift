@@ -113,7 +113,7 @@ final class MBBatteryModel: ObservableObject {
     static func readDevices() -> [MBBTDevice] {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/sbin/system_profiler")
-        task.arguments = ["SPBluetoothDataType", "-json", "-detailLevel", "basic"]
+        task.arguments = ["SPBluetoothDataType", "-json"]
         let pipe = Pipe()
         task.standardOutput = pipe
         task.standardError = FileHandle.nullDevice
