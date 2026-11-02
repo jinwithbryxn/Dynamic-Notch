@@ -3,6 +3,23 @@ enum ModuleCatalog {
     static func makeAll() -> [NotchModule] {
         [
             WorldClockModule(),
+            // 실행·검색·입력
+            CalculatorModule(),
+            QuickSearchModule(),
+            EmojiModule(),
+            TranslateModule(),
+            LauncherModule(),
+            LauncherWheelModule(),
+            WindowSnapModule(),
+            NaturalCommandsModule(),
+            ShortcutsModule(),
+            HomeShortcutsModule(),
+            SavedLinksModule(),
+            VideoSaverModule(),
+            InputTriggersModule(),
+            TextSelectionModule(),
+            DictationModule(),
+            SpacesModule(),
         ]
     }
 }
