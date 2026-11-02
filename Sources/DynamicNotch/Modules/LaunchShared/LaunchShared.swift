@@ -127,14 +127,21 @@ enum LaunchSystem {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.contains(" "), !t.isEmpty else { return nil }
         if let u = URL(string: t), let s = u.scheme?.lowercased(), s == "http" || s == "https", u.host != nil { return u }
-        // "example.com/path" 형태
+        // "example.com/path" 형태 (흔한 최상위 도메인만: file.txt 같은 파일 이름을 링크로 보지 않게)
         if t.range(of: #"^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+(/\S*)?$"#, options: .regularExpression) != nil,
-           let last = t.split(separator: "/").first?.split(separator: ".").last, last.count >= 2,
-           last.allSatisfy({ $0.isLetter }) {
+           let last = t.split(separator: "/").first?.split(separator: ".").last,
+           commonTLDs.contains(last.lowercased()) {
             return URL(string: "https://" + t)
         }
         return nil
     }
+
+    static let commonTLDs: Set<String> = [
+        "com", "net", "org", "io", "dev", "app", "ai", "co", "kr", "jp", "me", "so", "gg", "tv", "xyz", "info", "edu", "gov",
+        "uk", "de", "fr", "us", "ca", "au", "cn", "ru", "in", "page", "site", "tech", "cloud", "blog", "shop", "store", "link",
+        "ly", "to", "sh", "fm", "im", "es", "it", "nl", "se", "ch", "be", "at", "pl", "br", "mx", "tw", "hk", "sg", "vn", "th",
+        "id", "ph", "my", "nz", "eu", "asia", "biz", "news", "wiki", "design", "studio", "art", "zone", "one", "space", "run",
+    ]
 }
 
 /// 외부 명령을 백그라운드에서 실행하고 결과를 메인 스레드로 돌려준다.

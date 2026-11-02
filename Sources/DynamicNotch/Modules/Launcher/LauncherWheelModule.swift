@@ -259,7 +259,7 @@ final class LauncherWheelPanel: NSPanel {
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.12
             animator().alphaValue = 0
-        }, completionHandler: { [weak self] in self?.orderOut(nil) })
+        }, completionHandler: { self.orderOut(nil) })   // 애니메이션이 끝날 때까지 창을 붙잡아 둔다
     }
 }
 

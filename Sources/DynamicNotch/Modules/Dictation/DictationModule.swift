@@ -184,7 +184,14 @@ final class DictationModule: NotchModule, ObservableObject {
 
     private func complete() {
         guard engine != nil else { return }
-        listening = false
+        // 인식기가 스스로 끝낸 경우(최종 결과)에도 마이크를 닫고 붙여넣는다
+        if listening {
+            listening = false
+            pasteOnComplete = true
+            engine?.stop()
+            engine?.inputNode.removeTap(onBus: 0)
+            request?.endAudio()
+        }
         ticker?.invalidate()
         ticker = nil
         task?.cancel()
