@@ -132,7 +132,8 @@
 | 4차 뒤 | 기본 10개 + 직접 켠 17개 | 1.7–2.5% | 약 92.5MB (RSS) |
 
 - 네 차례 내내 CPU는 0.4–2.6% 안에 있었다. 메모리 지킴이 기준(150MB + 기능당 3MB)보다 낮다.
-- 시험 뒤에도 켜 둔 기능: `calendar`, `reminders`, `weather`, `privacy`, `btbattery`, `windowsnap`, `textactions`, `snippets`, `cleaning`, `menubar`, `capture`, `windowwatch`, `presenter`, `typingsounds`, `dictation`, `spectrum`, `soundmixer`. 타이핑 사운드·키 입력 표시·선택 텍스트 막대·메뉴 막대 화살표는 켜 두면 계속 보이거나 들린다.
+- 시험 뒤에도 켜 둔 기능: `calendar`, `reminders`, `weather`, `privacy`, `btbattery`, `windowsnap`, `textactions`, `snippets`, `cleaning`, `menubar`, `capture`, `windowwatch`, `dictation`, `spectrum`, `soundmixer`. 선택 텍스트 막대와 메뉴 막대 화살표는 켜 두면 계속 보인다.
+- `typingsounds`와 `presenter`(키 입력 표시·클릭 물결)는 사용자 요청으로 시험 뒤 껐다. 끈 뒤 앱의 키 누름 이벤트 탭이 사라지고(`CGGetEventTapList`로 확인, 남은 하나는 기존 볼륨·밝기 표시용 `HUDMonitor`), CPU 0.2%였다.
 
 ### 7.2 이번 시험으로 확인하지 못한 것
 
