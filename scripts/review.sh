@@ -19,7 +19,8 @@ EXE="DynamicNotchReview"
 BUNDLE_ID="com.dynamicnotch.app.review"
 INSTALLED_ID="com.dynamicnotch.app"
 MIN_OS="14.0"
-OUT="$HOME/Developer/Dynamic-Notch-build/review"
+# REVIEW_OUT으로 출력 폴더를 바꿀 수 있다 (여러 작업 폴더에서 동시에 빌드할 때)
+OUT="${REVIEW_OUT:-$HOME/Developer/Dynamic-Notch-build/review}"
 APP="$OUT/$NAME.app"
 
 build() {

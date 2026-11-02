@@ -7,6 +7,8 @@ if let agent = AgentNotify.source(from: CommandLine.arguments) {
     AgentNotify.runHook(agent, arguments: CommandLine.arguments)   // Claude Code·Codex 작업 완료 훅: 알리고 바로 종료
 }
 
+ModuleDevTools.handle(CommandLine.arguments)   // 확장 기능 검사·화면 그리기 명령줄 모드 (해당할 때만 실행 후 종료)
+
 if let op = ImageTool.op(from: CommandLine.arguments) {
     ImageTool.runHelper(op)   // 스크린샷 썸네일·변환 도우미: 처리 후 바로 종료
 }
