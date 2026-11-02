@@ -53,7 +53,10 @@ final class FileToolsModule: NotchModule {
                           run: { [weak self] in self?.store.qrFromScreen() }),
             PaletteAction(id: "filetools.qr.clipboard", title: T("클립보드 이미지에서 QR 읽기", "Scan QR code from clipboard"),
                           symbol: "doc.on.clipboard", keywords: ["qr", "clipboard", "클립보드", "바코드"],
-                          run: { [weak self] in self?.store.qrFromClipboard() }),
+                          run: { [weak self] in self?.store.qrFromClipboard(notice: true) }),
+            PaletteAction(id: "filetools.qr.fullscreen", title: T("화면 전체에서 QR 읽기", "Scan QR codes on the whole screen"),
+                          symbol: "rectangle.dashed", keywords: ["qr", "full screen", "전체 화면", "바코드"],
+                          run: { [weak self] in self?.store.qrFromScreen(fullScreen: true) }),
         ]
     }
 
@@ -200,31 +203,35 @@ final class FTStore: ObservableObject {
         }
     }
 
-    func qrFromClipboard() {
+    /// notice: 팔레트에서 불러 탭이 안 보일 때는 노치 알림으로 결과를 알린다
+    func qrFromClipboard(notice: Bool = false) {
         guard begin(T("QR 읽는 중", "Reading codes")) else { return }
         let gen = generation
         guard let image = FTEngine.clipboardImage() else {
-            finishCodes(gen, [], failure: T("클립보드에 이미지가 없음", "No image on the clipboard"))
+            finishCodes(gen, [], failure: T("클립보드에 이미지가 없음", "No image on the clipboard"), showNotice: notice)
             return
         }
         queue.async { [weak self] in
             let result = Result { try FTEngine.detectCodes(in: image) }
             DispatchQueue.main.async {
                 switch result {
-                case .success(let codes): self?.finishCodes(gen, codes, failure: nil)
-                case .failure(let e): self?.finishCodes(gen, [], failure: e.localizedDescription)
+                case .success(let codes): self?.finishCodes(gen, codes, failure: nil, showNotice: notice)
+                case .failure(let e): self?.finishCodes(gen, [], failure: e.localizedDescription, showNotice: notice)
                 }
             }
         }
     }
 
-    /// 화면 영역 캡처 → 해독. 화면 기록 권한이 없으면 macOS가 처음에 묻는다.
-    func qrFromScreen() {
-        guard begin(T("화면에서 영역을 드래그하세요 (esc 취소)", "Drag over the code (esc to cancel)")) else { return }
+    /// 화면 영역(또는 주 화면 전체) 캡처 → 해독. 화면 기록 권한이 없으면 macOS가 처음에 묻는다.
+    func qrFromScreen(fullScreen: Bool = false) {
+        let title = fullScreen ? T("화면 전체에서 읽는 중", "Reading the whole screen")
+                               : T("화면에서 영역을 드래그하세요 (esc 취소)", "Drag over the code (esc to cancel)")
+        guard begin(title) else { return }
         let gen = generation, group = processes
         context?.collapse()
         queue.async { [weak self] in
-            guard let image = FTEngine.captureRegion(processes: group) else {
+            if fullScreen { Thread.sleep(forTimeInterval: 0.4) }   // 노치가 접힌 뒤 찍는다
+            guard let image = FTEngine.captureRegion(processes: group, fullScreen: fullScreen) else {
                 DispatchQueue.main.async { self?.finishCodes(gen, [], failure: nil, cancelled: true) }
                 return
             }
@@ -513,7 +520,11 @@ private struct FTTab: View {
                     pill(T("클립보드", "Clipboard"), "doc.on.clipboard", enabled: true,
                          help: T("클립보드 이미지에서 읽기", "Read the clipboard image")) { store.qrFromClipboard() }
                     pill(T("화면 영역", "Screen"), "qrcode.viewfinder", enabled: true,
-                         help: T("영역을 드래그해 읽기 (화면 기록 권한 필요)", "Drag over a code (needs Screen Recording)")) { store.qrFromScreen() }
+                         help: T("영역을 드래그해 읽기, 오른쪽 클릭하면 화면 전체 (화면 기록 권한 필요)",
+                                 "Drag over a code; right-click for the whole screen (needs Screen Recording)")) { store.qrFromScreen() }
+                        .contextMenu {
+                            Button(T("화면 전체에서 읽기", "Read the whole screen")) { store.qrFromScreen(fullScreen: true) }
+                        }
                 }
             }
         }

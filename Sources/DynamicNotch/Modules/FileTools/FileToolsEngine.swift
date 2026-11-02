@@ -450,11 +450,13 @@ enum FTEngine {
         return nil
     }
 
-    /// 화면 영역을 골라 찍는다 (/usr/sbin/screencapture -i). 취소하면 nil. 찍은 임시 파일은 읽은 뒤 바로 지운다.
-    static func captureRegion(processes: FAProcessGroup) -> CGImage? {
+    /// 화면 영역을 골라 찍는다 (/usr/sbin/screencapture -i). fullScreen이면 주 화면 전체.
+    /// 취소하면 nil. 찍은 임시 파일은 읽은 뒤 바로 지운다.
+    static func captureRegion(processes: FAProcessGroup, fullScreen: Bool = false) -> CGImage? {
         let tmp = (try? fallbackFolder())?.appendingPathComponent("qr-\(UUID().uuidString).png")
             ?? FileManager.default.temporaryDirectory.appendingPathComponent("qr-\(UUID().uuidString).png")
-        _ = processes.run("/usr/sbin/screencapture", ["-i", "-x", "-o", "-t", "png", tmp.path], timeout: 300)
+        let args = fullScreen ? ["-x", "-m", "-t", "png", tmp.path] : ["-i", "-x", "-o", "-t", "png", tmp.path]
+        _ = processes.run("/usr/sbin/screencapture", args, timeout: 300)
         defer { try? FileManager.default.removeItem(at: tmp) }   // 이 기능이 만든 임시 캡처
         guard FileManager.default.fileExists(atPath: tmp.path) else { return nil }
         return loadImage(tmp, maxPixel: 4096)?.image

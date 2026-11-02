@@ -646,6 +646,15 @@ enum PkgSelfTest {
                let o = PkgBrewStore.parseOutdated(r.out) {
                 lines.append("outdated: \(o.filter { !$0.isCask }.count) formulae, \(o.filter(\.isCask).count) casks; e.g. \(o.prefix(2).map { "\($0.name) \($0.version ?? "?")→\($0.latest ?? "?")" })")
             } else { lines.append("FAIL brew outdated") }
+            // 설치·업그레이드와 같은 줄 단위 실행 경로를 읽기 전용 명령으로 확인
+            var streamed: [String] = []
+            var exitCode: Int32?
+            let group = FAProcessGroup()
+            group.stream(brew, ["info", "--formula", "jq"], env: PkgBrewStore.queryEnv,
+                         onLine: { streamed.append($0) }, onExit: { exitCode = $0 })
+            let deadline = Date().addingTimeInterval(60)
+            while exitCode == nil && Date() < deadline { RunLoop.main.run(until: Date().addingTimeInterval(0.05)) }
+            lines.append("stream 'brew info --formula jq': exit \(exitCode.map(String.init) ?? "timeout"), \(streamed.count) lines, first '\(streamed.first ?? "")'")
             if let r = processes.run(brew, ["desc", "--search", "jq"], env: PkgBrewStore.queryEnv, timeout: 120) {
                 let items = PkgBrewStore.parseDesc(r.outText)
                 let jq = items.first { $0.name == "jq" }
@@ -654,6 +663,14 @@ enum PkgSelfTest {
         } else {
             lines.append("brew not found → tab shows unsupported state with brew.sh link")
         }
+        var shLines: [String] = []
+        var shExit: Int32?
+        let shGroup = FAProcessGroup()
+        shGroup.stream("/bin/sh", ["-c", "echo one; echo two 1>&2; printf three; exit 3"],
+                                onLine: { shLines.append($0) }, onExit: { shExit = $0 })
+        let shDeadline = Date().addingTimeInterval(10)
+        while shExit == nil && Date() < shDeadline { RunLoop.main.run(until: Date().addingTimeInterval(0.05)) }
+        lines.append("stream runner: exit \(shExit.map(String.init) ?? "timeout") lines \(shLines) (expect 3, [one, two, three])")
         lines.append("name guard: jq=\(PkgBrewStore.validName("jq")) font-sf-pro=\(PkgBrewStore.validName("font-sf-pro")) '--force'=\(PkgBrewStore.validName("--force")) 'a b'=\(PkgBrewStore.validName("a b"))")
         lines.append("cask desc parse: \(PkgBrewStore.parseDesc("==> Casks\nfirefox: (Mozilla Firefox) Web browser").map { "\($0.name)|\($0.displayName ?? "")|\($0.desc)" })")
 
