@@ -26,6 +26,8 @@ final class CaptureToolsModule: NotchModule {
     let state = State()
     private var context: ModuleContext?
     private var process: Process?
+    /// 색 고르기 돋보기 (고를 때까지 잡아 둔다)
+    private var sampler: NSColorSampler?
     private var defaults: ModuleDefaults { ModuleDefaults(module: id) }
 
     static let screencapture = "/usr/sbin/screencapture"
@@ -138,6 +140,9 @@ final class CaptureToolsModule: NotchModule {
             guard let url = target, fm.fileExists(atPath: url.path) else { state.status = T("취소함", "Cancelled"); return }
             state.status = T("저장함: ", "Saved: ") + url.lastPathComponent
             CPSounds.play(.captureDone)
+            // macOS 스크린샷 폴더면 본 앱의 스크린샷 미리보기가 이미 알리므로 겹치지 않게 한다
+            if url.deletingLastPathComponent().standardizedFileURL == RecordingMonitor.saveFolder().standardizedFileURL,
+               AppSettings.shared.screenshotEnabled, AppSettings.shared.screenshotSource != .clipboard { return }
             context?.notice(T("스크린샷 저장", "Screenshot saved"), url.lastPathComponent, symbol: "photo", tab: id,
                             actions: [ActivityAction(id: "reveal", title: T("Finder에서 보기", "Show in Finder")) {
                                 NSWorkspace.shared.activateFileViewerSelecting([url]) }])
@@ -201,7 +206,10 @@ final class CaptureToolsModule: NotchModule {
     func pickColor() {
         context?.collapse()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-            NSColorSampler().show { color in
+            let sampler = NSColorSampler()
+            self?.sampler = sampler
+            sampler.show { color in
+                self?.sampler = nil
                 guard let self, let c = color?.usingColorSpace(.sRGB) else { return }
                 let hex = Self.hex(c)
                 CPImageIO.copyText(hex)

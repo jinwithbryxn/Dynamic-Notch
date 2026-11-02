@@ -377,3 +377,29 @@ extension NSScreen {
 final class CPHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
+
+/// 편집기 창: 앱 메뉴가 없어도 글자 칸에서 ⌘X·C·V·A·Z가 되게 한다 (글자 칸이 아니면 화면의 단축키로 넘긴다)
+final class CPEditorWindow: NSWindow {
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, handleEditing(event) { return }
+        super.sendEvent(event)
+    }
+
+    private func handleEditing(_ event: NSEvent) -> Bool {
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        guard flags.contains(.command), !flags.contains(.control), !flags.contains(.option),
+              let responder = firstResponder, responder is NSText else { return false }
+        let action: Selector
+        // 키 위치로 판단 (한글 입력 중에도 동작)
+        switch (event.keyCode, flags.contains(.shift)) {
+        case (7, false): action = #selector(NSText.cut(_:))
+        case (8, false): action = #selector(NSText.copy(_:))
+        case (9, false): action = #selector(NSText.paste(_:))
+        case (0, false): action = #selector(NSText.selectAll(_:))
+        case (6, false): action = Selector(("undo:"))
+        case (6, true): action = Selector(("redo:"))
+        default: return false
+        }
+        return responder.tryToPerform(action, with: self)
+    }
+}

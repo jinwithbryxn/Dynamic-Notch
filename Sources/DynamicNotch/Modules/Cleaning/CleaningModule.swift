@@ -53,7 +53,7 @@ final class CleaningModule: NotchModule {
     func paletteActions() -> [PaletteAction] {
         [
             PaletteAction(id: "cleaning.keyboard", title: T("키보드 청소 잠금", "Lock Keyboard for Cleaning"),
-                          subtitle: T("\(state.seconds)초 · ⌘⎋로 해제", "\(state.seconds) s · ⌘⎋ to unlock"), symbol: "keyboard",
+                          subtitle: T("\(state.seconds)초 · ⌘Esc로 해제", "\(state.seconds) s · ⌘Esc to unlock"), symbol: "keyboard",
                           keywords: ["clean", "청소", "keyboard", "키보드", "잠금"]) { [weak self] in self?.lockKeyboard() },
             PaletteAction(id: "cleaning.screen", title: T("화면 청소 (검은 화면)", "Clean Screen (Black)"), symbol: "display",
                           keywords: ["clean", "청소", "screen", "화면"]) { [weak self] in self?.cleanScreen() },
@@ -101,7 +101,7 @@ final class CleaningModule: NotchModule {
         context?.center.setPersistent(NotchActivity(
             kind: .system, priority: ActivityPriority.info, symbol: "keyboard", tint: .orange,
             value: .text(String(format: "%d:%02d", left / 60, left % 60)),
-            title: T("키보드 청소 잠금 · ⌘⎋로 해제", "Keyboard locked · ⌘⎋ to unlock"),
+            title: T("키보드 청소 잠금 · ⌘Esc로 해제", "Keyboard locked · ⌘Esc to unlock"),
             wing: NotchActivity.compactWing, moduleTab: id))
     }
 
@@ -114,7 +114,7 @@ final class CleaningModule: NotchModule {
         let why: String
         switch reason {
         case .timeout: why = T("시간이 지나 풀림", "Time is up")
-        case .escape: why = T("⌘⎋로 풀림", "Unlocked with ⌘⎋")
+        case .escape: why = T("⌘Esc로 풀림", "Unlocked with ⌘Esc")
         case .manual: why = T("풀림", "Unlocked")
         }
         context?.notice(T("키보드 잠금 해제", "Keyboard unlocked"), why, symbol: "keyboard", tint: .green, tab: id, duration: 2)
@@ -144,7 +144,7 @@ final class CleaningModule: NotchModule {
 
 /// 키보드 잠금 (능동 이벤트 탭, 전용 스레드).
 /// 버리는 것: 키 누름·뗌, 수정키, 상단 미디어·볼륨 키. 마우스·트랙패드는 그대로.
-/// 풀리는 경우: ⌘⎋, 시간 만료(탭 스레드 타이머), unlock()/stop(). 앱이 끝나면 macOS가 탭을 함께 없앤다.
+/// 풀리는 경우: ⌘Esc, 시간 만료(탭 스레드 타이머), unlock()/stop(). 앱이 끝나면 macOS가 탭을 함께 없앤다.
 final class CPKeyboardLock {
     enum Reason { case timeout, escape, manual }
 
@@ -244,7 +244,14 @@ final class CPKeyboardLock {
         DispatchQueue.main.async { [weak self] in self?.onUnlock?(reason) }
     }
 
-    deinit { release(.manual) }
+    deinit {
+        // 해제 중에는 약한 참조를 만들지 않고 탭만 정리한다
+        if let t = tap {
+            CGEvent.tapEnable(tap: t, enable: false)
+            CFMachPortInvalidate(t)
+        }
+        if let rl = runLoop { CFRunLoopStop(rl) }
+    }
 }
 
 /// 화면 청소: 모든 화면에 검은 창. 아무 곳이나 1.5초 누르거나 Esc를 1.5초 누르면 끝난다. 3분 뒤 자동으로 끝난다.
@@ -355,7 +362,7 @@ private struct CleaningTab: View {
                         VStack(spacing: 4) {
                             Text(String(format: "%d:%02d", left / 60, left % 60))
                                 .font(.system(size: 30, weight: .semibold, design: .rounded)).monospacedDigit()
-                            Text(T("키보드 잠김 · ⌘⎋로 해제", "Keyboard locked · ⌘⎋ to unlock")).font(.system(size: 10.5))
+                            Text(T("키보드 잠김 · ⌘Esc로 해제", "Keyboard locked · ⌘Esc to unlock")).font(.system(size: 10.5))
                                 .foregroundStyle(.white.opacity(0.6))
                             CPPill(symbol: "lock.open.fill", title: T("지금 풀기", "Unlock Now"), tint: .green) { module.unlockKeyboard() }
                         }
@@ -383,8 +390,8 @@ private struct CleaningTab: View {
                 Spacer()
             }
             CPPermissionLine(permission: .accessibility, granted: state.axGranted)
-            Text(T("⌘⎋ 또는 시간이 지나면 풀린다. 잠금은 별도 스레드에서 돌아 앱이 멈춰도 시간이 되면 풀리고, 앱이 끝나면 macOS가 잠금을 함께 없앤다. 비밀번호 칸에 입력 중일 때(보안 입력)는 macOS가 키를 막지 못하게 한다.",
-                   "Unlocks with ⌘⎋ or when time is up. The lock runs on its own thread, so it ends on time even if the app stalls, and macOS removes it if the app quits. While a password field has focus (secure input), macOS does not let keys be blocked."))
+            Text(T("⌘Esc 또는 시간이 지나면 풀린다. 잠금은 별도 스레드에서 돌아 앱이 멈춰도 시간이 되면 풀리고, 앱이 끝나면 macOS가 잠금을 함께 없앤다. 비밀번호 칸에 입력 중일 때(보안 입력)는 macOS가 키를 막지 못하게 한다.",
+                   "Unlocks with ⌘Esc or when time is up. The lock runs on its own thread, so it ends on time even if the app stalls, and macOS removes it if the app quits. While a password field has focus (secure input), macOS does not let keys be blocked."))
                 .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
             if let m = state.message {
                 Text(m).font(.system(size: 10.5)).foregroundStyle(.orange)

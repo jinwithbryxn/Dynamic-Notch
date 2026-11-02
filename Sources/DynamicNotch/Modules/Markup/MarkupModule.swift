@@ -168,7 +168,7 @@ private struct MarkupTab: View {
 enum WatermarkEditor {
     static func open(image: CGImage, sourceURL: URL?) {
         let model = WatermarkModel(image: image, sourceURL: sourceURL)
-        let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 900, height: 600),
+        let window = CPEditorWindow(contentRect: CGRect(x: 0, y: 0, width: 900, height: 600),
                               styleMask: [.titled, .closable, .resizable, .miniaturizable], backing: .buffered, defer: false)
         window.title = T("워터마크", "Watermark") + (sourceURL.map { " — " + $0.lastPathComponent } ?? "")
         window.contentView = NSHostingView(rootView: WatermarkView(model: model))

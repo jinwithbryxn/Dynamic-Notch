@@ -14,7 +14,7 @@ enum MarkupEditor {
         let ih = CGFloat(image.height) / (NSScreen.cpUnderMouse?.backingScaleFactor ?? 2)
         let k = min(1, maxW / max(1, iw), maxH / max(1, ih))
         let size = CGSize(width: max(720, iw * k), height: max(320, ih * k) + toolbar)
-        let window = NSWindow(contentRect: CGRect(origin: .zero, size: size),
+        let window = CPEditorWindow(contentRect: CGRect(origin: .zero, size: size),
                               styleMask: [.titled, .closable, .resizable, .miniaturizable], backing: .buffered, defer: false)
         window.title = T("마크업", "Markup") + (sourceURL.map { " — " + $0.lastPathComponent } ?? "")
         window.contentView = NSHostingView(rootView: MarkupEditorView(doc: doc))
