@@ -3,6 +3,12 @@ enum ModuleCatalog {
     static func makeAll() -> [NotchModule] {
         [
             WorldClockModule(),
+            CalendarModule(),
+            RemindersModule(),
+            TodoModule(),
+            AppleNotesModule(),
+            SavedLinksModule(),
+            WeatherModule(),
         ]
     }
 }
