@@ -80,33 +80,46 @@ final class BatteryHealthModule: NotchModule {
 
     // MARK: 전원 변화
 
-    private func powerChanged() {
-        let new = BatteryHealthReading.read()
-        model.reading = new
-        defer { last = new; updateDrainWatch() }
-        guard let old = last, new.present else { return }
+    enum PowerEvent: Equatable { case plugged, unplugged, low, full }
 
+    /// 이전·새 상태로 알릴 일을 고른다 (무장 상태만 바꾸고 화면·소리는 없음, 자체 검사에서도 씀)
+    func evaluate(old: BatteryHealthReading, new: BatteryHealthReading, now: Date = Date()) -> [PowerEvent] {
+        var events: [PowerEvent] = []
         if new.onAC != old.onAC {
-            let quick = Date().timeIntervalSince(lastACChange) < 2
-            lastACChange = Date()
+            let quick = now.timeIntervalSince(lastACChange) < 2   // 빠르게 뺐다 꽂으면 무시
+            lastACChange = now
             if !quick {
-                if new.onAC, plugAlert { postPlug(new); SysSounds.play(plugSound) }
-                if !new.onAC, unplugAlert { postUnplug(new); SysSounds.play(unplugSound) }
+                if new.onAC, plugAlert { events.append(.plugged) }
+                if !new.onAC, unplugAlert { events.append(.unplugged) }
             }
         }
         // 부족: 기준을 아래로 지날 때 한 번. 충전기를 꽂거나 기준 +5%를 넘으면 다시 무장.
         if new.onAC || new.percent >= lowThreshold + 5 { lowArmed = true }
         if lowAlert, lowArmed, !new.onAC, new.percent <= lowThreshold, old.percent > new.percent || old.onAC {
             lowArmed = false
-            postLow(new)
-            SysSounds.play(lowSound)
-            if glow { SysScreenGlow.flash(.systemRed) }
+            events.append(.low)
         }
         // 완충 기준: 충전 중 기준을 위로 지날 때
-        if fullAlert, new.onAC, old.percent < fullLevel, new.percent >= fullLevel {
-            postFull(new)
-            SysSounds.play(fullSound)
-            if glow { SysScreenGlow.flash(.systemGreen) }
+        if fullAlert, new.onAC, old.percent < fullLevel, new.percent >= fullLevel { events.append(.full) }
+        return events
+    }
+
+    private func powerChanged() {
+        let new = BatteryHealthReading.read()
+        model.reading = new
+        defer { last = new; updateDrainWatch() }
+        guard let old = last, new.present else { return }
+        for e in evaluate(old: old, new: new) {
+            switch e {
+            case .plugged: postPlug(new); SysSounds.play(plugSound)
+            case .unplugged: postUnplug(new); SysSounds.play(unplugSound)
+            case .low:
+                postLow(new); SysSounds.play(lowSound)
+                if glow { SysScreenGlow.flash(.systemRed) }
+            case .full:
+                postFull(new); SysSounds.play(fullSound)
+                if glow { SysScreenGlow.flash(.systemGreen) }
+            }
         }
     }
 
@@ -262,6 +275,18 @@ final class BatteryHealthModule: NotchModule {
         for f in hw.fans { lines.append("fan \(f.id + 1): \(Int(f.rpm)) rpm (min \(Int(f.min)), max \(Int(f.max)))") }
         if hw.fans.isEmpty { lines.append("fans: none reported") }
         SysSMC.shared.close()
+        // 알림 판정 규칙 점검 (가상의 전원 변화, 화면·소리 없음)
+        let probe = BatteryHealthModule()
+        var a = BatteryHealthReading(); a.present = true; a.percent = 22; a.onAC = false
+        var b = a; b.percent = probe.lowThreshold
+        var c = b; c.percent = probe.lowThreshold - 1
+        var d = c; d.onAC = true
+        let t0 = Date(timeIntervalSinceNow: -100)
+        let e1 = probe.evaluate(old: a, new: b, now: t0)
+        let e2 = probe.evaluate(old: b, new: c, now: t0.addingTimeInterval(60))
+        let e3 = probe.evaluate(old: c, new: d, now: t0.addingTimeInterval(70))
+        let e4 = probe.evaluate(old: d, new: c, now: t0.addingTimeInterval(80))
+        lines.append("alert rule check (defaults: low on at \(probe.lowThreshold)%, unplug on, plug off): crossing → \(e1.map { "\($0)" }), lower again → \(e2.map { "\($0)" }), plug in → \(e3.map { "\($0)" }), unplug → \(e4.map { "\($0)" })")
         return lines
     }
 }

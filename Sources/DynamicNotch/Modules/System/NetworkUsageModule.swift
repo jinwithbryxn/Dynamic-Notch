@@ -99,6 +99,15 @@ final class NetworkUsageModule: NotchModule {
         lines.append("store file: \(NetUsageStore.fileURL.path) days stored \(s.days.count)")
         let t = s.total(.today)
         lines.append("today stored rx \(SysFmt.bytes(Int64(t.rx))) tx \(SysFmt.bytes(Int64(t.tx))) observed \(SysFmt.seconds(t.seconds))")
+        // 합계 규칙 점검 (메모리 안의 임시 저장소, 파일에 쓰지 않음)
+        let probe = NetUsageStore()
+        let now = Date()
+        if let old = Calendar.current.date(byAdding: .day, value: -400, to: now) { probe.add(rx: 999, tx: 999, seconds: 60, at: old) }
+        probe.add(rx: 10, tx: 1, seconds: 60, at: now)
+        probe.add(rx: 5, tx: 2, seconds: 60, at: now)
+        probe.add(rx: 1, tx: 1, seconds: 0, at: now.addingTimeInterval(1))
+        let today = probe.total(.today, now: now.addingTimeInterval(1))
+        lines.append("store rule check: \(today.rx == 16 && today.tx == 4 && today.seconds == 120 && probe.days.count == 1 ? "pass" : "FAIL") (old days pruned, same-day merge)")
         return lines
     }
 }

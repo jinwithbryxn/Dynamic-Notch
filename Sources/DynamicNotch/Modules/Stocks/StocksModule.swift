@@ -62,6 +62,24 @@ final class StocksModule: NotchModule {
         }
         wait()
         lines.append("watchlist \(model.items.map(\.symbol).joined(separator: ",")) (stored locally)")
+        // 노치 티커: 저장하지 않는 임시 목록으로 실제 시세를 받아 상시 표시가 만들어지는지
+        let center = ActivityCenter()
+        let probe = StocksModel(defaults: ModuleDefaults(module: "stocks.selftest"))
+        probe.start(context: ModuleContext(center: center, openTab: { _ in }, collapse: {}, focusInput: {}), tab: id)
+        probe.selfTestUse([StockItem(symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", pinned: true),
+                           StockItem(symbol: "MSFT", name: "Microsoft", exchange: "NASDAQ", pinned: true)])
+        let deadline = Date().addingTimeInterval(12)
+        while probe.lastUpdate == nil, probe.status == nil, Date() < deadline { RunLoop.main.run(until: Date().addingTimeInterval(0.1)) }
+        if let a = center.persistent[.stocks] {
+            lines.append("ticker persistent: value \(a.value) title \(a.title ?? "-") subtitle \(a.subtitle ?? "-")")
+        } else { lines.append("ticker persistent: none (status \(probe.status ?? "-"))") }
+        probe.stop()
+        lines.append("after stop: ticker removed \(center.persistent[.stocks] == nil)")
+        // 알림 판정 논리 점검 (가격 데이터가 아니라 규칙 확인용 숫자)
+        let up = StockAlert(above: true, price: 100), down = StockAlert(above: false, price: 100)
+        let cases = [StocksModel.crossed(up, from: 99, to: 100), !StocksModel.crossed(up, from: 101, to: 102), !StocksModel.crossed(up, from: 100, to: 101),
+                     StocksModel.crossed(down, from: 101, to: 99.5), !StocksModel.crossed(down, from: 99, to: 98)]
+        lines.append("alert crossing rule check: \(cases.allSatisfy { $0 } ? "pass" : "FAIL") (\(cases.filter { $0 }.count)/\(cases.count))")
         return lines
     }
 }
@@ -222,8 +240,7 @@ final class StocksModel: ObservableObject {
         guard let prev = lastPrice[symbol], let i = items.firstIndex(where: { $0.symbol == symbol }), items[i].monitored else { return }
         var changed = false
         for (j, a) in items[i].alerts.enumerated() {
-            let crossed = a.above ? (prev < a.price && q.price >= a.price) : (prev > a.price && q.price <= a.price)
-            guard crossed else { continue }
+            guard Self.crossed(a, from: prev, to: q.price) else { continue }
             if let f = a.lastFired, Date().timeIntervalSince(f) < 1800 { continue }
             items[i].alerts[j].lastFired = Date()
             changed = true
@@ -237,6 +254,11 @@ final class StocksModel: ObservableObject {
                 valueTint: a.above ? .green : .red, moduleTab: tabID))
         }
         if changed { save() }
+    }
+
+    /// 이전 가격에서 새 가격으로 가며 알림 선을 실제로 넘었는지
+    static func crossed(_ a: StockAlert, from prev: Double, to new: Double) -> Bool {
+        a.above ? (prev < a.price && new >= a.price) : (prev > a.price && new <= a.price)
     }
 
     // MARK: 노치 티커
@@ -325,6 +347,13 @@ final class StocksModel: ObservableObject {
         schedule()
     }
 
+    /// 자체 검사용: 저장하지 않고 이 목록으로 시세를 받아 티커를 만든다
+    func selfTestUse(_ list: [StockItem]) {
+        items = list
+        schedule()
+        refresh()
+    }
+
     func addAlert(_ symbol: String, above: Bool, price: Double) {
         update(symbol) { $0.alerts.append(StockAlert(above: above, price: price)) }
         if let q = quotes[symbol] { lastPrice[symbol] = q.price }
@@ -361,7 +390,7 @@ private struct StocksTab: View {
                     .textFieldStyle(.plain).font(.system(size: 12))
                     .focused($focused)
                     .onSubmit { model.search(query) }
-                    .onTapGesture { model.context?.focusInput(); focused = true }
+                    .simultaneousGesture(TapGesture().onEnded { model.context?.focusInput(); focused = true })
                 if model.searching { ProgressView().controlSize(.mini) }
                 if !query.isEmpty {
                     Button { query = ""; model.results = [] } label: { Image(systemName: "xmark.circle.fill").font(.system(size: 11)) }
@@ -611,7 +640,7 @@ private struct StockDetail: View {
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.1)))
                     .frame(width: 80)
-                    .onTapGesture { model.context?.focusInput() }
+                    .simultaneousGesture(TapGesture().onEnded { model.context?.focusInput() })
                     .onSubmit(addAlert)
                 SysPillButton(title: T("추가", "Add"), symbol: "plus") { addAlert() }
                 Spacer()
@@ -638,7 +667,8 @@ private struct StockDetail: View {
     }
 
     private func addAlert() {
-        let text = alertPrice.replacingOccurrences(of: ",", with: "").trimmingCharacters(in: .whitespaces)
+        // 통화 기호·쉼표는 빼고 숫자와 소수점만
+        let text = String(alertPrice.filter { $0.isNumber || $0 == "." })
         guard let v = Double(text), v > 0 else { return }
         model.addAlert(item.symbol, above: alertAbove, price: v)
         alertPrice = ""

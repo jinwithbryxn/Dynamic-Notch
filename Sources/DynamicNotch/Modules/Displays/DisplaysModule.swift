@@ -102,6 +102,8 @@ final class DisplaysModel: ObservableObject {
     func probeDDC() {
         let externals = displays.filter { !$0.isBuiltin }.map(\.id).sorted()
         guard !externals.isEmpty, SysDDC.shared.apiAvailable else { return }
+        // 같은 화면들은 한 번만 확인한다 (탭을 열 때마다 DDC를 다시 묻지 않음)
+        if externals.allSatisfy({ ddc[$0]?.checked == true }) { return }
         queue.async { [weak self] in
             let avs = SysDDC.shared.externalServices()
             var found: [CGDirectDisplayID: AnyObject] = [:]

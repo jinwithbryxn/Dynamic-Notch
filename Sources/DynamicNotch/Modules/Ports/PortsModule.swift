@@ -58,6 +58,15 @@ final class PortsModule: NotchModule {
         var lines = ["listening TCP ports (this user, deduped by pid+port): \(list.count)"]
         for p in list.prefix(15) { lines.append("  \(p.port)\t\(p.name)\tpid \(p.pid)\t\(p.bindings)") }
         lines.append("palette parse 'port 3000' → \(Self.portQuery("port 3000") ?? "nil"), ':80' → \(Self.portQuery(":80") ?? "nil"), 'abc' → \(Self.portQuery("abc") ?? "nil")")
+        // 팔레트 즉석 결과: 캐시가 차면 "port <번호>"로 찾아지는지
+        let m = PortsModule()
+        _ = m.paletteResults(for: "port")
+        let deadline = Date().addingTimeInterval(8)
+        while m.model.lastScan == nil, Date() < deadline { RunLoop.main.run(until: Date().addingTimeInterval(0.05)) }
+        if let first = list.first {
+            let hits = m.paletteResults(for: "port \(first.port)")
+            lines.append("palette 'port \(first.port)' → \(hits.count) result(s): \(hits.first?.title ?? "-")")
+        }
         lines.append("self test never sends signals")
         return lines
     }
@@ -82,8 +91,8 @@ enum PortScanner {
     /// lsof 필드 출력: p<pid>, c<명령>, f<fd>, t<IPv4|IPv6>, n<주소:포트>. 실패하면 nil. 백그라운드에서 부른다.
     static func scan() -> [ListeningPort]? {
         guard let r = SysCommand.run("/usr/sbin/lsof", ["+c", "0", "-nP", "-iTCP", "-sTCP:LISTEN", "-Fpctn"], timeout: 8) else { return nil }
-        // 열린 포트가 없으면 lsof는 1로 끝난다
-        guard r.status == 0 || r.output.isEmpty else { return nil }
+        // 열린 포트가 없으면 lsof는 출력 없이 1로 끝난다. 출력이 있으면 끝 코드와 상관없이 읽는다.
+        if r.output.isEmpty { return r.status == 0 || r.status == 1 ? [] : nil }
         var map: [String: ListeningPort] = [:]
         var order: [String] = []
         var pid: pid_t = 0, cmd = "", fam = ""
