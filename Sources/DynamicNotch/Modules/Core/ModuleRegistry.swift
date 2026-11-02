@@ -65,6 +65,9 @@ final class ModuleRegistry: ObservableObject {
     /// 진행 중인 작업이 있어 메모리 지킴이가 다시 시작하면 안 되는지 (기능이 `isBusy`로 알린다)
     var isBusy: Bool { modules.contains { running.contains($0.id) && $0.isBusy } }
 
+    /// 켜진 확장 기능만큼 메모리 지킴이 기준에 더하는 여유 (기능당 3MB)
+    var memoryAllowanceMB: Double { Double(running.count) * 3 }
+
     func stopAll() {
         for m in modules where running.contains(m.id) { m.stop() }
         running.removeAll()

@@ -10,6 +10,12 @@ enum IslandSettings {
     /// 미니 플레이어가 펼쳐지기까지 기다리는 시간(초)
     static var peekDelay: Double { d.double("peekDelay", default: 0.3) }
 
+    /// 노치가 없는 화면에서는 위에 붙은 가짜 노치 대신 메뉴바 아래에 떠 있는 알약으로 그린다
+    static var floatingPill: Bool { d.bool("floatingPill", default: true) }
+
+    /// 화면 공유·녹화에서 노치 창을 빼 달라고 시스템에 요청한다 (모든 캡처 방식에서 보장되지는 않음)
+    static var hideFromCapture: Bool { d.bool("hideFromCapture", default: false) }
+
     static func set(_ value: Any?, _ name: String) { d.set(value, name) }
 }
 
@@ -114,11 +120,17 @@ struct IslandSettingsSection: View {
     @State private var bubble = IslandSettings.secondaryBubble
     @State private var peek = IslandSettings.mediaPeek
     @State private var delay = IslandSettings.peekDelay
+    @State private var pill = IslandSettings.floatingPill
+    @State private var hideCapture = IslandSettings.hideFromCapture
 
     var body: some View {
         Section {
             Toggle(T("두 번째 활동을 노치 옆 동그라미로 표시", "Show a second activity as a bubble beside the notch"), isOn: $bubble)
                 .onChange(of: bubble) { _, v in IslandSettings.set(v, "secondaryBubble") }
+            Toggle(T("노치 없는 화면에서는 떠 있는 알약으로", "Floating pill on displays without a notch"), isOn: $pill)
+                .onChange(of: pill) { _, v in IslandSettings.set(v, "floatingPill") }
+            Toggle(T("화면 공유·녹화에서 노치 숨기기 요청", "Ask macOS to hide the notch from screen sharing and recording"), isOn: $hideCapture)
+                .onChange(of: hideCapture) { _, v in IslandSettings.set(v, "hideFromCapture") }
             Toggle(T("음악 위에 커서를 올리면 미니 플레이어", "Hover over music to peek a mini player"), isOn: $peek)
                 .onChange(of: peek) { _, v in IslandSettings.set(v, "mediaPeek") }
             if peek {
@@ -132,8 +144,8 @@ struct IslandSettingsSection: View {
         } header: {
             Text(T("아일랜드", "Island"))
         } footer: {
-            Text(T("'상호작용 → 커서를 올리면 열기'가 켜져 있으면 미니 플레이어 대신 전체 화면이 열립니다.",
-                   "When 'open on hover' is on, the full panel opens instead of the mini player."))
+            Text(T("'상호작용 → 커서를 올리면 열기'가 켜져 있으면 미니 플레이어 대신 전체 화면이 열립니다. 캡처 숨기기는 창의 공유 설정만 바꾸므로 macOS 버전과 캡처 앱에 따라 노치가 그대로 찍힐 수 있습니다.",
+                   "When 'open on hover' is on, the full panel opens instead of the mini player. Hiding from capture only changes the window's sharing setting, so some macOS versions and capture apps may still record the notch."))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

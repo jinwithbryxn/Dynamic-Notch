@@ -24,6 +24,9 @@ struct ExpandedDock: View {
             }
             dockButton(symbol: "magnifyingglass", title: T("모든 도구 · 명령", "All Tools · Commands"),
                        selected: vm.expandedPage == .palette) { vm.openPalette() }
+            dockButton(symbol: vm.pinnedOpen ? "pin.fill" : "pin",
+                       title: vm.pinnedOpen ? T("열림 고정 풀기", "Unpin") : T("열린 채로 고정", "Keep open"),
+                       selected: vm.pinnedOpen) { vm.pinnedOpen.toggle() }
         }
         .animation(vm.openSpring, value: vm.expandedPage)
     }

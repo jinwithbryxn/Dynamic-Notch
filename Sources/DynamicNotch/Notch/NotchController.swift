@@ -61,6 +61,12 @@ final class NotchController: NotchGestureDelegate {
         NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)
             .sink { [weak self] _ in self?.reposition() }
             .store(in: &cancellables)
+        // 아일랜드 설정(떠 있는 알약 등)이 바뀌면 다시 배치
+        DistributedNotificationCenter.default().publisher(for: ModuleDefaults.changedNotification)
+            .filter { ($0.object as? String) == "island" }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reposition() }
+            .store(in: &cancellables)
         settings.$displayTarget
             .dropFirst()
             .sink { [weak self] _ in DispatchQueue.main.async { self?.reposition() } }
@@ -135,6 +141,9 @@ final class NotchController: NotchGestureDelegate {
         let notch = NotchGeometry.notchRect(on: screen)
         vm.notchSize = notch.size
         vm.hasPhysicalNotch = NotchGeometry.hasPhysicalNotch(screen)
+        vm.floatingPillEnabled = IslandSettings.floatingPill
+        panel.sharingType = IslandSettings.hideFromCapture ? .none : .readOnly
+        lockPanel.sharingType = panel.sharingType
         var size = NotchGeometry.panelSize
         // 창 원점은 정수 pt로 내려 놓인다. 노치 가운데가 0.5pt에 걸리면(예: 663~848, 가운데 755.5)
         // 창이 0.5pt 왼쪽으로 밀려 도형 오른쪽이 물리 노치보다 짧아 보이므로, 그만큼 창 폭을 늘려 가운데를 맞춘다.
@@ -184,7 +193,7 @@ final class NotchController: NotchGestureDelegate {
         }
         // 바깥 클릭 → 확장 닫기
         if let m = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak self] _ in
-            guard let self, self.vm.isExpanded else { return }
+            guard let self, self.vm.isExpanded, !self.vm.pinnedOpen else { return }
             if !self.interactiveRect.contains(NSEvent.mouseLocation) { self.collapse() }
         }) {
             monitors.append(m)

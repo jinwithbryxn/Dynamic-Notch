@@ -333,6 +333,12 @@ final class NotchViewModel: ObservableObject {
 
     // MARK: - 다이나믹 아일랜드: 두 번째 활동 동그라미 · 음악 미리보기
 
+    /// 노치 없는 화면에서 떠 있는 알약으로 그리는지 (설정은 IslandSettings, 화면은 NotchController가 알려 줌)
+    @Published var floatingPillEnabled = true
+    var floatingPill: Bool { !hasPhysicalNotch && floatingPillEnabled }
+    /// 떠 있는 알약이 화면 위 가장자리에서 떨어진 거리
+    var floatingInset: CGFloat { floatingPill ? 5 : 0 }
+
     /// 노치와 동그라미 사이 간격
     static let bubbleGap: CGFloat = 7
 
@@ -356,6 +362,7 @@ final class NotchViewModel: ObservableObject {
     /// 마우스가 반응해야 하는 영역 (확장 시 바깥 점 포함).
     var interactiveSize: CGSize {
         var size = targetSize
+        size.height += floatingInset
         // 오른쪽 동그라미까지 (가운데 기준이라 양쪽으로 같이 넓힌다)
         if secondaryBubble != nil { size.width += 2 * (Self.bubbleGap + bubbleDiameter) }
         if state == .expanded, showsDock || showsPersistentDots { size.height += Self.dotsAreaHeight }
@@ -498,6 +505,7 @@ final class NotchViewModel: ObservableObject {
         animationOverride = animation
         withAnimation(animation) {
             isExpanded = false
+            pinnedOpen = false
             cameraOn = false   // 노치를 닫으면 카메라 끔
         }
         MemoryTrim.soon()
@@ -583,6 +591,9 @@ final class NotchViewModel: ObservableObject {
         default: return nil
         }
     }
+
+    /// 열림 고정: 바깥을 눌러도 접히지 않는다 (독의 핀 버튼, 접으면 풀림)
+    @Published var pinnedOpen = false
 
     /// 노치 창을 키 창으로 (글자 입력). AppDelegate가 넣는다.
     var requestKeyFocus: (() -> Void)?

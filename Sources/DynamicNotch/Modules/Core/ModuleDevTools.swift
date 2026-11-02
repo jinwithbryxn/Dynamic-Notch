@@ -67,6 +67,10 @@ enum ModuleDevTools {
             vm.notchSize = NotchGeometry.notchRect(on: screen).size
             vm.hasPhysicalNotch = NotchGeometry.hasPhysicalNotch(screen)
         }
+        if ProcessInfo.processInfo.environment["DMN_NO_NOTCH"] == "1" {   // 노치 없는 화면 흉내
+            vm.hasPhysicalNotch = false
+            vm.notchSize = CGSize(width: 190, height: 24)
+        }
         let features = NotchFeatures(media: MediaController(center: center), screenshot: ScreenshotMonitor(center: center),
                                      recording: RecordingMonitor(center: center), tray: TrayStore(center: center),
                                      calendar: CalendarController(center: center), call: CallMonitor(center: center),

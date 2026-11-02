@@ -23,7 +23,10 @@ struct NotchRootView: View {
     var body: some View {
         let size = vm.displaySize
         let state = vm.state
-        let shape = NotchShape(topRadius: vm.topRadius, bottomRadius: vm.bottomRadius)
+        // 노치 없는 화면: 위쪽도 둥근 떠 있는 알약 (가로세로 중 짧은 쪽 절반까지 둥글게)
+        let shape: AnyShape = vm.floatingPill
+            ? AnyShape(RoundedRectangle(cornerRadius: min(vm.bottomRadius + 4, min(size.width, size.height) / 2), style: .continuous))
+            : AnyShape(NotchShape(topRadius: vm.topRadius, bottomRadius: vm.bottomRadius))
 
         VStack(spacing: 8) {
             ZStack(alignment: .top) {
@@ -75,6 +78,7 @@ struct NotchRootView: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.5, anchor: .top)))
             }
         }
+        .padding(.top, vm.floatingInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(vm.stateAnimation, value: state)
         .animation(vm.isRetracting ? vm.stateAnimation : (vm.animationOverride ?? vm.openSpring), value: vm.targetSize)

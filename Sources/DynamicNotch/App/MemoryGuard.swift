@@ -14,9 +14,9 @@ final class MemoryGuard {
 
     #if DEV
     static var testLimitMB: Double?   // 개발용: 시험 때 낮춰 본다
-    static var limitMB: Double { testLimitMB ?? AppSettings.shared.memoryLimitMB }
+    static var limitMB: Double { testLimitMB ?? (AppSettings.shared.memoryLimitMB + ModuleRegistry.shared.memoryAllowanceMB) }
     #else
-    static var limitMB: Double { AppSettings.shared.memoryLimitMB }
+    static var limitMB: Double { AppSettings.shared.memoryLimitMB + ModuleRegistry.shared.memoryAllowanceMB }
     #endif
 
     /// 지금 다시 시작해도 되는지 (AppDelegate가 연결)

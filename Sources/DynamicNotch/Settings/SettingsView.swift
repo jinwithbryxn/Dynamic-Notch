@@ -241,7 +241,7 @@ struct SettingsView: View {
                 Toggle(T("자동 업데이트 (하루 한 번 확인)", "Automatic updates (checks daily)"), isOn: $settings.autoUpdate)
                 Toggle(T("메모리 자동 최적화 (기준을 넘으면 쉬는 동안 조용히 다시 시작)", "Automatic memory cleanup (quietly restarts while idle above the limit)"), isOn: $settings.memoryGuard)
                 Picker(T("최적화 기준", "Cleanup Limit"), selection: $settings.memoryLimitMB) {
-                    ForEach([70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0], id: \.self) { Text("\(Int($0)) MB").tag($0) }
+                    ForEach([70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 200.0, 250.0, 300.0], id: \.self) { Text("\(Int($0)) MB").tag($0) }
                 }
                 .disabled(!settings.memoryGuard)
             }
