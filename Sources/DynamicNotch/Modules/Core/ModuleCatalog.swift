@@ -73,6 +73,14 @@ enum ModuleCatalog {
             MeetingModule(),
             MenuBarIconsModule(),
             NoticeSoundsModule(),
+            LocalAPIModule(),
+            DeepLinkModule(),
+            AgentHubModule(),
+            LocalUsageModule(),
+            ShellActivityModule(),
+            TerminalModule(),
+            AITextModule(),
+            AskAIModule(),
         ]
     }
 }
