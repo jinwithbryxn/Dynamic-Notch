@@ -81,7 +81,6 @@ final class BreakReminderModule: NotchModule, ObservableObject {
         timer = nil
         running = false
         elapsed = [:]
-        context?.center.dismissTransient(kind: .notice)
         context = nil
     }
 

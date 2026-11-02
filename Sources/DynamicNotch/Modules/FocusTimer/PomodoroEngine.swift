@@ -85,6 +85,20 @@ final class PomodoroEngine: ObservableObject {
     private var hiddenThisPhase: Set<String> = []
     private(set) var attached = false
 
+    // MARK: 자체 검사용 (파일·알림·소리·타이머 없이 상태 전이만 확인)
+    private(set) var testMode = false
+    private(set) var testLog: [FocusSession] = []
+
+    static func makeForTest() -> PomodoroEngine {
+        let e = PomodoroEngine()
+        e.testMode = true
+        e.attached = true
+        return e
+    }
+
+    /// 지금 단계를 끝난 것으로 처리 (조용히)
+    func testFinishNow() { finishPhase(silent: true) }
+
     // MARK: 설정 (ModuleDefaults "module.pomodoro.*")
 
     var defaults: ModuleDefaults { ModuleDefaults(module: Self.module) }
@@ -182,6 +196,8 @@ final class PomodoroEngine: ObservableObject {
 
     func startRepeat(seconds: Int? = nil) {
         userAction()
+        // 진행 중이던 집중은 중간 기록으로 남긴다
+        if let s = state, s.phase == .focus, !s.waiting { logFocus(s, completed: false) }
         if let seconds { defaults.set(max(5, seconds), "repeatSeconds") }
         begin(.repeating, cycle: 0, length: Double(seconds ?? repeatSeconds))
     }
@@ -255,6 +271,7 @@ final class PomodoroEngine: ObservableObject {
     // MARK: 내부
 
     private func userAction() {
+        guard !testMode else { return }
         TFAlarm.shared.stop()
         center?.dismissTransient(kind: .pomodoro)
     }
@@ -277,6 +294,7 @@ final class PomodoroEngine: ObservableObject {
 
     private func changed(save: Bool = true) {
         now = Date()
+        if testMode { return }
         if save {
             if let state { TFStorage.save(state, Self.module, Self.stateFile) } else { TFStorage.removeState(Self.module, Self.stateFile) }
         }
@@ -315,8 +333,8 @@ final class PomodoroEngine: ObservableObject {
         let focused = completed ? s.length : s.length - remaining(of: s)
         guard completed || focused >= 60 else { return }
         // 5분 연장은 시간만 더하고 세션 수에는 넣지 않는다
-        FocusLog.shared.add(FocusSession(start: s.phaseStart, end: end, seconds: focused,
-                                         completed: completed && !s.isExtension))
+        let session = FocusSession(start: s.phaseStart, end: end, seconds: focused, completed: completed && !s.isExtension)
+        if testMode { testLog.append(session) } else { FocusLog.shared.add(session) }
     }
 
     private func finishPhase(silent: Bool) {

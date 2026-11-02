@@ -177,6 +177,8 @@ final class TypingSoundsModule: NotchModule, ObservableObject {
     private var activateObserver: NSObjectProtocol?
     private var frontBundle: String?
     private var started = false
+    /// 지금 재생기에 올린 소리 (음량만 바뀌면 다시 만들지 않음)
+    private var prepared: (style: TypingSoundSynth.Style, path: String)?
     private var defaults: ModuleDefaults { ModuleDefaults(module: id) }
 
     var style: TypingSoundSynth.Style { TypingSoundSynth.Style(rawValue: defaults.string("style", default: "mechanical")) ?? .mechanical }
@@ -210,6 +212,7 @@ final class TypingSoundsModule: NotchModule, ObservableObject {
         TFKeyTap.shared.remove("typingsounds")
         subscribed = false
         player.teardown()
+        prepared = nil
         if let o = activateObserver { NSWorkspace.shared.notificationCenter.removeObserver(o) }
         activateObserver = nil
         HotKeyCenter.shared.unregister("typingsounds.pause")
@@ -217,7 +220,14 @@ final class TypingSoundsModule: NotchModule, ObservableObject {
 
     func settingsChanged() {
         guard started else { return }
-        if subscribed { _ = player.prepare(style: style, customPath: defaults.string("customPath", default: ""), volume: volume) }
+        if subscribed {
+            let path = defaults.string("customPath", default: "")
+            if prepared?.style != style || prepared?.path != path {
+                if player.prepare(style: style, customPath: path, volume: volume) { prepared = (style, path) }
+            } else {
+                player.setVolume(volume)
+            }
+        }
         registerHotkey()
     }
 
@@ -231,7 +241,9 @@ final class TypingSoundsModule: NotchModule, ObservableObject {
 
     private func trySubscribe() {
         guard started, !subscribed, TFKeyTap.hasPermission else { return }
-        guard player.prepare(style: style, customPath: defaults.string("customPath", default: ""), volume: volume) else { return }
+        let path = defaults.string("customPath", default: "")
+        guard player.prepare(style: style, customPath: path, volume: volume) else { return }
+        prepared = (style, path)
         subscribed = TFKeyTap.shared.add("typingsounds") { [weak self] code in self?.key(code) }
         if subscribed { retryTimer?.invalidate(); retryTimer = nil } else { player.teardown() }
     }

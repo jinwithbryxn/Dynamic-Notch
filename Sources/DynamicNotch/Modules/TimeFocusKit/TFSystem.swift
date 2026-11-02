@@ -261,7 +261,10 @@ enum TFShortcuts {
         group.enter()
         reader.async { outData = out.fileHandleForReading.readDataToEndOfFile(); group.leave() }
         while p.isRunning && Date() < deadline { usleep(50_000) }
-        if p.isRunning { p.terminate() }
+        if p.isRunning {
+            p.terminate()
+            p.waitUntilExit()
+        }
         _ = group.wait(timeout: .now() + 2)
         let errData = err.fileHandleForReading.availableData
         return (p.terminationStatus,

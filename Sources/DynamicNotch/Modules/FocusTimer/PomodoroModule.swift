@@ -111,7 +111,39 @@ final class PomodoroModule: NotchModule {
         lines.append("sounds: \(TFAlarm.systemSounds.count) system sounds, end sound '\(engine.endSound)' found=\(NSSound(named: engine.endSound) != nil)")
         lines.append("mascot symbols valid: \(PomodoroEngine.mascots.filter { !$0.symbol.isEmpty }.allSatisfy { NSImage(systemSymbolName: $0.symbol, accessibilityDescription: nil) != nil })")
         lines.append("idle seconds now: \(Int(TFSystem.idleSeconds))")
+        lines.append(contentsOf: Self.stateMachineTest())
         return lines
+    }
+
+    /// 상태 전이 검사 (별도 엔진, 파일·알림·소리 없음)
+    static func stateMachineTest() -> [String] {
+        let e = PomodoroEngine.makeForTest()
+        var trace: [String] = []
+        func mark() {
+            guard let s = e.state else { trace.append("idle"); return }
+            trace.append("\(s.phase.rawValue)\(s.waiting ? "(wait)" : (e.isPaused ? "(pause)" : ""))#\(s.cycleCount)")
+        }
+        e.startFocus(); mark()
+        e.pause(); let pausedLeft = Int(e.remaining); mark()
+        e.resume(); mark()
+        for _ in 0..<e.cyclesBeforeLong {
+            if e.state?.waiting == true { e.resume() }
+            e.testFinishNow(); mark()          // 집중 끝 → 휴식
+            if e.state?.phase.isBreak == true && e.state?.phase != .longBreak {
+                if e.state?.waiting == true { e.resume() }
+                e.testFinishNow(); mark()      // 휴식 끝 → 집중
+            }
+        }
+        e.extend(); mark()                      // 긴 휴식 대신 5분 더 집중
+        e.testFinishNow(); mark()
+        e.skip(); mark()                        // 긴 휴식 건너뛰기 → 집중 #0
+        e.stop(); mark()
+        e.startRepeat(seconds: 60); mark()
+        e.testFinishNow(); mark()               // 반복: 다시 시작 또는 자리 비움으로 멈춤
+        e.stop()
+        let completed = e.testLog.filter(\.completed).count
+        return ["state machine: " + trace.joined(separator: " → "),
+                "paused remaining \(pausedLeft)s, logged \(e.testLog.count) sessions (\(completed) completed, extension not counted)"]
     }
 }
 

@@ -260,8 +260,9 @@ final class FocusSoundsModule: NotchModule {
         let phase = info["phase"] as? String
         let running = info["running"] as? Bool ?? false
         let waiting = info["waiting"] as? Bool ?? false
-        if phase == "focus", running, !waiting, lastPhase != "focus" || player.current == nil,
-           defaults.bool("autoPlay", default: false), player.current == nil,
+        // 집중으로 들어설 때만 (일시정지 뒤 계속은 해당 없음)
+        if phase == "focus", running, !waiting, lastPhase != "focus", player.current == nil,
+           defaults.bool("autoPlay", default: false),
            let s = FocusSoundPlayer.Sound(rawValue: defaults.string("autoSound", default: "rain")) {
             player.play(s)
         }
@@ -353,7 +354,8 @@ private struct FocusSoundsTab: View {
                 Image(systemName: "speaker.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
                 Slider(value: Binding(get: { Double(player.volume) }, set: {
                     player.volume = Float($0)
-                    ModuleDefaults(module: FocusSoundPlayer.module).set($0, "volume")
+                    // 같은 프로세스라 알림 없이 바로 저장 (끄는 동안 매번 다른 기능을 깨우지 않게)
+                    UserDefaults.standard.set($0, forKey: "module.\(FocusSoundPlayer.module).volume")
                 }), in: 0...1)
                 .controlSize(.small)
                 .accessibilityLabel(T("음량", "Volume"))

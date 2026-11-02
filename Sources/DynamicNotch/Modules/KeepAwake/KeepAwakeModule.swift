@@ -287,8 +287,8 @@ private struct KeepAwakeTab: View {
                 Text(T("종료 시각", "Until")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
                 DatePicker("", selection: $untilTime, displayedComponents: .hourAndMinute)
                     .labelsHidden()
-                    .datePickerStyle(.field)
-                    .frame(width: 90)
+                    .datePickerStyle(.stepperField)
+                    .frame(width: 110)
                 TFPillButton(title: T("이 시각까지", "Until This Time")) {
                     var target = untilTime
                     // 이미 지난 시각이면 내일 같은 시각
