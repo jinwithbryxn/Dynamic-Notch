@@ -288,7 +288,7 @@ final class MBTapProcessor {
         let outList = UnsafeMutableAudioBufferListPointer(output)
         // 첫 출력 스트림에만 쓰고 나머지는 0
         var wrote = false
-        for (index, out) in outList.enumerated() {
+        for out in outList {
             guard let dstRaw = out.mData else { continue }
             let outCh = max(1, Int(out.mNumberChannels))
             let outFrames = Int(out.mDataByteSize) / (4 * outCh)

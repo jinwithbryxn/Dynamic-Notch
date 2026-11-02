@@ -466,7 +466,7 @@ private struct AudioDevicesSettings: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Toggle(T("⌃⌥⌘M으로 마이크 음소거 전환", "Toggle microphone mute with ⌃⌥⌘M"), isOn: $hotkey)
-                .onChange(of: hotkey) { ModuleDefaults(module: module).set($0, "hotkey") }
+                .onChange(of: hotkey) { _, newValue in ModuleDefaults(module: module).set(newValue, "hotkey") }
             Text(T("음소거는 기본 입력 기기에 걸리며 모든 앱에 적용됩니다. 음소거 속성이 없는 기기는 입력 음량을 0으로 내렸다가, 기능을 끄거나 앱을 다시 켤 때 원래 값으로 되돌립니다.",
                    "Mute applies to the default input for every app. Devices without a mute control get input volume 0, restored when the feature is turned off or the app restarts."))
                 .font(.caption).foregroundStyle(.secondary)

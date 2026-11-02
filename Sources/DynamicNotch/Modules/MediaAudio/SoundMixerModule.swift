@@ -69,12 +69,14 @@ final class MBMixerEngine: ObservableObject {
         static func == (a: AppRow, b: AppRow) -> Bool { a.id == b.id && a.objects == b.objects && a.playing == b.playing && a.name == b.name }
     }
 
-    enum Status: Equatable { case ready, unsupportedOS, missingUsageDescription, denied, error(String) }
+    /// 환경 조건 (탭 생성 실패는 lastError로 따로 보여 주고 다른 앱은 계속 처리한다)
+    enum Status: Equatable { case ready, unsupportedOS, missingUsageDescription, denied }
 
     @Published private(set) var apps: [AppRow] = []
     @Published private(set) var settings: [String: AppSetting] = [:]
     @Published private(set) var status: Status = .ready
     @Published private(set) var tappedCount = 0
+    @Published private(set) var lastError: String?
     @Published var expanded: String?
 
     static var apiAvailable: Bool {
@@ -143,7 +145,6 @@ final class MBMixerEngine: ObservableObject {
         if !Self.apiAvailable { s = .unsupportedOS }
         else if !MBAudio.hasCaptureUsageDescription { s = .missingUsageDescription }
         else if MBAudio.capturePermission() == .denied { s = .denied }
-        else if case .error = status { s = status }
         else { s = .ready }
         if s != status { status = s }
     }
@@ -269,16 +270,18 @@ final class MBMixerEngine: ObservableObject {
             session.tap.invalidate()
             sessions[bid] = nil
         }
-        // 새로 만들기
+        // 새로 만들기 (실패한 앱은 원래 소리 그대로 두고 이유를 보여 준다)
+        var failure: String?
         for (bid, w) in wanted where sessions[bid] == nil {
             do {
                 let session = try MBMixerSession(objects: w.0.objects, outputUID: w.2, name: "DMN Mixer \(w.0.name)", queue: ioQueue)
                 session.apply(w.1)
                 sessions[bid] = session
             } catch {
-                status = .error("\(w.0.name): \(error)")
+                failure = "\(w.0.name): \(error)"
             }
         }
+        if lastError != failure { lastError = failure }
         tappedCount = sessions.count
     }
 
@@ -406,7 +409,8 @@ private struct SoundMixerTab: View {
                              reason: T("시스템 설정 → 개인정보 보호 및 보안 → 화면 및 시스템 오디오 녹음에서 허용하세요.",
                                        "Allow it under System Settings → Privacy & Security → Screen & System Audio Recording."))
                 .onTapGesture { MBAudio.openPrivacySettings("Privacy_ScreenCapture") }
-        case .error(let msg):
+        }
+        if let msg = engine.lastError {
             MBUnsupportedBox(title: T("탭을 만들지 못함", "Couldn't create a tap"), reason: msg,
                              alternative: T("그 앱은 원래 소리로 재생됩니다", "That app keeps playing normally"))
         }

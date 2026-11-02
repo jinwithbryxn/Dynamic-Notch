@@ -6,6 +6,12 @@ enum ModuleCatalog {
             AudioDevicesModule(),
             SoundMixerModule(),
             AudioSpectrumModule(),
+            MusicToolsModule(),
+            ListeningHistoryModule(),
+            MiniPlayerModule(),
+            DesktopLyricsModule(),
+            YouTubeMusicModule(),
+            BluetoothBatteryModule(),
         ]
     }
 }
