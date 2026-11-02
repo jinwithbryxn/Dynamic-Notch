@@ -31,6 +31,36 @@
 | 메모리 지킴이 기본 기준 70 → 150MB, 켜진 기능당 3MB 여유, 진행 중 작업이 있는 기능은 재시작 막음 | `Settings/AppSettings.swift`, `App/MemoryGuard.swift`, `App/AppDelegate.swift` | M-L-023 |
 | 설치·복원 스크립트 (기존 앱은 지우지 않고 백업 폴더로 이동) | `scripts/install-local.sh` | M-L-017 |
 
+## 통합 연결 (P3)
+
+| 변경 | 파일 | 대조표 행 |
+|---|---|---|
+| 기능이 직접 찍은 영역 캡처(글자 인식·QR·마크업 등)를 녹화 감지에 알려, 영역 선택 화면을 녹화로 잘못 본 것을 거둠 | `Modules/Core/ModuleServices.swift`, `App/AppDelegate.swift` | M-G-001, 보존 수정(영역 캡처 ≠ 녹화) |
+| 상시 표시 우선순위에 확장 기능 종류(카메라·마이크, 청소, 포모도로, 스톱워치, 잠자기 방지, 다음 일정, 알림 미러링, 시스템, 주식) 추가. 저장된 순서에는 기본 순서상 바로 앞 항목 뒤에 끼워 넣음 | `Settings/AppSettings.swift`, `Settings/SettingsView.swift` | M-A-009 |
+| 청소 모드·키보드 잠금 전용 활동 종류(`.cleaning`)로 시스템 게이지와 겹치지 않게 함 | `Activity/NotchActivity.swift`, `Modules/Cleaning/CleaningModule.swift` | M-G-015, M-G-016 |
+| 확장 기능 '캘린더'(카운트다운 켬)·'배터리'가 켜져 있으면 기존 일정·배터리 알림은 쉬어 같은 알림이 두 번 뜨지 않음 | `Features/Home/CameraAndCalendar.swift`, `Monitors/BatteryMonitor.swift` | M-D-002, M-I-010 |
+| 자연어 명령의 타이머는 기본 타이머로 시작, 날씨는 잠금 화면 카드와 홈 대시보드 카드로 연결 | `App/AppDelegate.swift`, `Modules/Weather/WeatherModule.swift` | M-H-007, M-D-017, M-A-022 |
+| 권한 설명 문구: 다른 앱 제어(브라우저 탭 제목·메모 저장·회의 통화), 일정 추가, 현재 위치 날씨 | `Resources/Info.plist`, `Resources/ko.lproj/InfoPlist.strings` | - |
+| 집중 모드 동안 덜 중요한 알림 줄이기(선택, 기본 끔). 통화·배터리 부족·타이머 끝·에이전트 승인은 그대로 | `Activity/ActivityCenter.swift`, `Monitors/FocusMonitor.swift`, `Notch/IslandExtras.swift` | M-C-013 |
+| 저장 링크 기능이 두 묶음에서 겹쳐 런처 묶음의 `savedlinks`만 남김 | `Modules/SavedLinks/` | M-D-016 |
+
+## 기능 묶음
+
+각 묶음은 `Modules/<이름>/` 아래에만 파일을 더했고, 기능 폴더 밖 파일은 바꾸지 않았다. 행별 상태는 `FEATURE-MATRIX.md`의 구현 상태 열과 `UNSUPPORTED.md`에 있다.
+
+| 묶음 | 기능 id |
+|---|---|
+| 알림·잠금 화면 | `notifymirror`, `lockcards` |
+| 미디어·오디오 | `audiodevices`, `soundmixer`, `spectrum`, `musictools`, `listenhistory`, `miniplayer`, `desktoplyrics`, `ytmusic`, `btbattery` |
+| 클립보드·글자 | `clipboard`, `snippets`, `colors` |
+| 실행·검색·입력 | `calculator`, `quicksearch`, `emoji`, `translate`, `launcher`, `launcherwheel`, `windowsnap`, `nlcommands`, `shortcuts`, `homeshortcuts`, `savedlinks`, `videosaver`, `inputtriggers`, `textactions`, `dictation`, `spaces` |
+| 일정·할 일·메모·날씨 | `calendar`, `reminders`, `todo`, `applenotes`, `weather` |
+| 파일·앱 관리 | `filetools`, `drives`, `packages`, `appdata` |
+| 시간·집중·위젯 | `pomodoro`, `stopwatch`, `focussounds`, `keepawake`, `activity`, `screentime`, `breaks`, `focusswitch`, `typingsounds`, `desktopwidgets` |
+| 시스템·하드웨어·주식 | `sysmon`, `netusage`, `batteryhealth`, `devices`, `keyhud`, `displays`, `stocks`, `ports` |
+| 캡처·개인정보 | `capture`, `markup`, `teleprompter`, `presenter`, `cleaning`, `windowwatch`, `privacy`, `meeting`, `menubar`, `noticesounds` |
+| 기본 예시 | `worldclock` |
+
 ## 검증 도구
 
 - `--list-modules`, `--module-selftest=<id|all>`: 기능 목록·자체 검사.
