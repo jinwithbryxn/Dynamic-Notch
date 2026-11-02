@@ -53,6 +53,9 @@ final class ClipboardModule: NotchModule {
 
     /// 실행 중인 인스턴스 (다른 기능이 기록을 읽을 때)
     static weak var current: ClipboardModule?
+    /// 클립보드 변경 번호가 바뀔 때마다 (이 앱 프로세스 안에서만). userInfo["changeCount"]: Int.
+    /// 스크린샷 미리보기처럼 같은 0.5초 감시가 필요한 기능이 따로 폴링하지 않고 받아 쓸 수 있다.
+    static let pasteboardChanged = Notification.Name("com.dynamicnotch.clipboard.changed")
 
     /// 저장 위치를 바꿀 때만 (자체 검사의 임시 폴더)
     private let storeDirectory: URL?
@@ -188,6 +191,7 @@ final class ClipboardModule: NotchModule {
         let count = pb.changeCount
         guard count != lastCount else { return }
         lastCount = count
+        NotificationCenter.default.post(name: Self.pasteboardChanged, object: nil, userInfo: ["changeCount": count])
         guard !ClipPasteboard.isOwn(count) else { return }
         let prefs = ui.prefs
         guard !prefs.paused, ClipPasteboard.skipMarker(pb) == nil else { return }
