@@ -71,21 +71,38 @@ struct PermissionsView: View {
     // MARK: - 권한 목록
 
     private var permissionList: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
+        // 켜 둔 기능이 쓰는 권한만 '필요'로 센다. 나머지는 접어 둔다.
+        let users = PermissionNeeds.users()
+        let needed = PermissionKind.allCases.filter { users[$0] != nil }
+        // 자동화는 Music·Spotify가 켜져 있을 때만 상태를 알 수 있어 따로 둔다 (세지 않고, 차례로 허용에서도 뺀다)
+        let waiting = needed.filter { manager.status($0) == .needsAppRunning }
+        let missing = needed.filter { manager.status($0) != .granted && manager.status($0) != .needsAppRunning }
+        let granted = needed.filter { manager.status($0) == .granted }
+        let counted = needed.count - waiting.count
+        let unused = PermissionKind.allCases.filter { users[$0] == nil }
+        return VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     if !embedded {   // 설정 창 안에서는 페이지 제목이 따로 있다
                         Text(T("권한 관리", "Permissions")).font(.title2.bold())
                     }
                     Spacer()
-                    Text(T("\(manager.grantedCount)/\(PermissionKind.allCases.count) 허용됨", "\(manager.grantedCount)/\(PermissionKind.allCases.count) allowed"))
+                    Text(T("켜 둔 기능에 필요한 권한 \(granted.count)/\(counted) 허용됨", "\(granted.count)/\(counted) needed permissions allowed"))
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }
-                ProgressView(value: Double(manager.grantedCount), total: Double(PermissionKind.allCases.count))
-                Text(T("필수 권한이 없으면 해당 기능만 꺼지고 나머지는 동작합니다. 선택 권한은 나중에 허용해도 됩니다.", "Without a required permission, only that feature is turned off and everything else keeps working. Optional permissions can be allowed later."))
+                ProgressView(value: Double(granted.count), total: Double(max(counted, 1)))
+                if manager.walkthroughCurrent == nil, !missing.isEmpty {
+                    Button(T("남은 \(missing.count)개 차례로 허용", "Allow the remaining \(missing.count) in turn")) {
+                        manager.startWalkthrough(missing)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                PermissionWalkthroughBar()
+                Text(T("허용 창이 뜨는 권한은 답하면, 시스템 설정에서 켜는 권한은 켜지면 다음으로 넘어갑니다. 권한이 없으면 그 기능만 동작하지 않습니다.", "Prompted permissions move on once you answer; ones turned on in System Settings move on once they're on. Without a permission, only that feature stops working."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(20)
 
@@ -93,13 +110,26 @@ struct PermissionsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    ForEach(PermissionTier.allCases, id: \.self) { tier in
+                    if !missing.isEmpty {
+                        section(T("허용 필요", "Needed"), missing, users)
+                    }
+                    if !waiting.isEmpty {
+                        section(T("대상 앱을 켜야 확인되는 권한", "Checked only while the target app is running"), waiting, users)
+                    }
+                    if !granted.isEmpty {
+                        section(T("허용됨", "Allowed"), granted, users)
+                    }
+                    if needed.isEmpty {
+                        Text(T("지금 켜 둔 기능에는 따로 필요한 권한이 없습니다.", "The features you have on don't need any permissions."))
+                            .foregroundStyle(.secondary)
+                    }
+                    DisclosureGroup(T("켜 둔 기능에 꼭 필요하지 않은 권한 (\(unused.count))", "Not required by the features you have on (\(unused.count))")) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(tier.label).font(.headline).foregroundStyle(.secondary)
-                            ForEach(PermissionKind.allCases.filter { $0.tier == tier }) { kind in
-                                PermissionRow(kind: kind, status: manager.status(kind), manager: manager)
+                            ForEach(unused) { kind in
+                                PermissionRow(kind: kind, status: manager.status(kind), manager: manager, users: nil)
                             }
                         }
+                        .padding(.top, 8)
                     }
                     Text(T("앱을 새 버전으로 바꾼 뒤 손쉬운 사용·입력 모니터링이 허용돼 있는데도 동작하지 않으면, 시스템 설정에서 Dynamic Notch 항목을 지우고(−) 다시 허용하세요.", "If Accessibility or Input Monitoring stops working after updating the app even though it is allowed, remove Dynamic Notch from that list in System Settings (−) and allow it again."))
                         .font(.footnote)
@@ -123,6 +153,15 @@ struct PermissionsView: View {
                 .keyboardShortcut(.defaultAction)
             }
             .padding(16)
+            }
+        }
+    }
+
+    private func section(_ title: String, _ kinds: [PermissionKind], _ users: [PermissionKind: [String]]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.headline).foregroundStyle(.secondary)
+            ForEach(kinds) { kind in
+                PermissionRow(kind: kind, status: manager.status(kind), manager: manager, users: users[kind])
             }
         }
     }
@@ -156,6 +195,8 @@ struct PermissionRow: View {
     var kind: PermissionKind
     var status: PermissionStatus
     var manager: PermissionsManager
+    /// 이 권한을 쓰는 켜진 기능 이름. nil이면 권한의 기본 쓰임새를 보여 준다.
+    var users: [String]?
     private let requestedState = State(initialValue: false)
     private var requested: Bool {
         get { requestedState.wrappedValue }
@@ -170,7 +211,9 @@ struct PermissionRow: View {
                 .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
             VStack(alignment: .leading, spacing: 2) {
                 Text(kind.title).font(.body.weight(.medium))
-                Text(kind.purpose).font(.caption).foregroundStyle(.secondary)
+                Text(users.map { T("쓰는 기능: \($0.joined(separator: ", "))", "Used by: \($0.joined(separator: ", "))") } ?? kind.purpose)
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
             badge

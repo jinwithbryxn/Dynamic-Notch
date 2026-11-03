@@ -5,6 +5,7 @@ import CoreLocation
 import EventKit
 import Intents
 import ServiceManagement
+import Speech
 import UserNotifications
 
 enum PermissionTier: Int, CaseIterable {
@@ -36,6 +37,7 @@ enum PermissionStatus: Equatable {
 enum PermissionKind: String, CaseIterable, Identifiable {
     case accessibility, inputMonitoring, screenRecording, camera, calendar, bluetooth
     case location, automation, focus, fullDisk, files, notifications, loginItem
+    case reminders, microphone, speech, systemAudio
 
     var id: String { rawValue }
 
@@ -54,6 +56,10 @@ enum PermissionKind: String, CaseIterable, Identifiable {
         case .files: return T("파일 및 폴더(다운로드, 데스크탑)", "Files & Folders (Downloads, Desktop)")
         case .notifications: return T("알림", "Notifications")
         case .loginItem: return T("로그인 시 실행", "Open at Login")
+        case .reminders: return T("미리 알림(전체 접근)", "Reminders (Full Access)")
+        case .microphone: return T("마이크", "Microphone")
+        case .speech: return T("음성 인식", "Speech Recognition")
+        case .systemAudio: return T("시스템 오디오 녹음", "System Audio Recording")
         }
     }
 
@@ -72,6 +78,10 @@ enum PermissionKind: String, CaseIterable, Identifiable {
         case .files: return T("다운로드 감지, 스크린샷 저장", "Detect downloads, save screenshots")
         case .notifications: return T("노치를 숨겼을 때 대체 알림", "Fallback alerts when the notch is hidden")
         case .loginItem: return T("로그인하면 자동 실행", "Launch automatically at login")
+        case .reminders: return T("미리 알림 보기·추가", "View and add reminders")
+        case .microphone: return T("받아쓰기, 소리 입력", "Dictation, audio input")
+        case .speech: return T("받아쓰기", "Dictation")
+        case .systemAudio: return T("앱별 음량 조절, 소리에 맞춰 움직이는 막대", "Per-app volume, sound-reactive bars")
         }
     }
 
@@ -90,6 +100,10 @@ enum PermissionKind: String, CaseIterable, Identifiable {
         case .files: return "folder"
         case .notifications: return "bell.badge"
         case .loginItem: return "power"
+        case .reminders: return "checklist"
+        case .microphone: return "mic"
+        case .speech: return "waveform"
+        case .systemAudio: return "speaker.wave.3"
         }
     }
 
@@ -97,12 +111,22 @@ enum PermissionKind: String, CaseIterable, Identifiable {
         switch self {
         case .accessibility, .inputMonitoring: return .required
         case .screenRecording, .camera, .calendar, .bluetooth, .automation, .files, .loginItem: return .recommended
-        case .location, .focus, .fullDisk, .notifications: return .optional
+        case .location, .focus, .fullDisk, .notifications, .reminders, .microphone, .speech, .systemAudio: return .optional
         }
     }
 
     /// 허용 후 앱을 다시 시작해야 반영되는 권한.
     var needsRelaunch: Bool { self == .inputMonitoring || self == .screenRecording }
+
+    /// 시스템이 허용 창을 띄우지 않아 사용자가 시스템 설정에서 직접 켜야 하는 권한.
+    /// 차례로 허용할 때 이 권한은 설정 화면을 열어 두고 허용될 때까지 기다린다.
+    var grantedInSettings: Bool {
+        switch self {
+        // 시스템 오디오 녹음은 공개된 요청 함수가 없어, 기능이 소리를 처음 가져올 때 시스템이 묻는다
+        case .accessibility, .inputMonitoring, .screenRecording, .fullDisk, .systemAudio: return true
+        default: return false
+        }
+    }
 
     var settingsURL: URL? {
         let anchor: String
@@ -118,6 +142,10 @@ enum PermissionKind: String, CaseIterable, Identifiable {
         case .focus: anchor = "Privacy_Focus"
         case .fullDisk: anchor = "Privacy_AllFiles"
         case .files: anchor = "Privacy_FilesAndFolders"
+        case .reminders: anchor = "Privacy_Reminders"
+        case .microphone: anchor = "Privacy_Microphone"
+        case .speech: anchor = "Privacy_SpeechRecognition"
+        case .systemAudio: anchor = "Privacy_ScreenCapture"   // 같은 화면 아래쪽의 '시스템 오디오 녹음만' 목록
         case .notifications:
             return URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension")
         case .loginItem:
@@ -137,6 +165,8 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
     private let locationManager = CLLocationManager()
     private var bluetoothManager: CBCentralManager?
     private var refreshTimer: Timer?
+    /// 1초 갱신을 쓰고 있는 곳의 수 (열린 권한·기능 화면, 진행 중인 '차례로 허용')
+    private var refreshUsers = 0
     private let filesRequestedKey = "filesPermissionRequested"
     private static let automationTargets = ["com.apple.Music", "com.spotify.client"]
 
@@ -150,11 +180,12 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
 
     func status(_ kind: PermissionKind) -> PermissionStatus { statuses[kind] ?? .unknown }
 
-    // MARK: - 주기적 갱신 (창이 열려 있는 동안 1초마다)
+    // MARK: - 주기적 갱신 (화면이 열려 있거나 차례로 허용하는 동안 1초마다)
 
     func startAutoRefresh() {
+        refreshUsers += 1
         refresh()
-        refreshTimer?.invalidate()
+        guard refreshTimer == nil else { return }
         let t = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.refresh() }
         t.tolerance = 0.3
         RunLoop.main.add(t, forMode: .common)
@@ -162,6 +193,8 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
     }
 
     func stopAutoRefresh() {
+        refreshUsers = max(0, refreshUsers - 1)
+        guard refreshUsers == 0 else { return }
         refreshTimer?.invalidate()
         refreshTimer = nil
     }
@@ -179,9 +212,13 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
         s[.fullDisk] = Self.hasFullDiskAccess() ? .granted : .notDetermined
         s[.files] = filesStatus()
         s[.loginItem] = Self.map(SMAppService.mainApp.status)
+        s[.reminders] = Self.map(EKEventStore.authorizationStatus(for: .reminder))
+        s[.microphone] = Self.map(AVCaptureDevice.authorizationStatus(for: .audio))
+        s[.speech] = Self.map(SFSpeechRecognizer.authorizationStatus())
+        s[.systemAudio] = Self.map(MBAudio.capturePermission())
         s[.automation] = statuses[.automation] ?? .unknown
         s[.notifications] = statuses[.notifications] ?? .unknown
-        statuses = s
+        if s != statuses { statuses = s }   // 1초마다 불리므로 바뀐 때만 화면을 다시 그린다
 
         refreshAutomation()
         UNUserNotificationCenter.current().getNotificationSettings { settings in
@@ -191,8 +228,85 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
             case .denied: status = .denied
             default: status = .notDetermined
             }
-            DispatchQueue.main.async { self.statuses[.notifications] = status }
+            DispatchQueue.main.async {
+                if self.statuses[.notifications] != status { self.statuses[.notifications] = status }
+                self.checkWalkthrough()
+            }
         }
+        checkWalkthrough()
+    }
+
+    // MARK: - 차례로 허용
+
+    /// 남은 차례. 맨 앞이 지금 묻는 권한이다.
+    @Published private(set) var walkthrough: [PermissionKind] = []
+    /// 이번에 차례로 허용을 시작할 때의 개수 (진행 표시용)
+    @Published private(set) var walkthroughTotal = 0
+    /// 이번 차례로 허용 중에 새로 허용된 권한 (앱을 다시 시작해야 반영되는 권한 안내용)
+    @Published private(set) var walkthroughGranted: Set<PermissionKind> = []
+    private var stepStartStatus: PermissionStatus = .unknown
+
+    var walkthroughCurrent: PermissionKind? { walkthrough.first }
+    /// 지금 권한을 시스템 설정에서 켜야 하는지 (원래 그런 권한이거나, 예전에 거부해 설정을 열어 준 경우)
+    var walkthroughInSettings: Bool {
+        guard let kind = walkthrough.first else { return false }
+        return kind.grantedInSettings || stepStartStatus == .denied
+    }
+    var walkthroughStep: Int { walkthroughTotal - walkthrough.count + 1 }
+
+    /// 허용되지 않은 권한을 하나씩 요청한다. 허용 창이 뜨는 권한은 답하면, 시스템 설정에서 켜는 권한은 켜지면 다음으로 넘어간다.
+    /// 이미 진행 중이면 빠진 것만 뒤에 붙인다.
+    func startWalkthrough(_ kinds: [PermissionKind]) {
+        refresh()
+        let todo = kinds.filter { status($0) != .granted && status($0) != .needsAppRunning && !walkthrough.contains($0) }
+        guard !todo.isEmpty else { return }
+        let starting = walkthrough.isEmpty
+        walkthrough += todo
+        walkthroughTotal += todo.count
+        guard starting else { return }
+        walkthroughGranted = []
+        startAutoRefresh()
+        beginStep()
+    }
+
+    /// 지금 권한을 건너뛰고 다음으로
+    func skipStep() {
+        guard !walkthrough.isEmpty else { return }
+        walkthrough.removeFirst()
+        beginStep()
+    }
+
+    func cancelWalkthrough() {
+        guard !walkthrough.isEmpty else { return }
+        walkthrough = []
+        finishWalkthrough()
+    }
+
+    private func beginStep() {
+        guard let kind = walkthrough.first else { finishWalkthrough(); return }
+        stepStartStatus = status(kind)
+        PermissionGuidePanel.shared.update()
+        // 갱신 도중에 불릴 수 있으므로 시스템 창은 다음 차례에 띄운다
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.walkthrough.first == kind else { return }
+            self.request(kind)
+        }
+    }
+
+    private func finishWalkthrough() {
+        walkthroughTotal = 0
+        PermissionGuidePanel.shared.update()
+        stopAutoRefresh()
+    }
+
+    /// 지금 묻는 권한에 답이 났는지 본다. 갱신할 때마다 불린다.
+    private func checkWalkthrough() {
+        guard let kind = walkthrough.first else { return }
+        let s = status(kind)
+        guard Self.isAnswered(kind, from: stepStartStatus, now: s) else { return }
+        if s == .granted { walkthroughGranted.insert(kind) }
+        walkthrough.removeFirst()
+        beginStep()
     }
 
     // MARK: - 요청
@@ -212,6 +326,15 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
         case .calendar:
             if status(kind) == .denied { openSettings(kind); break }
             eventStore.requestFullAccessToEvents { _, _ in self.refreshOnMain() }
+        case .reminders:
+            if status(kind) == .denied { openSettings(kind); break }
+            eventStore.requestFullAccessToReminders { _, _ in self.refreshOnMain() }
+        case .microphone:
+            if status(kind) == .denied { openSettings(kind); break }
+            AVCaptureDevice.requestAccess(for: .audio) { _ in self.refreshOnMain() }
+        case .speech:
+            if status(kind) == .denied { openSettings(kind); break }
+            SFSpeechRecognizer.requestAuthorization { _ in self.refreshOnMain() }
         case .bluetooth:
             if status(kind) == .denied { openSettings(kind); break }
             bluetoothManager = CBCentralManager(delegate: self, queue: nil)
@@ -223,7 +346,7 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
         case .focus:
             if status(kind) == .denied { openSettings(kind); break }
             INFocusStatusCenter.default.requestAuthorization { _ in self.refreshOnMain() }
-        case .fullDisk:
+        case .fullDisk, .systemAudio:
             openSettings(kind)
         case .files:
             UserDefaults.standard.set(true, forKey: filesRequestedKey)
@@ -273,6 +396,14 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
         NSApp.terminate(nil)
     }
 
+    /// 차례로 허용에서 지금 권한을 끝난 것으로 볼지.
+    /// 허용되면 끝. 허용 창이 뜨는 권한은 처음 묻는 것이었다면 거부로 답해도 끝.
+    /// 시스템 설정에서 켜는 권한과, 이미 거부돼 설정을 열어 준 권한은 켜질 때까지 기다린다.
+    static func isAnswered(_ kind: PermissionKind, from start: PermissionStatus, now: PermissionStatus) -> Bool {
+        if now == .granted || now == .needsAppRunning { return true }
+        return start == .notDetermined && now == .denied && !kind.grantedInSettings
+    }
+
     // MARK: - 자동화
 
     private func refreshAutomation() {
@@ -283,7 +414,10 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
             else if results.contains(.notDetermined) { status = .notDetermined }
             else if results.contains(.granted) { status = .granted }
             else { status = .needsAppRunning }
-            DispatchQueue.main.async { self.statuses[.automation] = status }
+            DispatchQueue.main.async {
+                if self.statuses[.automation] != status { self.statuses[.automation] = status }
+                self.checkWalkthrough()
+            }
         }
     }
 
@@ -375,6 +509,23 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
     private static func map(_ s: EKAuthorizationStatus) -> PermissionStatus {
         switch s {
         case .fullAccess: return .granted
+        case .notDetermined: return .notDetermined
+        default: return .denied
+        }
+    }
+
+    private static func map(_ s: MBAudio.CapturePermission) -> PermissionStatus {
+        switch s {
+        case .authorized: return .granted
+        case .denied: return .denied
+        case .unknown: return .notDetermined
+        case .unavailable: return .unknown
+        }
+    }
+
+    private static func map(_ s: SFSpeechRecognizerAuthorizationStatus) -> PermissionStatus {
+        switch s {
+        case .authorized: return .granted
         case .notDetermined: return .notDetermined
         default: return .denied
         }

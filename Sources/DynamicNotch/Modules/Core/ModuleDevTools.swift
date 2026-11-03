@@ -10,6 +10,8 @@ import SwiftUI
 ///                                          노치 전체를 실제 뷰로 그려 PNG로 저장
 ///   --render-tab=<id> --out=<png> [--start] [--wait=<초>] [--size=<폭>x<높이>]
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
+///   --render-permissions --out=<png> [--wait=<초>] [--height=<pt>]
+///                                          권한 관리 창을 밝은 배경에 그려 PNG로 저장 (이 앱의 실제 권한 상태로)
 ///   --login-item=off                       이 앱 번들의 '로그인 시 열기' 등록을 지운다 (검토용 앱 정리용)
 enum ModuleDevTools {
     static func handle(_ arguments: [String]) {
@@ -34,10 +36,14 @@ enum ModuleDevTools {
         if let id = value("module-selftest") {
             AppSettings.isHelper = true
             let modules = ModuleCatalog.makeAll().filter { id == "all" || $0.id == id }
-            if modules.isEmpty { print("unknown module: \(id)"); exit(2) }
+            if modules.isEmpty && id != "permissions" { print("unknown module: \(id)"); exit(2) }
             for m in modules {
                 print("== \(m.id)")
                 for line in m.selfTest() { print("  \(line)") }
+            }
+            if id == "all" || id == "permissions" {
+                print("== permissions")
+                for line in PermissionNeeds.selfTest() { print("  \(line)") }
             }
             exit(0)
         }
@@ -46,6 +52,16 @@ enum ModuleDevTools {
             _ = NSApplication.shared
             NSApp.setActivationPolicy(.prohibited)
             renderNotch(state, wait: Double(value("wait") ?? "") ?? 1.2, to: URL(fileURLWithPath: out))
+            exit(0)
+        }
+        if arguments.contains("--render-permissions"), let out = value("out") {
+            AppSettings.isHelper = true
+            _ = NSApplication.shared
+            NSApp.setActivationPolicy(.prohibited)
+            let view = AnyView(PermissionsView(onboarding: false, embedded: value("height") != nil) {})
+            let height = Double(value("height") ?? "") ?? 640
+            render(view, contentSize: CGSize(width: 560, height: height), wait: Double(value("wait") ?? "") ?? 1.5,
+                   to: URL(fileURLWithPath: out), light: true)
             exit(0)
         }
         if let id = value("render-tab"), let out = value("out") {
@@ -134,14 +150,16 @@ enum ModuleDevTools {
     }
 
     /// 확장 패널과 같은 여백·배경(검은 둥근 사각형, 어두운 화면 모드)으로 그린다.
-    private static func render(_ content: AnyView, contentSize: CGSize, wait: TimeInterval, to url: URL) {
-        let pad: CGFloat = 30
+    /// - light: 노치 모양 검은 배경 대신 창처럼 밝은 배경에 그린다 (설정·권한 창 확인용)
+    private static func render(_ content: AnyView, contentSize: CGSize, wait: TimeInterval, to url: URL, light: Bool = false) {
+        let pad: CGFloat = light ? 0 : 30
         let size = CGSize(width: contentSize.width + 2 * pad, height: contentSize.height + 2 * pad)
         let root = content
             .frame(width: contentSize.width, height: contentSize.height)
             .padding(pad)
-            .background(RoundedRectangle(cornerRadius: 36, style: .continuous).fill(Color.black))
-            .environment(\.colorScheme, .dark)
+            .background(RoundedRectangle(cornerRadius: light ? 0 : 36, style: .continuous)
+                .fill(light ? Color(nsColor: .windowBackgroundColor) : Color.black))
+            .environment(\.colorScheme, light ? .light : .dark)
         let host = NSHostingView(rootView: AnyView(root))
         host.frame = CGRect(origin: .zero, size: size)
         let window = NSWindow(contentRect: host.frame, styleMask: [.borderless], backing: .buffered, defer: false)

@@ -92,6 +92,7 @@ struct HotKeyRecorder: View {
 /// 설정 → 확장 기능: 명령 팔레트 단축키, 기능별 켜기·독 고정·세부 설정
 struct ModulesSettingsPage: View {
     @ObservedObject private var registry = ModuleRegistry.shared
+    @ObservedObject private var permissions = PermissionsManager.shared
     @State private var hotkeyOn = ModuleDefaults(module: "palette").bool("hotkeyEnabled", default: true)
     @State private var hotkey = PaletteHotKey.current
     @State private var query = ""
@@ -104,6 +105,9 @@ struct ModulesSettingsPage: View {
 
     var body: some View {
         Form {
+            if permissions.walkthroughCurrent != nil || permissions.walkthroughGranted.contains(where: \.needsRelaunch) {
+                Section { PermissionWalkthroughBar() }
+            }
             IslandSettingsSection()
             Section {
                 Toggle(T("전역 단축키로 명령 팔레트 열기", "Open the command palette with a global shortcut"), isOn: $hotkeyOn)
@@ -137,22 +141,27 @@ struct ModulesSettingsPage: View {
             } header: {
                 Text(T("기능", "Features"))
             } footer: {
-                Text(T("끈 기능은 타이머·감시·오디오 캡처·네트워크 요청을 모두 멈춥니다. 권한이 필요한 기능은 처음부터 꺼져 있습니다.",
-                       "Turned-off features stop their timers, watchers, audio capture and network requests. Features that need permissions start turned off."))
+                Text(T("끈 기능은 타이머·감시·오디오 캡처·네트워크 요청을 모두 멈춥니다. 권한이 필요한 기능은 처음부터 꺼져 있고, 켜면 필요한 권한을 차례로 묻습니다.",
+                       "Turned-off features stop their timers, watchers, audio capture and network requests. Features that need permissions start turned off and ask for them in turn when you turn them on."))
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
+        .onAppear { permissions.startAutoRefresh() }
+        .onDisappear { permissions.stopAutoRefresh() }
     }
 }
 
 private struct ModuleSettingsRow: View {
     let module: NotchModule
     @ObservedObject private var registry = ModuleRegistry.shared
+    @ObservedObject private var permissions = PermissionsManager.shared
     @State private var open = false
 
     var body: some View {
         let enabled = registry.isEnabled(module)
+        // 자동화는 대상 앱이 켜져 있어야 알 수 있어 빼고 보여 준다
+        let missing = (PermissionNeeds.modules[module.id] ?? []).filter { ![.granted, .needsAppRunning].contains(permissions.status($0)) }
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 Image(systemName: module.symbol).frame(width: 20).foregroundStyle(Color.accentColor)
@@ -172,10 +181,24 @@ private struct ModuleSettingsRow: View {
                     .buttonStyle(.borderless)
                     .accessibilityLabel(T("세부 설정", "Details"))
                 }
-                Toggle("", isOn: Binding(get: { enabled }, set: { registry.setEnabled(module, $0) }))
+                Toggle("", isOn: Binding(get: { enabled }, set: { on in
+                    registry.setEnabled(module, on)
+                    // 켜는 순간 이 기능에 필요한 권한을 차례로 묻는다
+                    if on { permissions.startWalkthrough(PermissionNeeds.modules[module.id] ?? []) }
+                }))
                     .toggleStyle(.switch)
                     .labelsHidden()
                     .accessibilityLabel(module.title)
+            }
+            if enabled, !missing.isEmpty {
+                HStack(spacing: 8) {
+                    Text(T("필요한 권한: \(missing.map(\.title).joined(separator: ", "))", "Needs: \(missing.map(\.title).joined(separator: ", "))"))
+                        .font(.caption).foregroundStyle(.orange)
+                    Button(T("허용", "Allow")) { permissions.startWalkthrough(missing) }
+                        .controlSize(.small)
+                        .disabled(permissions.walkthroughCurrent != nil)
+                }
+                .padding(.leading, 30)
             }
             if open, enabled, let view = module.settingsView() {
                 view.padding(.leading, 30)
