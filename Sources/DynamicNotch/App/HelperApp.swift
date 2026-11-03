@@ -39,6 +39,11 @@ final class HUDStatus: ObservableObject {
     deinit { timer?.invalidate() }
 }
 
+/// 한 번만 받을 알림 관찰자를 클로저 안에서 지우려고 담아 두는 상자
+private final class TokenBox: @unchecked Sendable {
+    var value: NSObjectProtocol?
+}
+
 final class HelperDelegate: NSObject, NSApplicationDelegate {
     private let mode: String
     private var settingsWindow: NSWindow?
@@ -140,14 +145,16 @@ final class HelperDelegate: NSObject, NSApplicationDelegate {
 
     private func present(_ window: NSWindow?) {
         // 메뉴 막대 전용 앱의 도우미라 macOS가 앞으로 가져오기를 막을 때가 있다 (지금 쓰는 앱 창 뒤에 열려 안 보임, 2026-11-02).
-        // 잠깐 떠 있는 창 높이로 올려 맨 앞에 보이게 하고, 사용자가 창을 눌러 키 창이 되면 보통 높이로 돌린다.
-        if let window, window.level == .normal, !window.isKeyWindow {
+        // 잠깐 떠 있는 창 높이로 올려 맨 앞에 보이게 하고, 앱이 실제로 앞으로 오면(사용자가 창을 누르는 등) 보통 높이로 돌린다.
+        // 앞으로 오지 못한 앱에서도 창은 키 창이 될 수 있어, 키 창 알림으로 돌리면 다시 뒤로 숨는다 (2026-11-03 재현).
+        if let window, window.level == .normal, !NSApp.isActive {
             window.level = .floating
-            var token: NSObjectProtocol?
-            token = NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window,
-                                                           queue: .main) { [weak window] _ in
+            let token = TokenBox()
+            token.value = NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification,
+                                                                 object: nil, queue: .main) { [weak window, token] _ in
                 window?.level = .normal
-                if let token { NotificationCenter.default.removeObserver(token) }
+                if let observer = token.value { NotificationCenter.default.removeObserver(observer) }
+                token.value = nil
             }
         }
         NSApp.activate(ignoringOtherApps: true)
