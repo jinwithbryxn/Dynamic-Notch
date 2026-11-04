@@ -174,6 +174,7 @@
 
 - 요청: 2026-11-04 사용자가 4.12–4.13 변경을 담은 새 릴리스를 요청했다. 버전을 1.2.3(빌드 15)으로 올리고 `scripts/build.sh --zip`(설치·실행 옵션 없음)으로 배포 zip을 만들었다.
 - zip 확인: 체크섬 일치, 서명 확인(지정 요구 사항은 번들 ID), 버전 1.2.3·빌드 15, 개인 빌드 표시(`DMNCustomBuild`) 그대로, 앱 안 파일 8개, 빌드한 컴퓨터의 경로·계정 이름 없음(실행 파일의 `/Users/me/...`는 자체 검사 예시 문구). zip에서 꺼낸 앱의 `--module-selftest=all` PASS 152 FAIL 0, `core` PASS 13 FAIL 0(`DMN_SELFTEST_NETWORK=1`), `permissions` PASS 4 FAIL 0.
+- zip 교체: 처음 올린 zip은 `build.sh --zip`의 `ditto -c -k --keepParent`가 확장 속성(`com.apple.provenance`)을 `._` 파일 14개로 넣은 것이었다. `/usr/bin/unzip`으로 풀면 그 파일이 앱 안에 남아 `codesign --verify`가 "a sealed resource is missing or invalid"로 실패했다(Finder·`ditto`로 풀면 문제없음). 다운로드 0회일 때 같은 앱을 `--norsrc --noextattr --noacl`로 다시 압축해 zip과 `.sha256`을 바꿨다(sha256 `6d7b44ec…`, 항목 15개, `._` 없음, `ditto`·`unzip` 양쪽에서 서명 확인, 앱 파일은 검사한 빌드와 같음). `build.sh --zip`도 이 옵션을 쓰게 고쳤다. 태그는 옮기지 않아 `v1.2.3` 시점의 `build.sh`에는 이 수정이 없다.
 - 공개: GitHub에서 태그 `v1.2.3`을 `1acc35e`에 만들고 zip과 `.sha256`을 릴리스에 올렸다. 로컬 저장소에는 원본 저장소의 `v1.2.3`–`v1.2.5` 태그가 남아 있어 로컬에서는 태그를 만들거나 밀지 않았다. 올린 zip을 다시 받아 체크섬과 바이트가 같은지 확인했고, 최신 릴리스가 `v1.2.3`인지 API로 확인했다.
 - 설치본: 19:10에 `scripts/install-local.sh install`로 `1acc35e`(1.2.3)를 설치했다(백업 `backups/20261104-191029`). 코드는 4.13 설치본과 같고 버전 표기만 다르다. 서명 확인, 어댑터 프로세스 1개, CPU 0.0%, 메모리 약 78MB, 튕김 기록 없음. 빌드 폴더와 임시 폴더 사본의 LaunchServices 등록을 지워 `/Applications` 사본만 남겼다.
 - 확인하지 못한 것: 4.13의 목록과 같다. 릴리스 zip을 다른 Mac에서 받아 처음 실행(격리 속성, 그래도 열기)하는 과정은 해 보지 않았다.

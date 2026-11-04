@@ -60,7 +60,9 @@ if [ "$ZIP" = 1 ]; then
   VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" Resources/Info.plist)
   OUT="build/Dynamic-Notch-$VERSION.zip"
   rm -f "$OUT"
-  (cd build && ditto -c -k --keepParent "$NAME.app" "$(basename "$OUT")")
+  # 확장 속성(com.apple.provenance 등)을 빼야 zip에 ._ 파일이 생기지 않는다. 다른 압축 도구로 풀면 그 파일이 앱 안에 남아 서명이 깨진다.
+  # Leave out extended attributes so the zip has no ._ files; other unzip tools would leave them inside the app and break the signature.
+  (cd build && ditto -c -k --keepParent --norsrc --noextattr --noacl "$NAME.app" "$(basename "$OUT")")
   (cd build && shasum -a 256 "$(basename "$OUT")" | tee "$(basename "$OUT").sha256")
 fi
 
