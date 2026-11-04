@@ -156,8 +156,19 @@
 - 요청: 2026-11-04 사용자가 제품·유지보수 관점에서 고칠 곳을 찾아 고쳐 달라고 했다. 위험이 낮은 것만 고치고, 다른 곳을 깨뜨릴 수 있는 것은 아래 '남긴 것'에 적었다.
 - 고친 것: 꺼 둔 스크린샷 감지가 바탕화면 파일 검색을 계속 돌리던 것, 꺼 둔 화면 녹화 감지가 1.5초마다 확인을 계속하던 것(끄면 표시도 지운다), 미디어 도우미 파이프가 끝난 뒤에도 빈 데이터로 계속 불리던 것, Spotify 아트워크를 시간·크기 제한 없이 동기로 받던 것(5초·10MB 제한), 주식 새로고침 간격을 바꿔도 타이머가 그대로이던 것, 업데이트 임시 폴더가 실패 뒤 남던 것, YouTube Music 토큰을 1초마다 키체인에서 읽던 것, 시스템 명령의 오류 출력을 읽지 않는 파이프에 받던 것. 부르는 곳이 없는 함수 7개(`allReadings`, `closeAll`, `regenerateHookToken`, `releaseAll`, `renameList`, `requestReminderAccess`, `setPref`)를 지웠다.
 - 확인: 빌드 성공(경고만). 빌드한 앱의 `--module-selftest=all` PASS 140 FAIL 0, `--module-selftest=permissions` PASS 4 FAIL 0. 16:02에 `d156964`을 설치했고 실행·서명 확인, 튕김 기록 없음. 자체 검사는 위 동작 변화를 직접 보지 않으며, 각 동작(감지를 끈 뒤 확인이 멈추는지, 간격 변경, 아트워크 받기)은 실기에서 따로 시험하지 않았다.
-- 남긴 것: 음악 앱 AppleScript 호출이 주 스레드에서 답을 기다려 앱이 느리면 노치가 잠깐 멈출 수 있다. 에이전트 알림이 작업 내용을 분산 알림(DistributedNotificationCenter)으로 보내고, 같은 통로로 들어오는 `agent:`·`restart` 명령에 인증이 없다. MediaRemote 펄 어댑터가 두 벌이고, HTTP 도우미와 전원 정보(IOPS) 해석이 여러 곳에 겹친다. 이 넷은 동작을 바꾸는 범위가 커서 따로 다룬다.
+- 남긴 것: 음악 앱 AppleScript 호출이 주 스레드에서 답을 기다려 앱이 느리면 노치가 잠깐 멈출 수 있다. 에이전트 알림이 작업 내용을 분산 알림(DistributedNotificationCenter)으로 보내고, 같은 통로로 들어오는 `agent:`·`restart` 명령에 인증이 없다. MediaRemote 펄 어댑터가 두 벌이고, HTTP 도우미와 전원 정보(IOPS) 해석이 여러 곳에 겹친다. 이 넷은 동작을 바꾸는 범위가 커서 따로 다룬다. 4.13에서 고쳤다.
 - 빌드 환경: 이 Mac의 Command Line Tools에 든 SwiftPM이 빈 패키지도 매니페스트 링크에서 실패해(`PackageDescription.Package.__allocating_init` 미정의) `scripts/build.sh`(`swift build`)가 돌지 않았다. 16:10쯤 사용자가 Command Line Tools를 지우고 다시 설치했다(같은 26.6, Swift 6.3.3). 그 뒤 빈 패키지 `swift build`가 성공했고, 플래그 없는 `scripts/build.sh`도 3분 만에 끝났으며 그 앱의 `--module-selftest=all`은 PASS 140 FAIL 0이었다. `scripts/install-local.sh`·`scripts/review.sh`는 그대로 `swiftc`를 직접 불러 빌드한다.
+
+### 4.13 음악 앱 대기, 알림 통로 인증, 중복 코드 (`e50b1ae`, `5c97016`)
+
+- 요청: 2026-11-04 사용자가 4.12의 남긴 것 셋을 고쳐 실제 앱에 반영해 달라고 했다.
+- 음악 앱 대기: Music·Spotify 알림에 재생 위치가 없으면 주 스레드에서 AppleScript로 위치를 묻고 답을 기다렸다. 이제 0으로 먼저 보여 주고 위치는 백그라운드에서 물어 맞춘다. AppleScript는 모두 한 직렬 큐(`AppleScriptQueue`)에서만 돌고(미디어, 음악 모듈, Apple 메모), 앨범아트 받기는 그 큐 밖에서 한다.
+- 알림 통로: 명령 채널(`com.dynamicnotch.app.command`), 도우미 채널, 작업 완료 채널의 내용을 `CommandEnvelope`로 봉인한다. ChaCha20-Poly1305, 열쇠는 번들 ID별 데이터 폴더의 0600 파일(`command.key`, 32바이트). 받는 쪽은 열쇠로 열리고 30초 안에 만들어졌으며 처음 보는 봉투만 받는다. 봉인하지 않은 명령은 버린다. 앱 밖 스크립트는 앱 실행 파일의 `--send-command=<명령>`으로 보낸다. 사용자의 `~/.local/bin/notch-agent-done`도 이 방식으로 바꿨다(이전 본 `~/.local/share/dynamic-notch-agent/notch-agent-done.bak-20261104`). 한계: 같은 사용자 권한으로 도는 샌드박스 밖 프로그램은 열쇠 파일을 읽을 수 있다.
+- 중복 코드: 기본 미디어 표시와 음악 모듈이 MediaRemote 어댑터(perl) 프로세스 하나를 함께 쓴다(`MediaRemoteFeed`, 음악 모듈을 열면 두 번째 프로세스를 띄우던 것). 동기 HTTP 받기 네 벌(앨범아트, LRCLIB 가사, 데스크톱 가사, 업데이터)은 `HTTPFetch`로, 전원 목록 읽기 다섯 벌은 `PowerSources`로 합쳤다. YouTube Music의 로컬 API 요청은 상태 코드와 오류 문구가 필요해 그대로 두었다.
+- 확인 (자동): 빌드 성공. 새 `--module-selftest=core` PASS 13 FAIL 0 (봉투 8개: 열쇠 파일 0600 한 번만 생성, 다른 열쇠 거부, 재전송 거부, 30초 지난 봉투 거부, 바뀐 봉투 거부, 봉인 안 된 명령 거부, 봉투에 명령 글자가 보이지 않음; AppleScript 큐 재진입; 전원 목록과 배터리 읽기 일치; 구독 둘에 어댑터 프로세스 하나, 둘 다 놓으면 0개; HTTP 받기는 HTTP가 아닌 응답과 크기 초과를 버림, `DMN_SELFTEST_NETWORK=1`로 실제 받기 확인). `--module-selftest=all` PASS 152 FAIL 0, `permissions` PASS 4 FAIL 0.
+- 확인 (실기, 검토용 앱): 실행 중인 검토용 앱에 봉인하지 않은 `restart`를 보내면 무시했고(프로세스 번호 그대로), 설치본 열쇠로 봉인한 `restart`도 무시했으며, 자기 열쇠로 봉인한 `restart`는 실제로 다시 시작했다. 어댑터 프로세스는 하나였다.
+- 확인 (실기, 설치본): 16:49에 `5c97016`을 설치했다(백업 `backups/20261104-164943`). 봉인하지 않은 `restart`는 무시, `--send-command=restart`는 실제 재시작. 어댑터 프로세스 1개, CPU 0.0%, 메모리 72MB, 서명 확인, 튕김 기록 없음. 16:50에 `--send-command=agent:claude|설치 확인`으로 시험 알림을 보냈다(화면 표시는 이 셸에서 볼 수 없어 사용자 확인에 맡긴다).
+- 확인하지 못한 것: Music·Spotify가 위치 없는 알림을 보낼 때 노치가 멈추지 않는지(음악 앱이 늦게 답하는 상황을 만들지 않았다), 음악 모듈을 연 상태에서 어댑터를 함께 쓰는 실제 화면, 도우미 채널로 설정 창을 앞으로 가져오는 동작(이 셸에서 연 앱은 macOS가 앞으로 가져오지 못하게 해 창 순서로 확인하지 못했다; 같은 봉투 코드는 재시작으로 확인), 업데이터와 가사의 실제 받기.
 
 ## 5. 확인하지 못한 것
 
