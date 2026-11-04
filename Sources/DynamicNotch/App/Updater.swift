@@ -191,17 +191,9 @@ final class Updater {
     }
 
     private func download(_ url: URL, limit: Int = 5_000_000, accept: String? = nil) -> Data? {
-        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 30)
-        request.setValue("DynamicNotch/\(Self.currentVersion)", forHTTPHeaderField: "User-Agent")
-        if let accept { request.setValue(accept, forHTTPHeaderField: "Accept") }
-        let sem = DispatchSemaphore(value: 0)
-        var result: Data?
-        URLSession.shared.dataTask(with: request) { data, response, _ in
-            if (response as? HTTPURLResponse)?.statusCode == 200, let data, data.count <= limit { result = data }
-            sem.signal()
-        }.resume()
-        _ = sem.wait(timeout: .now() + 120)
-        return result
+        var headers = ["User-Agent": "DynamicNotch/\(Self.currentVersion)"]
+        if let accept { headers["Accept"] = accept }
+        return HTTPFetch.data(url, timeout: 30, maxBytes: limit, headers: headers, wait: 120)
     }
 
     private func run(_ path: String, _ args: [String]) -> Int32 {

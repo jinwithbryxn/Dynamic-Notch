@@ -200,13 +200,10 @@ final class ANotesModel: ObservableObject {
 
     private func run(_ source: String, completion: @escaping (NSAppleEventDescriptor?, String?) -> Void) {
         queue.async {
-            var error: NSDictionary?
-            let script = NSAppleScript(source: source)
-            let result = script?.executeAndReturnError(&error)
-            let message: String? = error.map { e in
-                let code = e[NSAppleScript.errorNumber] as? Int ?? 0
+            let (result, error) = AppleScriptQueue.run(source)
+            let message: String? = error.map { code, text in
                 if code == -1743 { return T("메모 제어 권한이 거부됨 — 시스템 설정 → 개인정보 보호 → 자동화", "Permission to control Notes was denied — System Settings → Privacy → Automation") }
-                return (e[NSAppleScript.errorMessage] as? String) ?? T("AppleScript 오류 \(code)", "AppleScript error \(code)")
+                return text.isEmpty ? T("AppleScript 오류 \(code)", "AppleScript error \(code)") : text
             }
             DispatchQueue.main.async { completion(message == nil ? result : nil, message) }
         }

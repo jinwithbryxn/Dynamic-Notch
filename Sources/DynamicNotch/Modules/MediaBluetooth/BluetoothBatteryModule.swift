@@ -164,14 +164,9 @@ final class MBBatteryModel: ObservableObject {
 
     /// 액세서리 전원 목록 전체 (이름 → 가장 낮은 값). 비공개 IOPSCopyPowerSourcesByType(4)
     static func accessoryLevels() -> [String: Int] {
-        typealias ByType = @convention(c) (Int32) -> Unmanaged<CFTypeRef>?
-        guard let p = dlsym(dlopen("/System/Library/Frameworks/IOKit.framework/IOKit", RTLD_NOW), "IOPSCopyPowerSourcesByType"),
-              let info = unsafeBitCast(p, to: ByType.self)(4)?.takeRetainedValue(),
-              let list = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] else { return [:] }
         var out: [String: Int] = [:]
-        for ps in list {
-            guard let d = IOPSGetPowerSourceDescription(info, ps)?.takeUnretainedValue() as? [String: Any],
-                  let name = d["Name"] as? String else { continue }
+        for d in PowerSources.accessories() {
+            guard let name = d["Name"] as? String else { continue }
             // 케이스는 경고 대상이 아니다
             if (d["Part Identifier"] as? String) == "Case" { continue }
             var levels: [Int] = []

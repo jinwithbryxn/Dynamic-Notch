@@ -70,10 +70,6 @@ final class MediaController: ObservableObject {
 
     private let center: ActivityCenter
     private let settings = AppSettings.shared
-    private var adapter: Process?
-    private var adapterInput: FileHandle?
-    private var buffer = Data()
-    private var restartDelay: TimeInterval = 1
     private var hideWork: DispatchWorkItem?
     /// 곡이 바뀐 직후 새 앨범아트를 기다리는 곡 변경 팝업 (아트·색이 맞은 뒤에 띄운다)
     private var trackPopupWork: DispatchWorkItem?
@@ -102,61 +98,25 @@ final class MediaController: ObservableObject {
 
     /// 앱 종료 시 어댑터(perl) 하위 프로세스를 함께 끝낸다.
     func stop() {
-        adapter?.terminationHandler = nil
-        adapter?.terminate()
-        adapter = nil
+        MediaRemoteFeed.shared.stopAll()
     }
 
     // MARK: - 어댑터
 
+    /// 음악 모듈과 함께 쓰는 어댑터 프로세스(MediaRemoteFeed)를 구독한다. 없거나 끝나면 분산 알림 대체 경로로.
     private func startAdapter() {
-        guard let resources = Bundle.main.resourceURL,
-              FileManager.default.fileExists(atPath: resources.appendingPathComponent("libMRAdapter.dylib").path) else {
-            fallbackActive = true
-            return
-        }
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
-        p.arguments = [resources.appendingPathComponent("mr_run.pl").path,
-                       resources.appendingPathComponent("libMRAdapter.dylib").path]
-        let out = Pipe(), input = Pipe()
-        p.standardOutput = out
-        p.standardInput = input
-        p.standardError = FileHandle.nullDevice
-        out.fileHandleForReading.readabilityHandler = { [weak self] h in
-            let data = h.availableData
-            guard !data.isEmpty else { h.readabilityHandler = nil; return }   // 끝(EOF)이면 더 부르지 않게
-            DispatchQueue.main.async { self?.consume(data) }
-        }
-        p.terminationHandler = { [weak self] _ in
-            DispatchQueue.main.async {
-                guard let self else { return }
+        MediaRemoteFeed.shared.subscribe("media") { [weak self] event in
+            guard let self else { return }
+            switch event {
+            case .started:
+                self.adapterRunning = true
+                self.fallbackActive = false
+            case .stopped:
                 self.adapterRunning = false
                 self.fallbackActive = true
-                // 재시작 (최대 60초 간격)
-                DispatchQueue.main.asyncAfter(deadline: .now() + self.restartDelay) { self.startAdapter() }
-                self.restartDelay = min(60, self.restartDelay * 2)
+            case .report(let o):
+                self.handleAdapter(o)
             }
-        }
-        do {
-            try p.run()
-            adapter = p
-            adapterInput = input.fileHandleForWriting
-            adapterRunning = true
-            fallbackActive = false
-        } catch {
-            fallbackActive = true
-        }
-    }
-
-    private func consume(_ data: Data) {
-        buffer.append(data)
-        while let nl = buffer.firstIndex(of: 0x0A) {
-            let line = buffer[buffer.startIndex..<nl]
-            buffer.removeSubrange(buffer.startIndex...nl)
-            guard let obj = try? JSONSerialization.jsonObject(with: line) as? [String: Any] else { continue }
-            restartDelay = 1
-            handleAdapter(obj)
         }
     }
 
@@ -271,27 +231,33 @@ final class MediaController: ObservableObject {
         let key = "\(title)|\(info["Artist"] as? String ?? "")|\(info["Album"] as? String ?? "")"
         // 위치: 알림에 있으면 그 값, 같은 곡을 이미 보고 있으면 계산한 값, 그 밖에만 AppleScript로 묻는다
         let known = nowPlaying.flatMap { $0.bundleID == bundle && $0.trackKey == key ? $0.position(at: Date()) : nil }
-        let position = (info["Playback Position"] as? Double) ?? known ?? Self.scriptNumber(bundle: bundle, "player position") ?? 0
+        let notified = info["Playback Position"] as? Double
+        let position = notified ?? known ?? 0
         let np = NowPlaying(title: title, artist: info["Artist"] as? String ?? "", album: info["Album"] as? String ?? "",
                             duration: durationMS / 1000, elapsed: position, timestamp: Date(),
                             rate: state == "Playing" ? 1 : 0, playing: state == "Playing", bundleID: bundle)
         receive(np, artwork: nil)
+        if notified == nil, known == nil { loadScriptPosition(bundle: bundle, key: np.trackKey) }
         if nowPlaying?.bundleID == bundle, lastArtworkTrack != np.trackKey { loadScriptArtwork(bundle: bundle, key: np.trackKey) }
     }
 
-    /// 앨범아트 내려받기: HTTPS만, 5초 제한, 10MB 이하만 (백그라운드에서 호출)
-    /// 5초 제한, 10MB까지 (아트워크용)
+    /// 알림에 위치가 없으면 0으로 먼저 보여 주고, 음악 앱에 묻는 것은 주 스레드 밖에서 한다.
+    /// (주 스레드에서 기다리면 앱이 늦게 답하는 동안 노치가 멈춘다)
+    private func loadScriptPosition(bundle: String, key: String) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let position = Self.scriptNumber(bundle: bundle, "player position") else { return }
+            DispatchQueue.main.async {
+                guard let self, var np = self.nowPlaying, np.bundleID == bundle, np.trackKey == key else { return }
+                np.elapsed = position
+                np.timestamp = Date()
+                self.nowPlaying = np
+            }
+        }
+    }
+
+    /// 앨범아트 내려받기: 5초 제한, 10MB 이하만 (백그라운드에서 호출, 주소는 부르는 쪽에서 HTTPS만 넘긴다)
     static func download(_ url: URL) -> Data? {
-        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 5)
-        request.httpShouldHandleCookies = false
-        let sem = DispatchSemaphore(value: 0)
-        var result: Data?
-        URLSession.shared.dataTask(with: request) { data, response, _ in
-            if (response as? HTTPURLResponse)?.statusCode == 200, let data, data.count <= 10_000_000 { result = data }
-            sem.signal()
-        }.resume()
-        _ = sem.wait(timeout: .now() + 6)
-        return result
+        HTTPFetch.data(url, timeout: 5, maxBytes: 10_000_000)
     }
 
     private func loadScriptArtwork(bundle: String, key: String) {
@@ -302,16 +268,16 @@ final class MediaController: ObservableObject {
                 artData = Self.runScript("tell application id \"com.apple.Music\" to get raw data of artwork 1 of current track")?.data
             } else if let url = Self.runScript("tell application id \"com.spotify.client\" to get artwork url of current track")?.stringValue,
                       let u = URL(string: url), u.scheme == "https" {
-                artData = Self.download(u)
+                artData = Self.download(u)   // AppleScript 큐 밖이라 받는 동안 재생 명령이 밀리지 않는다
             }
             DispatchQueue.main.async { if let artData { self?.setArtwork(data: artData) } }
         }
     }
 
+    /// AppleScriptQueue에서 실행한다. 백그라운드에서만 부른다.
     @discardableResult
     static func runScript(_ source: String) -> NSAppleEventDescriptor? {
-        var error: NSDictionary?
-        return NSAppleScript(source: source)?.executeAndReturnError(&error)
+        AppleScriptQueue.run(source).result
     }
 
     private static func scriptNumber(bundle: String, _ property: String) -> Double? {
@@ -534,7 +500,7 @@ final class MediaController: ObservableObject {
 
     private func send(_ line: String) {
         // 어댑터가 막 끝난 경우에도 앱이 죽지 않게 예외를 던지는 쓰기를 쓴다 (SIGPIPE는 main.swift에서 무시)
-        try? adapterInput?.write(contentsOf: Data((line + "\n").utf8))
+        MediaRemoteFeed.shared.send(line)
     }
 
     /// NX_KEYTYPE_PLAY(16) / NEXT(17) / PREVIOUS(18) 키 이벤트를 합성한다.

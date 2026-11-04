@@ -89,15 +89,10 @@ final class LyricsProvider: ObservableObject {
             URLQueryItem(name: "duration", value: String(Int(np.duration.rounded()))),
         ]
         guard let url = comps.url else { return nil }
-        var request = URLRequest(url: url, timeoutInterval: 8)
-        request.setValue("DynamicNotch/\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") (https://github.com/jinwithbryxn/Dynamic-Notch)", forHTTPHeaderField: "User-Agent")
-        let sem = DispatchSemaphore(value: 0)
-        var body: Data?
-        URLSession.shared.dataTask(with: request) { data, response, _ in
-            if (response as? HTTPURLResponse)?.statusCode == 200 { body = data }
-            sem.signal()
-        }.resume()
-        _ = sem.wait(timeout: .now() + 10)
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let body = HTTPFetch.data(url, timeout: 8, maxBytes: 2_000_000,
+                                  headers: ["User-Agent": "DynamicNotch/\(version) (https://github.com/jinwithbryxn/Dynamic-Notch)"],
+                                  wait: 10)
         guard let body, let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any] else { return nil }
         if let synced = json["syncedLyrics"] as? String, !synced.isEmpty {
             let lines = parseLRC(synced)

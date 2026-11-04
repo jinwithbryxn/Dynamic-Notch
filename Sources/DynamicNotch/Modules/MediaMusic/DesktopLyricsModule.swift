@@ -67,17 +67,8 @@ enum MBLyricsSources {
     }
 
     private static func getJSON(_ url: URL, headers: [String: String] = [:]) -> Any? {
-        var req = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 8)
-        req.httpShouldHandleCookies = false
-        for (k, v) in headers { req.setValue(v, forHTTPHeaderField: k) }
-        let sem = DispatchSemaphore(value: 0)
-        var body: Data?
-        URLSession.shared.dataTask(with: req) { data, resp, _ in
-            if (resp as? HTTPURLResponse)?.statusCode == 200, let data, data.count < 2_000_000 { body = data }
-            sem.signal()
-        }.resume()
-        _ = sem.wait(timeout: .now() + 10)
-        return body.flatMap { try? JSONSerialization.jsonObject(with: $0) }
+        HTTPFetch.data(url, timeout: 8, maxBytes: 2_000_000, headers: headers, wait: 10)
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) }
     }
 
     private static var userAgent: String {

@@ -225,34 +225,27 @@ final class LCDataModel: ObservableObject {
         var order: [String] = []
         func touch(_ name: String) { if byName[name] == nil { byName[name] = Parts(); order.append(name) } }
 
-        typealias ByType = @convention(c) (Int32) -> Unmanaged<CFTypeRef>?
-        if let handle = dlopen("/System/Library/Frameworks/IOKit.framework/IOKit", RTLD_NOW),
-           let p = dlsym(handle, "IOPSCopyPowerSourcesByType"),
-           let info = unsafeBitCast(p, to: ByType.self)(4)?.takeRetainedValue(),
-           let list = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] {
-            for ps in list {
-                guard let d = IOPSGetPowerSourceDescription(info, ps)?.takeUnretainedValue() as? [String: Any],
-                      let name = d["Name"] as? String else { continue }
-                let level = d["Current Capacity"] as? Int
-                switch d["Part Identifier"] as? String {
-                case "Left": touch(name); byName[name]?.left = level
-                case "Right": touch(name); byName[name]?.right = level
-                case "Case":
-                    // 케이스는 "이름 Case"처럼 따로 올 수 있다 → 앞부분이 같은 기기에 붙인다
-                    let owner = order.first { name.hasPrefix($0) } ?? name
-                    touch(owner); byName[owner]?.caseLevel = level
-                case "Combined":
-                    touch(name)
-                    for part in (d["Combined Parts"] as? [[String: Any]]) ?? [] {
-                        switch part["Part Identifier"] as? String {
-                        case "Left": byName[name]?.left = part["Current Capacity"] as? Int
-                        case "Right": byName[name]?.right = part["Current Capacity"] as? Int
-                        default: break
-                        }
+        for d in PowerSources.accessories() {
+            guard let name = d["Name"] as? String else { continue }
+            let level = d["Current Capacity"] as? Int
+            switch d["Part Identifier"] as? String {
+            case "Left": touch(name); byName[name]?.left = level
+            case "Right": touch(name); byName[name]?.right = level
+            case "Case":
+                // 케이스는 "이름 Case"처럼 따로 올 수 있다 → 앞부분이 같은 기기에 붙인다
+                let owner = order.first { name.hasPrefix($0) } ?? name
+                touch(owner); byName[owner]?.caseLevel = level
+            case "Combined":
+                touch(name)
+                for part in (d["Combined Parts"] as? [[String: Any]]) ?? [] {
+                    switch part["Part Identifier"] as? String {
+                    case "Left": byName[name]?.left = part["Current Capacity"] as? Int
+                    case "Right": byName[name]?.right = part["Current Capacity"] as? Int
+                    default: break
                     }
-                    if byName[name]?.left == nil, byName[name]?.right == nil { byName[name]?.main = level }
-                default: touch(name); byName[name]?.main = level
                 }
+                if byName[name]?.left == nil, byName[name]?.right == nil { byName[name]?.main = level }
+            default: touch(name); byName[name]?.main = level
             }
         }
         // Magic 키보드·마우스·트랙패드

@@ -39,22 +39,18 @@ struct BatteryHealthReading: Equatable {
 
     static func read() -> BatteryHealthReading {
         var r = BatteryHealthReading()
-        if let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-           let list = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] {
-            for ps in list {
-                guard let d = IOPSGetPowerSourceDescription(info, ps)?.takeUnretainedValue() as? [String: Any],
-                      d[kIOPSTypeKey] as? String == kIOPSInternalBatteryType else { continue }
-                r.present = true
-                let cur = d[kIOPSCurrentCapacityKey] as? Int ?? 0
-                let max = d[kIOPSMaxCapacityKey] as? Int ?? 100
-                r.percent = max > 0 ? Int((Double(cur) / Double(max) * 100).rounded()) : cur
-                r.isCharging = d[kIOPSIsChargingKey] as? Bool ?? false
-                r.onAC = d[kIOPSPowerSourceStateKey] as? String == kIOPSACPowerValue
-                r.isCharged = d[kIOPSIsChargedKey] as? Bool ?? false
-                if let t = d[kIOPSTimeToEmptyKey] as? Int, t > 0, !r.onAC { r.minutesToEmpty = t }
-                if let t = d[kIOPSTimeToFullChargeKey] as? Int, t > 0, r.isCharging { r.minutesToFull = t }
-                r.lowPowerMode = (d["LPM Active"] as? Bool) ?? ProcessInfo.processInfo.isLowPowerModeEnabled
-            }
+        for d in PowerSources.system() {
+            guard d[kIOPSTypeKey] as? String == kIOPSInternalBatteryType else { continue }
+            r.present = true
+            let cur = d[kIOPSCurrentCapacityKey] as? Int ?? 0
+            let max = d[kIOPSMaxCapacityKey] as? Int ?? 100
+            r.percent = max > 0 ? Int((Double(cur) / Double(max) * 100).rounded()) : cur
+            r.isCharging = d[kIOPSIsChargingKey] as? Bool ?? false
+            r.onAC = d[kIOPSPowerSourceStateKey] as? String == kIOPSACPowerValue
+            r.isCharged = d[kIOPSIsChargedKey] as? Bool ?? false
+            if let t = d[kIOPSTimeToEmptyKey] as? Int, t > 0, !r.onAC { r.minutesToEmpty = t }
+            if let t = d[kIOPSTimeToFullChargeKey] as? Int, t > 0, r.isCharging { r.minutesToFull = t }
+            r.lowPowerMode = (d["LPM Active"] as? Bool) ?? ProcessInfo.processInfo.isLowPowerModeEnabled
         }
         if !r.present { r.lowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled }
         let svc = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))

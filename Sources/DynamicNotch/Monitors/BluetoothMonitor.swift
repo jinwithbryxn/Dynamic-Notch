@@ -300,15 +300,10 @@ final class BluetoothMonitor: NSObject {
     /// macOS 배터리 위젯이 쓰는 액세서리 전원 목록 (비공개 IOPSCopyPowerSourcesByType, 액세서리 = 4).
     /// AirPods(좌·우·케이스), 블루투스 LE 마우스·키보드 등 배터리 서비스를 가진 기기가 이름으로 나온다.
     static func accessoryBattery(name: String) -> Battery? {
-        typealias ByType = @convention(c) (Int32) -> Unmanaged<CFTypeRef>?
-        guard let p = dlsym(dlopen("/System/Library/Frameworks/IOKit.framework/IOKit", RTLD_NOW), "IOPSCopyPowerSourcesByType"),
-              let info = unsafeBitCast(p, to: ByType.self)(4)?.takeRetainedValue(),
-              let list = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] else { return nil }
         var battery = Battery()
         var found = false
-        for ps in list {
-            guard let d = IOPSGetPowerSourceDescription(info, ps)?.takeUnretainedValue() as? [String: Any],
-                  let psName = d["Name"] as? String else { continue }
+        for d in PowerSources.accessories() {
+            guard let psName = d["Name"] as? String else { continue }
             let level = d["Current Capacity"] as? Int
             let part = d["Part Identifier"] as? String
             if psName == name {

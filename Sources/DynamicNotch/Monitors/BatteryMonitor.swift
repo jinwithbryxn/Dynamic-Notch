@@ -35,11 +35,8 @@ final class BatteryMonitor: ObservableObject {
     }
 
     static func read() -> Snapshot? {
-        guard let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let list = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef] else { return nil }
-        for ps in list {
-            guard let desc = IOPSGetPowerSourceDescription(info, ps)?.takeUnretainedValue() as? [String: Any],
-                  desc["Type"] as? String == "InternalBattery" else { continue }
+        for desc in PowerSources.system() {
+            guard desc["Type"] as? String == "InternalBattery" else { continue }
             let current = desc["Current Capacity"] as? Int ?? 0
             let max = desc["Max Capacity"] as? Int ?? 100
             let toFull = desc["Time to Full Charge"] as? Int ?? -1

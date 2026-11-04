@@ -5,7 +5,7 @@ import SwiftUI
 /// 확장 기능 개발·검증용 명령줄 모드. 앱 창을 띄우지 않고 결과를 출력한 뒤 끝난다.
 ///
 ///   --list-modules                         기능 목록
-///   --module-selftest=<id|all>             기능 자체 검사 (실제 macOS 기능 호출)
+///   --module-selftest=<id|all|permissions|core>  기능 자체 검사 (실제 macOS 기능 호출). core = 명령 봉투·AppleScript 큐·공통 부품
 ///   --render-notch=<home|palette|module:id|detail-actions|compact-two> --out=<png> [--wait=<초>]
 ///                                          노치 전체를 실제 뷰로 그려 PNG로 저장
 ///   --render-tab=<id> --out=<png> [--start] [--wait=<초>] [--size=<폭>x<높이>]
@@ -36,7 +36,7 @@ enum ModuleDevTools {
         if let id = value("module-selftest") {
             AppSettings.isHelper = true
             let modules = ModuleCatalog.makeAll().filter { id == "all" || $0.id == id }
-            if modules.isEmpty && id != "permissions" { print("unknown module: \(id)"); exit(2) }
+            if modules.isEmpty && id != "permissions" && id != "core" { print("unknown module: \(id)"); exit(2) }
             for m in modules {
                 print("== \(m.id)")
                 for line in m.selfTest() { print("  \(line)") }
@@ -44,6 +44,10 @@ enum ModuleDevTools {
             if id == "all" || id == "permissions" {
                 print("== permissions")
                 for line in PermissionNeeds.selfTest() { print("  \(line)") }
+            }
+            if id == "all" || id == "core" {
+                print("== core")
+                for line in CoreSelfTest.run() { print("  \(line)") }
             }
             exit(0)
         }

@@ -3,7 +3,7 @@ import SwiftUI
 
 /// 음악 모듈이 함께 쓰는 재생 정보.
 /// - 화면(탭·플로팅 창)을 쓰는 동안만 켠다 (`acquire`/`release`). 쓰는 곳이 없으면 프로세스·감시를 모두 멈춘다.
-/// - 기존 MediaRemote 어댑터(앱 리소스의 mr_run.pl + libMRAdapter.dylib, 수정 없이 실행)로 모든 소스의 정보를 받고,
+/// - 기본 미디어 표시와 함께 쓰는 MediaRemote 어댑터 프로세스(MediaRemoteFeed)로 모든 소스의 정보를 받고,
 ///   어댑터가 없으면 Music·Spotify 분산 알림으로 대신한다.
 /// - 어댑터 명령은 기존 그대로 toggle / next / prev / seek <초> / refresh 뿐이다.
 struct MBTrack: Equatable {
@@ -47,11 +47,7 @@ final class MBPlayerFeed: ObservableObject {
     @Published private(set) var adapterRunning = false
 
     private var users: Set<String> = []
-    private var process: Process?
-    private var input: FileHandle?
-    private var buffer = Data()
     private var observers: [NSObjectProtocol] = []
-    private var restartDelay: TimeInterval = 1
     private var artworkKey: String?
 
     var isActive: Bool { !users.isEmpty }
@@ -75,83 +71,29 @@ final class MBPlayerFeed: ObservableObject {
         observers.append(dnc.addObserver(forName: .init("com.spotify.client.PlaybackStateChanged"), object: nil, queue: .main) { [weak self] n in
             self?.notification(n.userInfo, bundle: "com.spotify.client")
         })
-        startAdapter()
+        MediaRemoteFeed.shared.subscribe("music") { [weak self] event in
+            guard let self else { return }
+            switch event {
+            case .started: self.adapterRunning = true
+            case .stopped: self.adapterRunning = false
+            case .report(let o): self.adapterReport(o)
+            }
+        }
     }
 
     private func end() {
         for o in observers { DistributedNotificationCenter.default().removeObserver(o) }
         observers.removeAll()
-        if let p = process {
-            p.terminationHandler = nil
-            (p.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
-            if p.isRunning { p.terminate() }
-        }
-        try? input?.close()
-        process = nil
-        input = nil
-        buffer.removeAll()
+        MediaRemoteFeed.shared.unsubscribe("music")
         adapterRunning = false
         track = nil
         artwork = nil
         artworkKey = nil
-        restartDelay = 1
     }
 
     // MARK: 어댑터
 
-    static var adapterAvailable: Bool {
-        guard let r = Bundle.main.resourceURL else { return false }
-        return FileManager.default.fileExists(atPath: r.appendingPathComponent("libMRAdapter.dylib").path)
-            && FileManager.default.fileExists(atPath: r.appendingPathComponent("mr_run.pl").path)
-    }
-
-    private func startAdapter() {
-        guard isActive, process == nil, Self.adapterAvailable, let res = Bundle.main.resourceURL else { return }
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
-        p.arguments = [res.appendingPathComponent("mr_run.pl").path, res.appendingPathComponent("libMRAdapter.dylib").path]
-        let out = Pipe(), inp = Pipe()
-        p.standardOutput = out
-        p.standardInput = inp
-        p.standardError = FileHandle.nullDevice
-        out.fileHandleForReading.readabilityHandler = { [weak self] h in
-            let data = h.availableData
-            guard !data.isEmpty else { h.readabilityHandler = nil; return }   // 끝(EOF)이면 더 부르지 않게
-            DispatchQueue.main.async { self?.consume(data) }
-        }
-        p.terminationHandler = { [weak self] _ in
-            DispatchQueue.main.async {
-                guard let self, self.process === p else { return }
-                self.process = nil
-                self.input = nil
-                self.adapterRunning = false
-                guard self.isActive else { return }
-                // 쓰는 화면이 남아 있으면 다시 띄운다 (최대 60초 간격)
-                let delay = self.restartDelay
-                self.restartDelay = min(60, delay * 2)
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { self.startAdapter() }
-            }
-        }
-        do {
-            try p.run()
-            process = p
-            input = inp.fileHandleForWriting
-            adapterRunning = true
-        } catch {
-            adapterRunning = false
-        }
-    }
-
-    private func consume(_ data: Data) {
-        buffer.append(data)
-        while let nl = buffer.firstIndex(of: 0x0A) {
-            let line = buffer[buffer.startIndex..<nl]
-            buffer.removeSubrange(buffer.startIndex...nl)
-            guard let o = try? JSONSerialization.jsonObject(with: line) as? [String: Any] else { continue }
-            restartDelay = 1
-            adapterReport(o)
-        }
-    }
+    static var adapterAvailable: Bool { MediaRemoteFeed.available }
 
     private func adapterReport(_ o: [String: Any]) {
         if o["error"] != nil { return }
@@ -177,7 +119,7 @@ final class MBPlayerFeed: ObservableObject {
     }
 
     func send(_ line: String) {
-        try? input?.write(contentsOf: Data((line + "\n").utf8))
+        MediaRemoteFeed.shared.send(line)
     }
 
     // MARK: Music·Spotify 분산 알림 (권한 불필요)
@@ -208,13 +150,13 @@ final class MBPlayerFeed: ObservableObject {
               artworkKey != t.key, !MBAudio.isDevTool else { return }
         artworkKey = t.key
         let key = t.key
-        MBPlayer.queue.async { [weak self] in
+        DispatchQueue.global(qos: .utility).async { [weak self] in
             var data: Data?
             if b == "com.apple.Music" {
                 data = MBPlayer.run("tell application id \"com.apple.Music\" to get raw data of artwork 1 of current track").result?.data
             } else if let s = MBPlayer.run("tell application id \"com.spotify.client\" to get artwork url of current track").result?.stringValue,
                       let url = URL(string: s), url.scheme == "https" {
-                data = MediaController.download(url)   // 재생 명령과 같은 줄에서 돌므로 시간·크기 제한이 있는 받기를 쓴다
+                data = MediaController.download(url)   // AppleScript 큐 밖이라 받는 동안 재생 명령이 밀리지 않는다
             }
             DispatchQueue.main.async {
                 guard let self, self.track?.key == key, let data, let img = NSImage(data: data) else { return }
@@ -226,18 +168,14 @@ final class MBPlayerFeed: ObservableObject {
 
 /// 재생 제어: Music·Spotify는 AppleScript(자동화 권한, 처음 쓸 때 묻는다), 그 밖은 기존 어댑터 명령, 어댑터가 없으면 미디어 키.
 enum MBPlayer {
-    static let queue = DispatchQueue(label: "dmn.music.applescript", qos: .userInitiated)
+    /// 앱 전체가 함께 쓰는 AppleScript 큐 (재생 명령은 순서대로 간다)
+    static var queue: DispatchQueue { AppleScriptQueue.queue }
     static let scriptable: Set<String> = ["com.apple.Music", "com.spotify.client"]
     static let longFormApps = ["com.apple.podcasts", "com.apple.iBooksX", "com.audible", "fm.overcast", "au.com.shiftyjelly.podcasts"]
 
-    /// AppleScript 실행 (백그라운드 큐에서 부른다). 실패하면 오류 번호·문구.
+    /// AppleScript 실행 (백그라운드에서 부른다). 실패하면 오류 번호·문구.
     static func run(_ source: String) -> (result: NSAppleEventDescriptor?, error: (Int, String)?) {
-        var err: NSDictionary?
-        let r = NSAppleScript(source: source)?.executeAndReturnError(&err)
-        if let err {
-            return (nil, ((err[NSAppleScript.errorNumber] as? Int) ?? 0, (err[NSAppleScript.errorMessage] as? String) ?? ""))
-        }
-        return (r, nil)
+        AppleScriptQueue.run(source)
     }
 
     static func isRunning(_ bundle: String) -> Bool {
