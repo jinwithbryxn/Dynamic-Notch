@@ -151,6 +151,14 @@
 - 확인: 빌드한 앱의 `--module-selftest=permissions`에 호출 확인을 넣었다. 창이 뜨지 않도록 이미 허용된 마이크 권한으로 `TCCAccessRequest`를 불러 '허용' 답이 바로 오는 것을 봤다(호출 방식 확인). `--module-selftest=all` 77묶음 FAIL 0, PASS 140. 실제 시스템 오디오 녹음 허용 창은 아래 결과 줄에 적는다.
 - 결과: 15:34:45에 `cef6ee2`을 설치하고 권한 관리 창을 열었다. 사용자가 '남은 1개 차례로 허용'을 눌렀고, tccd 기록에서 15:35:41에 권한 창 프로세스의 `kTCCServiceAudioCapture` 요청에 시스템 허용 창이 떴고(`display_prompt`) 15:35:44에 답이 났다. 사용자는 허용했다고 답했고, 설치 앱이 읽는 상태도 `systemAudio=granted`로 바뀌었다. 권한 화면은 '켜 둔 기능에 필요한 권한 13/13 허용됨'으로 바뀌고 '허용 필요' 칸과 차례로 허용 버튼이 사라졌다(`--render-permissions`로 확인). 이 권한으로 동작하는 `spectrum`(M-B-021)과 `soundmixer`(M-B-026)는 다시 시험하지 않아 '실기 미검증' 그대로 둔다.
 
+### 4.12 전체 코드 점검에서 고친 것 (`8e8225c`)
+
+- 요청: 2026-11-04 사용자가 제품·유지보수 관점에서 고칠 곳을 찾아 고쳐 달라고 했다. 위험이 낮은 것만 고치고, 다른 곳을 깨뜨릴 수 있는 것은 아래 '남긴 것'에 적었다.
+- 고친 것: 꺼 둔 스크린샷 감지가 바탕화면 파일 검색을 계속 돌리던 것, 꺼 둔 화면 녹화 감지가 1.5초마다 확인을 계속하던 것(끄면 표시도 지운다), 미디어 도우미 파이프가 끝난 뒤에도 빈 데이터로 계속 불리던 것, Spotify 아트워크를 시간·크기 제한 없이 동기로 받던 것(5초·10MB 제한), 주식 새로고침 간격을 바꿔도 타이머가 그대로이던 것, 업데이트 임시 폴더가 실패 뒤 남던 것, YouTube Music 토큰을 1초마다 키체인에서 읽던 것, 시스템 명령의 오류 출력을 읽지 않는 파이프에 받던 것. 부르는 곳이 없는 함수 7개(`allReadings`, `closeAll`, `regenerateHookToken`, `releaseAll`, `renameList`, `requestReminderAccess`, `setPref`)를 지웠다.
+- 확인: 빌드 성공(경고만). 빌드한 앱의 `--module-selftest=all` PASS 140 FAIL 0, `--module-selftest=permissions` PASS 4 FAIL 0. 16:02에 `d156964`을 설치했고 실행·서명 확인, 튕김 기록 없음. 자체 검사는 위 동작 변화를 직접 보지 않으며, 각 동작(감지를 끈 뒤 확인이 멈추는지, 간격 변경, 아트워크 받기)은 실기에서 따로 시험하지 않았다.
+- 남긴 것: 음악 앱 AppleScript 호출이 주 스레드에서 답을 기다려 앱이 느리면 노치가 잠깐 멈출 수 있다. 에이전트 알림이 작업 내용을 분산 알림(DistributedNotificationCenter)으로 보내고, 같은 통로로 들어오는 `agent:`·`restart` 명령에 인증이 없다. MediaRemote 펄 어댑터가 두 벌이고, HTTP 도우미와 전원 정보(IOPS) 해석이 여러 곳에 겹친다. 이 넷은 동작을 바꾸는 범위가 커서 따로 다룬다.
+- 빌드 환경: 이 Mac의 Command Line Tools에 든 SwiftPM은 빈 패키지도 매니페스트 링크에서 실패한다(`PackageDescription.Package.__allocating_init` 미정의). 그래서 `scripts/build.sh`(`swift build`)는 여기서 돌지 않고, `scripts/install-local.sh`·`scripts/review.sh`는 `swiftc`를 직접 불러 빌드한다.
+
 ## 5. 확인하지 못한 것
 
 - 실제 화면 캡처: 셸에 화면 기록 권한이 없고, 화면 조작 도구는 메뉴 막대 전용인 이 앱을 대상으로 잡지 못했다. 화면 모양은 2절의 자체 그리기 PNG로 확인했고, 7절의 실기 결과는 사용자가 화면에서 본 것이다.
