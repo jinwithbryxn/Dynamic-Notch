@@ -78,6 +78,12 @@ final class HelperDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
+    /// 같은 번들이라 앱을 다시 열면 이 도우미가 받을 수도 있다. 본 앱과 같게 설정 창을 앞으로 가져온다.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        open("settings")
+        return false
+    }
+
     private func open(_ mode: String) {
         switch mode {
         case "permissions": showPermissions(onboarding: false)

@@ -404,6 +404,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         for url in urls where !DeepLinkModule.handle(url) { ModuleServices.handle(url) }
     }
 
+    /// 이미 실행 중일 때 Finder·Launchpad·Spotlight에서 앱을 다시 열면 설정 창을 띄운다.
+    /// 메뉴 막대 앱이라 창이 없어, 그대로 두면 다시 열어도 아무 일도 없는 것처럼 보인다 (2026-11-04).
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSettings()
+        return false
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         ModuleRegistry.shared.stopAll()   // 화면 감마·전원 유지·오디오 등 기능이 바꾼 상태를 되돌린다
         media.stop()
