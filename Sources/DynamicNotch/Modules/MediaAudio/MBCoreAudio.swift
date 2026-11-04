@@ -199,6 +199,32 @@ enum MBAudio {
         }
     }
 
+    private static let tccRequest: UnsafeMutableRawPointer? = {
+        guard let lib = dlopen("/System/Library/PrivateFrameworks/TCC.framework/Versions/A/TCC", RTLD_NOW) else { return nil }
+        return dlsym(lib, "TCCAccessRequest")
+    }()
+
+    /// 시스템 오디오 녹음 허용 창을 띄울 수 있는지 (TCCAccessRequest가 있는지)
+    static var canRequestCapturePermission: Bool { tccRequest != nil }
+
+    /// 비공개 TCC.framework의 TCCAccessRequest로 시스템 오디오 녹음 허용 창을 띄운다.
+    /// 이 요청이 있어야 시스템 설정의 '시스템 오디오 녹음만' 목록에 앱이 올라온다.
+    /// 위쪽 '화면 및 시스템 오디오 녹음' 목록을 켜도 이 권한(kTCCServiceAudioCapture)은 미정으로 남는다 (2026-11-04 확인).
+    /// 함수가 없으면 false를 돌려주고 completion은 부르지 않는다.
+    @discardableResult
+    static func requestCapturePermission(_ completion: @escaping (Bool) -> Void) -> Bool {
+        requestTCC("kTCCServiceAudioCapture", completion)
+    }
+
+    /// TCCAccessRequest 호출. 이미 정해진 권한이면 창 없이 바로 답한다 (자체 검사가 허용된 권한으로 호출 경로를 확인할 때 쓴다).
+    @discardableResult
+    static func requestTCC(_ service: String, _ completion: @escaping (Bool) -> Void) -> Bool {
+        typealias Request = @convention(c) (CFString, CFDictionary?, @escaping @convention(block) (Bool) -> Void) -> Void
+        guard let sym = tccRequest else { return false }
+        unsafeBitCast(sym, to: Request.self)(service as CFString, nil) { completion($0) }
+        return true
+    }
+
     /// 탭을 쓰려면 Info.plist에 시스템 오디오 녹음 설명이 있어야 한다 (없으면 시도하지 않음)
     static var hasCaptureUsageDescription: Bool {
         Bundle.main.object(forInfoDictionaryKey: "NSAudioCaptureUsageDescription") != nil

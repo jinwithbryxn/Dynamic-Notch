@@ -122,8 +122,9 @@ enum PermissionKind: String, CaseIterable, Identifiable {
     /// 차례로 허용할 때 이 권한은 설정 화면을 열어 두고 허용될 때까지 기다린다.
     var grantedInSettings: Bool {
         switch self {
-        // 시스템 오디오 녹음은 공개된 요청 함수가 없어, 기능이 소리를 처음 가져올 때 시스템이 묻는다
-        case .accessibility, .inputMonitoring, .screenRecording, .fullDisk, .systemAudio: return true
+        case .accessibility, .inputMonitoring, .screenRecording, .fullDisk: return true
+        // 시스템 오디오 녹음은 공개된 요청 함수가 없어 비공개 TCCAccessRequest로 허용 창을 띄운다. 그 함수가 없을 때만 설정에서 켠다
+        case .systemAudio: return !MBAudio.canRequestCapturePermission
         default: return false
         }
     }
@@ -346,7 +347,10 @@ final class PermissionsManager: NSObject, ObservableObject, CLLocationManagerDel
         case .focus:
             if status(kind) == .denied { openSettings(kind); break }
             INFocusStatusCenter.default.requestAuthorization { _ in self.refreshOnMain() }
-        case .fullDisk, .systemAudio:
+        case .systemAudio:
+            if status(kind) == .denied { openSettings(kind); break }
+            if !MBAudio.requestCapturePermission({ _ in self.refreshOnMain() }) { openSettings(kind) }
+        case .fullDisk:
             openSettings(kind)
         case .files:
             UserDefaults.standard.set(true, forKey: filesRequestedKey)

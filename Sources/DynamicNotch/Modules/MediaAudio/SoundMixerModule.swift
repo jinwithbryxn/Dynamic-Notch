@@ -411,8 +411,8 @@ private struct SoundMixerTab: View {
                              alternative: T("대안: 앱 자체 음량 조절", "Alternative: each app's own volume control"))
         case .denied:
             MBUnsupportedBox(title: T("시스템 오디오 녹음 권한 거부됨", "System audio recording denied"),
-                             reason: T("시스템 설정 → 개인정보 보호 및 보안 → 화면 및 시스템 오디오 녹음에서 허용하세요.",
-                                       "Allow it under System Settings → Privacy & Security → Screen & System Audio Recording."))
+                             reason: T("시스템 설정 → 개인정보 보호 및 보안 → 화면 및 시스템 오디오 녹음 화면 아래쪽 '시스템 오디오 녹음만' 목록에서 허용하세요. 위쪽 목록과는 따로입니다.",
+                                       "Allow it in the 'System Audio Recording Only' list at the bottom of System Settings → Privacy & Security → Screen & System Audio Recording. It is separate from the list above it."))
                 .onTapGesture { MBAudio.openPrivacySettings("Privacy_ScreenCapture") }
         }
         if let msg = engine.lastError {
