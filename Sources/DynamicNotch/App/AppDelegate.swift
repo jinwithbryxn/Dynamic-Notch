@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Combine
+import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings.shared
@@ -33,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        refreshLoginItemIfMoved()
         let features = NotchFeatures(media: media, screenshot: screenshot, recording: recording, tray: tray, calendar: calendar,
                                      call: call, usage: usage, memo: memo)
         let root = NotchRootView(vm: vm, timer: timer, features: features) { [weak self] in self?.showSettings() }
@@ -402,6 +404,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, open urls: [URL]) {
         // dynamicnotch://show?… 는 딥링크 알림 기능(켜져 있을 때)이, 나머지는 기능별 처리기가 받는다
         for url in urls where !DeepLinkModule.handle(url) { ModuleServices.handle(url) }
+    }
+
+    /// 앱 위치가 바뀌면(제품 이름 변경으로 Dynamic Notch.app → Dynamic Notch.app 등) 로그인 항목이 옛 경로를 가리켜
+    /// 로그인할 때 열리지 않는다. 켜져 있었다면 지금 위치로 다시 등록한다. 기록이 없으면 옛 이름의 설치 경로로 본다.
+    private func refreshLoginItemIfMoved() {
+        let key = "loginItemBundlePath"
+        let path = Bundle.main.bundlePath
+        let last = UserDefaults.standard.string(forKey: key) ?? "/Applications/Dynamic Notch.app"
+        UserDefaults.standard.set(path, forKey: key)
+        guard last != path, SMAppService.mainApp.status == .enabled else { return }
+        do {
+            try SMAppService.mainApp.unregister()
+            try SMAppService.mainApp.register()
+        } catch {
+            NSLog("DynamicNotch: login item refresh failed: \(error)")
+        }
     }
 
     /// 이미 실행 중일 때 Finder·Launchpad·Spotlight에서 앱을 다시 열면 설정 창을 띄운다.

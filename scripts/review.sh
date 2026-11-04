@@ -71,7 +71,7 @@ case "${1:-}" in
     [ -d "$APP" ] || build
     # 검토용 앱에서는 첫 안내(권한 요청·로그인 시 열기)를 띄우지 않는다. 설치 앱과 이름이 같은 항목이 시스템 설정에 생기지 않게.
     defaults write "$BUNDLE_ID" onboardingDone -bool true
-    quit_app "$INSTALLED_ID" "Dynamic Notch"
+    quit_app "$INSTALLED_ID" "Dynamic (Mac)?Notch"
     open "$APP"
     ;;
   stop)
@@ -79,7 +79,7 @@ case "${1:-}" in
     open -b "$INSTALLED_ID"
     ;;
   status)
-    running "Dynamic Notch" && echo "installed: running" || echo "installed: not running"
+    running "Dynamic (Mac)?Notch" && echo "installed: running" || echo "installed: not running"
     running "$NAME" && echo "review: running" || echo "review: not running"
     ;;
   *) echo "usage: scripts/review.sh <build|start|stop|status>" >&2; exit 1 ;;

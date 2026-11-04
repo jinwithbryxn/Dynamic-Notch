@@ -13,12 +13,15 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 NAME="Dynamic Notch"
+# 2026-11-04 제품 이름을 바꾸기 전의 앱 이름. 그 이름으로 설치된 앱도 끄고 백업 폴더로 옮긴다
+LEGACY_NAME="Dynamic Notch"
 EXE="DynamicNotch"
 BUNDLE_ID="com.dynamicnotch.app"
 MIN_OS="14.0"
 OUT="$HOME/Developer/Dynamic-Notch-build/install"
 BUILT="$OUT/$NAME.app"
 TARGET="/Applications/$NAME.app"
+LEGACY_TARGET="/Applications/$LEGACY_NAME.app"
 BACKUP_ROOT="$HOME/.local/share/dynamic-notch-agent/backups"
 
 build() {
@@ -43,7 +46,7 @@ build() {
   echo "built: $BUILT ($(git rev-parse --short HEAD))"
 }
 
-running() { pgrep -f "/$NAME.app/Contents/MacOS/$EXE" >/dev/null; }
+running() { pgrep -f "/($NAME|$LEGACY_NAME)\.app/Contents/MacOS/$EXE" >/dev/null; }
 
 # 설정·권한 창은 같은 번들 ID의 도우미 프로세스라 종료 요청이 도우미에 먼저 갈 수 있다.
 # 본 앱과 도우미가 모두 끝날 때까지 2초마다 다시 요청한다 (최대 15초).
@@ -79,6 +82,10 @@ install() {
     # 기존 앱은 지우지 않고 백업 폴더로 옮긴다 (되돌리기용)
     mv "$TARGET" "$dir/$NAME.app"
   fi
+  if [ -d "$LEGACY_TARGET" ]; then
+    # 옛 이름의 앱이 남아 있으면 같은 번들 ID가 둘이 되므로 함께 옮긴다
+    mv "$LEGACY_TARGET" "$dir/$LEGACY_NAME.app"
+  fi
   ditto "$BUILT" "$TARGET"
   codesign --verify --deep --strict "$TARGET"
   # 빌드 폴더의 사본이 같은 번들 ID로 등록돼 있으면 'open -b'·시스템 설정이 그쪽을 가리킬 수 있어 등록을 지운다
@@ -89,13 +96,18 @@ install() {
 
 restore() {
   local dir="${1:?usage: scripts/install-local.sh restore <backup folder>}"
-  [ -d "$dir/$NAME.app" ] || { echo "error: no app in $dir" >&2; exit 1; }
+  # 이름을 바꾸기 전의 백업에는 옛 이름의 앱이 들어 있다. 그 이름 그대로 되돌린다
+  local name="$NAME"
+  [ -d "$dir/$name.app" ] || name="$LEGACY_NAME"
+  [ -d "$dir/$name.app" ] || { echo "error: no app in $dir" >&2; exit 1; }
   local stamp
   stamp=$(date +%Y%m%d-%H%M%S)
   mkdir -p "$BACKUP_ROOT/replaced-$stamp"
   quit_app
   [ -d "$TARGET" ] && mv "$TARGET" "$BACKUP_ROOT/replaced-$stamp/$NAME.app"
-  ditto "$dir/$NAME.app" "$TARGET"
+  [ -d "$LEGACY_TARGET" ] && mv "$LEGACY_TARGET" "$BACKUP_ROOT/replaced-$stamp/$LEGACY_NAME.app"
+  TARGET="/Applications/$name.app"
+  ditto "$dir/$name.app" "$TARGET"
   if [ -f "$dir/settings.plist" ]; then
     defaults export "$BUNDLE_ID" "$BACKUP_ROOT/replaced-$stamp/settings.plist"
     defaults import "$BUNDLE_ID" "$dir/settings.plist"

@@ -21,6 +21,7 @@ final class LyricsProvider: ObservableObject {
 
     private static let cacheFolder: URL = {
         let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+        // 제품 이름이 바뀌어도 받아 둔 가사를 찾도록 옛 폴더 이름을 그대로 쓴다
         let url = base.appendingPathComponent("Dynamic Notch/Lyrics", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url

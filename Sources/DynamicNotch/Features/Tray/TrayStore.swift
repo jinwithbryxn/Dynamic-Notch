@@ -40,6 +40,7 @@ final class TrayStore: NSObject, ObservableObject, NSSharingServiceDelegate {
 
     private static let copyFolder: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        // 제품 이름이 Dynamic Notch로 바뀌어도 저장된 항목을 찾도록 옛 폴더 이름을 그대로 쓴다
         return base.appendingPathComponent("Dynamic Notch/Tray", isDirectory: true)
     }()
 

@@ -151,6 +151,7 @@ final class ShellActivityModule: NotchModule {
 
 /// ~/.zshrc 블록 설치기 (대상 파일·endpoint 경로 주입)
 struct ShellHookInstaller {
+    // 사용자 셸 설정에 넣은 블록을 찾아 지우는 표시라, 제품 이름이 바뀌어도 옛 문구를 그대로 쓴다
     static let begin = "# >>> Dynamic Notch shell activity >>>"
     static let end = "# <<< Dynamic Notch shell activity <<<"
     /// 원래 파일이 줄바꿈으로 끝나지 않아 줄바꿈을 하나 더했다는 표시 (뺄 때 같이 뺀다)
