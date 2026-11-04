@@ -40,7 +40,7 @@ Every permission is optional — without one, only the matching feature turns of
 |---|---|
 | Accessibility | Replacing the volume/brightness HUD, stopping screen recordings, detecting file drags, answering/ending calls |
 | Input Monitoring | Intercepting the brightness and volume keys |
-| Screen & System Audio Recording | Detecting that the screen is being recorded |
+| Screen & System Audio Recording | Detecting that the screen is being recorded; screen capture tools and Window Watch (extensions) |
 | Camera | The camera mirror on the Home screen (off until you click it) |
 | Calendars (Full Access) | Today's events and upcoming-event alerts |
 | Bluetooth | Accessory connections and battery levels |
@@ -50,6 +50,11 @@ Every permission is optional — without one, only the matching feature turns of
 | Full Disk Access | Showing the Focus *name and icon* (Work, Sleep, …) |
 | Files & Folders | Watching Downloads, saving screenshots to Desktop |
 | Open at Login | Starting automatically when you log in |
+| Reminders (Full Access) | Reminders tab and natural-language commands (extensions) |
+| Microphone, Speech Recognition | Dictation (extension) |
+| System Audio Recording Only | Audio spectrum and per-app volume (extensions). This is the lower list on the Screen & System Audio Recording page and is separate from the list above it; the app asks with a macOS prompt. |
+
+The Permissions window counts only what your enabled features need, shows which feature uses each permission, and can ask for the missing ones one by one.
 
 ## How it works & how to use it
 
@@ -146,6 +151,22 @@ A sidebar with **General**, **Priority**, **Interactions**, **Test**, **Permissi
 ### Language
 Korean and English. Settings → General → Language (System default / 한국어 / English), then **Restart Now**.
 
+## Extensions
+
+**Settings → Extensions** has 76 optional modules. Ten that need no permission start on (world clock, calculator, quick search, emoji, to-do, Pomodoro, stopwatch, markup, notice sounds, settings backup). Everything that needs a permission, the network or background work starts off, and turning a module on asks only for what it needs. A module that is off does no background work.
+
+| Area | Modules |
+|---|---|
+| Media & audio | Audio devices, per-app volume, audio spectrum, playback tools, listening history, floating player, lyrics, YouTube Music, device battery |
+| Productivity | Clipboard, snippets, colors, calculator, quick search, emoji, translate, app launcher, launcher wheel, window snapping, natural-language commands, Shortcuts, Home shortcuts, saved links, video saver, modifier-key taps, selected-text actions, dictation, desktops |
+| Time & planning | Calendar, reminders, to-do, Apple Notes, weather, world clock, Pomodoro, stopwatch, focus sounds, keep awake, activity rings, Screen Time, break reminders, Focus switch, typing sounds, desktop widgets |
+| System & files | System monitor, data usage, battery, devices, key HUD, displays, stocks, ports, file tools, drives, packages, settings backup & reset |
+| Capture & presenting | Screen capture, markup, teleprompter, presenter tools, cleaning mode, Window Watch |
+| Privacy & alerts | Camera & mic indicator, notification mirroring, lock screen cards, meeting calls, menu bar icons, notice sounds, deep-link alerts |
+| Developer & AI | Local API, coding agents, AI usage (local logs), long-running commands, terminal, AI text polish, Ask Claude |
+
+Not every module has been tried on a real Mac with its permissions granted. The status of each feature (confirmed on a real Mac, self-tested, built but untested, partial, deferred) is in [docs/notchy-parity/FEATURE-MATRIX.md](docs/notchy-parity/FEATURE-MATRIX.md).
+
 ## Privacy
 
 - No analytics, no accounts, no tracking. Settings and tray items stay on your Mac.
@@ -222,7 +243,7 @@ scripts/build.sh --install --run  # install to /Applications
 |---|---|
 | 손쉬운 사용 | 음량·밝기 HUD 대체, 화면 녹화 정지, 파일 드래그 감지, 전화 받기·끊기 |
 | 입력 모니터링 | 밝기·음량 키 가로채기 |
-| 화면 및 시스템 오디오 녹음 | 화면 녹화 중인지 감지 |
+| 화면 및 시스템 오디오 녹음 | 화면 녹화 중인지 감지, 화면 캡처 도구·창 지켜보기(확장 기능) |
 | 카메라 | 홈 화면의 카메라 거울 (누르기 전까지 꺼져 있음) |
 | 캘린더(전체 접근) | 오늘 일정, 일정 시작 전 알림 |
 | 블루투스 | 액세서리 연결·배터리 표시 |
@@ -232,6 +253,11 @@ scripts/build.sh --install --run  # install to /Applications
 | 전체 디스크 접근 | 집중 모드 *이름·아이콘*(업무, 수면 등) 표시 |
 | 파일 및 폴더 | 다운로드 폴더 감시, 데스크탑에 스크린샷 저장 |
 | 로그인 시 실행 | 로그인하면 자동 실행 |
+| 미리 알림(전체 접근) | 미리 알림 탭, 자연어 명령(확장 기능) |
+| 마이크, 음성 인식 | 받아쓰기(확장 기능) |
+| 시스템 오디오 녹음만 | 오디오 스펙트럼, 앱별 볼륨(확장 기능). 화면 및 시스템 오디오 녹음 화면의 아래쪽 목록이며 위쪽 목록과 따로 허용합니다. 앱이 macOS 허용 창으로 묻습니다. |
+
+권한 관리 창은 켜 둔 기능에 필요한 권한만 세고, 권한마다 쓰는 기능을 보여 주며, 빠진 권한을 하나씩 차례로 물어볼 수 있습니다.
 
 ## 기능과 사용법
 
@@ -327,6 +353,22 @@ Claude Code·Codex 작업이 끝나면 노치에 **완료**가 뜨고, 누르면
 
 ### 언어
 한국어와 영어. 설정 → 일반 → 언어(시스템 설정 따름 / 한국어 / English) 선택 후 **지금 다시 시작**.
+
+## 확장 기능
+
+**설정 → 확장 기능**에 선택 모듈 76개가 있습니다. 권한이 필요 없는 10개(세계 시계, 계산기, 빠른 검색, 이모지, 할 일, 포모도로, 스톱워치, 마크업, 알림 소리, 설정 백업)만 켜진 채로 시작하고, 권한·네트워크·백그라운드 작업이 필요한 모듈은 모두 꺼진 채로 시작합니다. 모듈을 켜면 그 모듈에 필요한 권한만 묻고, 꺼 둔 모듈은 백그라운드 작업을 하지 않습니다.
+
+| 분야 | 모듈 |
+|---|---|
+| 미디어·오디오 | 오디오 장치, 앱별 사운드, 오디오 스펙트럼, 재생 도구, 청취 기록, 플로팅 플레이어, 가사, YouTube Music, 기기 배터리 |
+| 생산성 | 클립보드, 스니펫, 색상, 계산기, 빠른 검색, 이모지, 번역, 앱 런처, 런처 휠, 창 배치, 자연어 명령, 단축어, 홈 바로가기, 저장 링크, 동영상 저장, 수정키 탭, 선택 텍스트 동작, 받아쓰기, 데스크톱 |
+| 시간·일정 | 캘린더, 미리 알림, 할 일, Apple 메모, 날씨, 세계 시계, 포모도로, 스톱워치, 집중 배경음, 잠자기 방지, 활동 링, Screen Time, 휴식 알림, Focus 전환, 타이핑 소리, 데스크톱 위젯 |
+| 시스템·파일 | 시스템, 데이터 사용량, 배터리, 기기, 키 HUD, 화면, 주식, 포트, 파일 도구, 드라이브, 패키지, 설정 백업·초기화 |
+| 캡처·발표 | 화면 캡처, 마크업, 텔레프롬프터, 발표 도구, 청소 모드, 창 지켜보기 |
+| 개인정보·알림 | 카메라·마이크 사용 표시, 알림 미러링, 잠금 화면 카드, 회의 통화, 메뉴 막대 아이콘, 알림 소리, 딥링크 알림 |
+| 개발·AI | 로컬 API, 코딩 에이전트, AI 사용량(로컬 로그), 오래 걸리는 명령, 터미널, AI 글 다듬기, Claude에게 묻기 |
+
+모든 모듈을 권한을 준 실제 Mac에서 시험한 것은 아닙니다. 기능별 상태(실기 확인, 자체 검사 통과, 만들었지만 미검증, 부분 구현, 보류)는 [docs/notchy-parity/FEATURE-MATRIX.md](docs/notchy-parity/FEATURE-MATRIX.md)에 있습니다.
 
 ## 개인정보
 
