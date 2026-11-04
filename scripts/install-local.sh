@@ -60,13 +60,17 @@ quit_app() {
   exit 1
 }
 
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+
+# 백업 폴더로 옮긴 앱도 같은 번들 ID로 등록돼 있어, 'open -b'가 그쪽을 띄울 수 있다 (2026-11-04).
+# 옮긴 앱은 등록을 지우고, 설치한 경로를 직접 연 뒤 그 경로의 프로세스인지 확인한다.
 launch() {
-  /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$TARGET" || true
+  "$LSREGISTER" -f "$TARGET" || true
   for _ in 1 2 3 4 5; do
-    open -b "$BUNDLE_ID" && sleep 2 && running && { echo "running: $TARGET"; return 0; }
+    open "$TARGET" && sleep 2 && pgrep -f "^$TARGET/Contents/MacOS/$EXE" >/dev/null && { echo "running: $TARGET"; return 0; }
     sleep 1
   done
-  echo "warning: $NAME did not start; run: open -b $BUNDLE_ID" >&2
+  echo "warning: $NAME did not start; run: open \"$TARGET\"" >&2
 }
 
 install() {
@@ -86,10 +90,13 @@ install() {
     # 옛 이름의 앱이 남아 있으면 같은 번들 ID가 둘이 되므로 함께 옮긴다
     mv "$LEGACY_TARGET" "$dir/$LEGACY_NAME.app"
   fi
+  for old in "$dir/$NAME.app" "$dir/$LEGACY_NAME.app"; do
+    [ -d "$old" ] && "$LSREGISTER" -u "$old" 2>/dev/null || true
+  done
   ditto "$BUILT" "$TARGET"
   codesign --verify --deep --strict "$TARGET"
   # 빌드 폴더의 사본이 같은 번들 ID로 등록돼 있으면 'open -b'·시스템 설정이 그쪽을 가리킬 수 있어 등록을 지운다
-  /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -u "$BUILT" 2>/dev/null || true
+  "$LSREGISTER" -u "$BUILT" 2>/dev/null || true
   echo "backup: $dir"
   launch
 }
@@ -106,6 +113,9 @@ restore() {
   quit_app
   [ -d "$TARGET" ] && mv "$TARGET" "$BACKUP_ROOT/replaced-$stamp/$NAME.app"
   [ -d "$LEGACY_TARGET" ] && mv "$LEGACY_TARGET" "$BACKUP_ROOT/replaced-$stamp/$LEGACY_NAME.app"
+  for old in "$BACKUP_ROOT/replaced-$stamp"/*.app; do
+    [ -d "$old" ] && "$LSREGISTER" -u "$old" 2>/dev/null || true
+  done
   TARGET="/Applications/$name.app"
   ditto "$dir/$name.app" "$TARGET"
   if [ -f "$dir/settings.plist" ]; then
