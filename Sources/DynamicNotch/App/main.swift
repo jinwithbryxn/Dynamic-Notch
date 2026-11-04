@@ -3,6 +3,11 @@ import AppKit
 // 하위 프로세스(미디어 어댑터·도우미)가 먼저 끝난 파이프에 써도 앱이 종료되지 않게 한다
 signal(SIGPIPE, SIG_IGN)
 
+if let command = CommandEnvelope.sendCommand(from: CommandLine.arguments) {
+    Helper.sendToMain(command)   // 명령을 봉투에 넣어 본 앱에 보내고 바로 종료 (앱 밖 알림 스크립트용)
+    exit(0)
+}
+
 if let agent = AgentNotify.source(from: CommandLine.arguments) {
     AgentNotify.runHook(agent, arguments: CommandLine.arguments)   // Claude Code·Codex 작업 완료 훅: 알리고 바로 종료
 }

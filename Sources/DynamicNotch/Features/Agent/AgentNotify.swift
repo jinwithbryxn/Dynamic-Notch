@@ -14,6 +14,7 @@ enum AgentSource: String, CaseIterable, Identifiable {
 /// 작업 완료 알림.
 /// Claude Code(Stop 훅)·Codex(notify)가 작업을 끝내면 이 앱 실행 파일을 `--agent-done=<에이전트>`로 잠깐 실행하고,
 /// 그 짧은 프로세스가 분산 알림으로 본 앱에 알린 뒤 바로 끝난다. 알림을 누르면 에이전트가 돌던 앱(터미널·Claude·Codex 등)을 연다.
+/// 알림 내용(프로젝트, 끝난 작업 문구)은 CommandEnvelope로 봉인해 다른 프로세스가 엿보거나 꾸밀 수 없다.
 enum AgentNotify {
     static let notification = Notification.Name("com.dynamicnotch.app.agent")
 
@@ -65,13 +66,15 @@ enum AgentNotify {
             }
         }
         let app = guiAncestor()
-        DistributedNotificationCenter.default().postNotificationName(
-            notification, object: source.rawValue,
-            userInfo: ["project": URL(fileURLWithPath: folder).lastPathComponent,
-                       "task": oneLine(task, limit: 80),
-                       "bundle": app?.bundleIdentifier ?? "",
-                       "pid": Int(app?.processIdentifier ?? 0)],
-            deliverImmediately: true)
+        let payload: [String: Any] = ["source": source.rawValue,
+                                      "project": URL(fileURLWithPath: folder).lastPathComponent,
+                                      "task": oneLine(task, limit: 80),
+                                      "bundle": app?.bundleIdentifier ?? "",
+                                      "pid": Int(app?.processIdentifier ?? 0)]
+        if let envelope = CommandEnvelope.seal(payload) {
+            DistributedNotificationCenter.default().postNotificationName(notification, object: envelope,
+                                                                         userInfo: nil, deliverImmediately: true)
+        }
         exit(0)
     }
 
@@ -131,9 +134,9 @@ enum AgentNotify {
     /// 알림을 받아 노치에 띄운다. 누르면 열 앱은 activity.targetApp("번들ID|pid")에 담는다.
     static func observe(center: ActivityCenter) -> NSObjectProtocol {
         DistributedNotificationCenter.default().addObserver(forName: notification, object: nil, queue: .main) { note in
-            guard AppSettings.shared.agentAlerts,
-                  let raw = note.object as? String, let source = AgentSource(rawValue: raw) else { return }
-            let info = note.userInfo ?? [:]
+            guard AppSettings.shared.agentAlerts, let raw = note.object as? String,
+                  let info = CommandEnvelope.open(raw),
+                  let source = (info["source"] as? String).flatMap(AgentSource.init(rawValue:)) else { return }
             let project = info["project"] as? String ?? ""
             let bundle = info["bundle"] as? String ?? ""
             let pid = info["pid"] as? Int ?? 0

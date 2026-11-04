@@ -1,5 +1,8 @@
 #!/bin/bash
 # 개발용: 실행 중인 Dynamic Notch(개발 빌드: scripts/build.sh --dev)에 테스트 명령을 보낸다.
 # Dev only: send a test command to a running dev build (scripts/build.sh --dev).
+# 앱은 열쇠로 봉인한 명령만 받으므로, 빌드한 앱 실행 파일의 --send-command로 보낸다 (NOTCH_APP으로 앱 경로를 바꿀 수 있다).
+# The app only accepts sealed commands, so this goes through the built binary's --send-command (override the app with NOTCH_APP).
 # 예 / e.g.: scripts/notchctl home | collapse | media | lock | unlock | <PreviewID, 예: hud-volume, charger, call-incoming>
-exec /usr/bin/swift -e 'import Foundation; DistributedNotificationCenter.default().postNotificationName(.init("com.dynamicnotch.app.command"), object: CommandLine.arguments[1], userInfo: nil, deliverImmediately: true)' "$1"
+APP="${NOTCH_APP:-$(cd "$(dirname "$0")/.." && pwd)/build/Dynamic Notch.app}"
+exec "$APP/Contents/MacOS/DynamicNotch" --send-command="$1"

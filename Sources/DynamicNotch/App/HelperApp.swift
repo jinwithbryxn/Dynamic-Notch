@@ -5,14 +5,22 @@ import ApplicationServices
 /// 설정·권한 창 전용 도우미 프로세스.
 /// 본 앱이 `--helper=settings|permissions|onboarding`으로 같은 실행 파일을 띄우고,
 /// 창이 모두 닫히면 프로세스가 끝나 그 메모리(SwiftUI 폼, 시스템 글꼴·아이콘 캐시 약 20MB)가 통째로 반환된다.
-/// 설정 변경은 AppSettings가, 미리보기·재시작은 디버그 채널로 본 앱에 전달한다.
+/// 설정 변경은 AppSettings가, 미리보기·재시작은 명령 채널(봉투에 넣어서, CommandEnvelope)로 본 앱에 전달한다.
 enum Helper {
     static let commandNotification = Notification.Name("com.dynamicnotch.app.command")
     static let helperNotification = Notification.Name("com.dynamicnotch.app.helper")
 
-    /// 본 앱에 명령 보내기 (미리보기, 재시작)
+    /// 본 앱에 명령 보내기 (미리보기, 재시작, 에이전트 완료). 봉투에 넣지 못하면 보내지 않는다.
     static func sendToMain(_ command: String) {
-        DistributedNotificationCenter.default().postNotificationName(commandNotification, object: command,
+        guard let envelope = CommandEnvelope.sealCommand(command) else { return }
+        DistributedNotificationCenter.default().postNotificationName(commandNotification, object: envelope,
+                                                                     userInfo: nil, deliverImmediately: true)
+    }
+
+    /// 도우미에 명령 보내기 (창 열기 모드, close). 봉투에 넣지 못하면 보내지 않는다.
+    static func sendToHelper(_ command: String) {
+        guard let envelope = CommandEnvelope.sealCommand(command) else { return }
+        DistributedNotificationCenter.default().postNotificationName(helperNotification, object: envelope,
                                                                      userInfo: nil, deliverImmediately: true)
     }
 
@@ -59,7 +67,7 @@ final class HelperDelegate: NSObject, NSApplicationDelegate {
         // 본 앱이 다시 '설정 열기'를 요청하면 새 프로세스를 띄우지 않고 이 창을 앞으로 가져온다.
         DistributedNotificationCenter.default().addObserver(forName: Helper.helperNotification, object: nil,
                                                             queue: .main) { [weak self] n in
-            guard let self, let command = n.object as? String else { return }
+            guard let self, let raw = n.object as? String, let command = CommandEnvelope.openCommand(raw) else { return }
             if command == "close" {
                 NSApp.terminate(nil)
             } else {

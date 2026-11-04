@@ -165,13 +165,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.settings.reload()
         }
 
-        // 설정 도우미 → 본 앱 명령 채널. 분산 알림은 보낸 쪽을 확인할 수 없으므로
-        // 배포 빌드는 해가 없는 명령(정해진 미리보기, 다시 시작, 코딩 에이전트 완료 알림)만 받는다.
-        // 나머지는 개발 빌드(-DDEV)에서만.
+        // 설정 도우미·알림 스크립트 → 본 앱 명령 채널. 분산 알림은 보낸 쪽을 확인할 수 없으므로
+        // 이 앱의 열쇠로 봉인한 봉투만 받는다 (CommandEnvelope: 꾸민 명령·엿보기·다시 보내기 차단).
+        // 그 안에서도 배포 빌드는 해가 없는 명령(정해진 미리보기, 다시 시작, 코딩 에이전트 완료 알림)만, 나머지는 개발 빌드(-DDEV)에서만.
+        _ = CommandEnvelope.key()   // 보내는 쪽이 쓸 수 있게 열쇠를 미리 만들어 둔다
         DistributedNotificationCenter.default().addObserver(
             forName: Helper.commandNotification, object: nil, queue: .main
         ) { [weak self] note in
-            guard let self, let command = note.object as? String else { return }
+            guard let self, let raw = note.object as? String, let command = CommandEnvelope.openCommand(raw) else { return }
             switch command {
             case let c where c.hasPrefix("preview:"):
                 // 허용 목록(PreviewID)에 있는 미리보기만 실행. "@compact"/"@detail"이 붙으면 그 형태로.
@@ -625,8 +626,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func openHelper(_ mode: String) {
         vm.collapse()
         if let p = helperProcess, p.isRunning {
-            DistributedNotificationCenter.default().postNotificationName(Helper.helperNotification, object: mode,
-                                                                         userInfo: nil, deliverImmediately: true)
+            Helper.sendToHelper(mode)
             return
         }
         guard let exe = Bundle.main.executableURL else { return }
@@ -648,7 +648,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func closeHelper() {
-        DistributedNotificationCenter.default().postNotificationName(Helper.helperNotification, object: "close",
-                                                                     userInfo: nil, deliverImmediately: true)
+        Helper.sendToHelper("close")
     }
 }
