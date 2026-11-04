@@ -182,8 +182,11 @@ final class StocksModel: ObservableObject {
             updateTicker()
             return
         }
-        if refreshTimer == nil {
-            let t = Timer(timeInterval: max(60, refreshMinutes * 60), repeats: true) { [weak self] _ in self?.timerFired() }
+        // 새로고침 간격을 바꾸면 타이머를 다시 만든다
+        let interval = max(60, refreshMinutes * 60)
+        if refreshTimer?.timeInterval != interval {
+            refreshTimer?.invalidate()
+            let t = Timer(timeInterval: interval, repeats: true) { [weak self] _ in self?.timerFired() }
             t.tolerance = 10
             RunLoop.main.add(t, forMode: .common)
             refreshTimer = t

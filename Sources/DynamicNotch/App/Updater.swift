@@ -66,6 +66,7 @@ final class Updater {
     // MARK: - 확인 → 내려받기 → 검증 → 교체
 
     private func performUpdate() -> Result {
+        Self.removeLeftoverWorkFolders()
         guard let release = fetchJSON("https://api.github.com/repos/\(Self.repo)/releases/latest"),
               let tag = release["tag_name"] as? String,
               let assets = release["assets"] as? [[String: Any]] else {
@@ -104,6 +105,7 @@ final class Updater {
         let zipFile = work.appendingPathComponent("update.zip")
         guard (try? zip.write(to: zipFile)) != nil,
               run("/usr/bin/ditto", ["-x", "-k", zipFile.path, work.path]) == 0 else {
+            try? FileManager.default.removeItem(at: work)
             return .failed(T("압축을 풀지 못했습니다", "Couldn't unpack the update"))
         }
         let newApp = work.appendingPathComponent(Bundle.main.bundleURL.lastPathComponent)
@@ -113,12 +115,14 @@ final class Updater {
               info["CFBundleIdentifier"] as? String == Bundle.main.bundleIdentifier,
               let newVersion = info["CFBundleShortVersionString"] as? String,
               Self.isNewer(newVersion, than: Self.currentVersion) else {
+            try? FileManager.default.removeItem(at: work)
             return .failed(T("업데이트 파일 검증에 실패했습니다", "The update failed verification"))
         }
         // 설치 위치에 쓸 수 있어야 교체할 수 있다
         let target = Bundle.main.bundleURL
         guard FileManager.default.isWritableFile(atPath: target.deletingLastPathComponent().path) else {
             DispatchQueue.main.async { NSWorkspace.shared.open(URL(string: "https://github.com/\(Self.repo)/releases/latest")!) }
+            try? FileManager.default.removeItem(at: work)
             return .failed(T("앱 폴더에 쓸 권한이 없어 릴리스 페이지를 열었습니다", "No permission to replace the app; opened the release page"))
         }
         DispatchQueue.main.async { self.install(newApp: newApp, target: target, version: newVersion) }
@@ -162,6 +166,15 @@ final class Updater {
     }
 
     // MARK: - 도우미
+
+    /// 지난 확인·설치가 남긴 임시 폴더(받은 zip과 푼 앱)를 지운다
+    private static func removeLeftoverWorkFolders() {
+        let tmp = FileManager.default.temporaryDirectory
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: tmp.path)) ?? []
+        for name in names where name.hasPrefix("DynamicNotch-update-") {
+            try? FileManager.default.removeItem(at: tmp.appendingPathComponent(name))
+        }
+    }
 
     static func isNewer(_ a: String, than b: String) -> Bool {
         let pa = a.split(separator: ".").map { Int($0) ?? 0 }, pb = b.split(separator: ".").map { Int($0) ?? 0 }

@@ -265,10 +265,6 @@ final class CalendarModel: ObservableObject {
         }
     }
 
-    func requestReminderAccess() {
-        PIMPrivacy.request(.reminder, store: store) { [weak self] _ in self?.reloadVisible() }
-    }
-
     /// 새 일정이 들어갈 캘린더 (설정에서 고른 것, 없으면 기본 캘린더)
     var targetCalendar: EKCalendar? {
         guard access == .granted else { return nil }

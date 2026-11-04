@@ -46,7 +46,7 @@ final class ScreenshotMonitor: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] enabled, source in
                 self?.updatePasteboardWatch(enabled && source != .file)
-                self?.updateFileQuery(source)
+                self?.updateFileQuery(enabled ? source : .clipboard)   // 꺼져 있으면 파일 감시도 멈춘다
             }
             .store(in: &cancellables)
     }

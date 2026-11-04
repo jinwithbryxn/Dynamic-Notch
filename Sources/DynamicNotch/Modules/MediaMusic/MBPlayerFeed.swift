@@ -116,7 +116,7 @@ final class MBPlayerFeed: ObservableObject {
         p.standardError = FileHandle.nullDevice
         out.fileHandleForReading.readabilityHandler = { [weak self] h in
             let data = h.availableData
-            guard !data.isEmpty else { return }
+            guard !data.isEmpty else { h.readabilityHandler = nil; return }   // 끝(EOF)이면 더 부르지 않게
             DispatchQueue.main.async { self?.consume(data) }
         }
         p.terminationHandler = { [weak self] _ in
@@ -214,7 +214,7 @@ final class MBPlayerFeed: ObservableObject {
                 data = MBPlayer.run("tell application id \"com.apple.Music\" to get raw data of artwork 1 of current track").result?.data
             } else if let s = MBPlayer.run("tell application id \"com.spotify.client\" to get artwork url of current track").result?.stringValue,
                       let url = URL(string: s), url.scheme == "https" {
-                data = try? Data(contentsOf: url)
+                data = MediaController.download(url)   // 재생 명령과 같은 줄에서 돌므로 시간·크기 제한이 있는 받기를 쓴다
             }
             DispatchQueue.main.async {
                 guard let self, self.track?.key == key, let data, let img = NSImage(data: data) else { return }

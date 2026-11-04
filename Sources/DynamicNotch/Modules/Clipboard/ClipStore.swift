@@ -212,12 +212,6 @@ final class ClipStore: ObservableObject {
         return list
     }
 
-    func renameList(_ id: UUID, _ name: String) {
-        guard let i = lists.firstIndex(where: { $0.id == id }) else { return }
-        lists[i].name = name
-        scheduleSave()
-    }
-
     /// 목록만 지운다. 항목은 기록에 남고 다시 한도의 적용을 받는다.
     func deleteList(_ id: UUID) {
         lists.removeAll { $0.id == id }

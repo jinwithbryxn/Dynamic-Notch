@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 /// 화면 녹화 표시 (⌘⇧5, QuickTime 등 시스템 녹화).
@@ -33,7 +34,31 @@ final class RecordingMonitor: ObservableObject {
         self.center = center
     }
 
-    func start() { schedule(interval: 1.5) }
+    /// 녹화 감지를 끄면 프로세스 확인도 멈춘다 (꺼 둔 기능은 백그라운드 작업을 하지 않는다)
+    func start() {
+        settings.$recordingEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak self] on in
+                guard let self else { return }
+                if on { self.schedule(interval: 1.5) } else { self.stopPolling() }
+            }
+            .store(in: &cancellables)
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
+    private func stopPolling() {
+        timer?.invalidate()
+        timer = nil
+        interval = 0
+        positiveStreak = 0
+        suppressedAfterScreenshot = false
+        if startedAt != nil {
+            startedAt = nil
+            center.removePersistent(.recording)
+            center.dismissTransient(kind: .recording)
+        }
+    }
 
     /// 평소 1.5초, 스크린샷 도구가 떠 있는 동안은 0.4초마다 확인 (녹화 시작·끝을 1초 안에 반영)
     private var interval: TimeInterval = 0

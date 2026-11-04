@@ -8,7 +8,7 @@ import Security
 /// 토큰은 두 가지다.
 /// - 개발자 토큰: 키체인에만 둔다. 모든 명령 가능 (사용자가 설정에서 복사해 스크립트에 쓴다).
 /// - 훅 토큰: 에이전트 훅·셸 훅 전용 명령만 가능. 훅 프로세스(perl·zsh)는 이 앱의 키체인 항목을 프롬프트 없이 읽을 수 없어서
-///   키체인 값과 같은 것을 0600 파일(`endpoint`)에도 둔다. 다시 만들면 이전 값은 바로 무효.
+///   키체인 값과 같은 것을 0600 파일(`endpoint`)에도 둔다.
 final class LocalAPIServer {
     static let shared = LocalAPIServer(config: .live)
 
@@ -152,13 +152,6 @@ final class LocalAPIServer {
         config.saveToken(Self.developerTokenKey, t)
         developerToken = t
         return t
-    }
-
-    func regenerateHookToken() {
-        let t = Self.randomToken()
-        config.saveToken(Self.hookTokenKey, t)
-        hookToken = t
-        writeEndpointFile()
     }
 
     /// 설정 도우미가 키체인 값을 바꿨을 때 다시 읽는다

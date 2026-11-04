@@ -84,7 +84,9 @@ final class MBYTMusicClient: ObservableObject {
         return out
     }
 
-    private var token: String? { KeychainStore.get(Self.tokenAccount) }
+    /// 키체인은 처음 한 번만 읽고 기억한다. 1초마다 읽으면 재빌드 뒤 키체인 확인 창이 거듭 뜰 수 있다.
+    private lazy var cachedToken: String? = KeychainStore.get(Self.tokenAccount)
+    private var token: String? { cachedToken }
 
     // MARK: 읽기 (탭이 보이는 동안만)
 
@@ -178,6 +180,7 @@ final class MBYTMusicClient: ObservableObject {
                 guard let self else { return }
                 if let tokenValue {
                     KeychainStore.set(tokenValue, for: Self.tokenAccount)
+                    self.cachedToken = tokenValue
                     self.state = .connected
                     self.poll()
                 } else {
@@ -189,6 +192,7 @@ final class MBYTMusicClient: ObservableObject {
 
     func forget() {
         KeychainStore.set(nil, for: Self.tokenAccount)
+        cachedToken = nil
         state = .needsAuth
     }
 

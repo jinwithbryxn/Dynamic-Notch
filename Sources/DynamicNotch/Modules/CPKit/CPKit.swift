@@ -243,7 +243,6 @@ final class CPWindowKeeper: NSObject, NSWindowDelegate {
         windows.removeAll { $0 === w }
     }
 
-    func closeAll() { windows.forEach { $0.close() } }
 }
 
 /// 이미지 클립보드·파일 도우미

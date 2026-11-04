@@ -56,11 +56,6 @@ final class SysMonSampler: ObservableObject {
         reschedule()
     }
 
-    func releaseAll() {
-        users.removeAll()
-        reschedule()
-    }
-
     private func reschedule() {
         let need = parts
         if need.isEmpty {

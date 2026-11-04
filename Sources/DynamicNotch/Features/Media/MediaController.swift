@@ -125,7 +125,7 @@ final class MediaController: ObservableObject {
         p.standardError = FileHandle.nullDevice
         out.fileHandleForReading.readabilityHandler = { [weak self] h in
             let data = h.availableData
-            guard !data.isEmpty else { return }
+            guard !data.isEmpty else { h.readabilityHandler = nil; return }   // 끝(EOF)이면 더 부르지 않게
             DispatchQueue.main.async { self?.consume(data) }
         }
         p.terminationHandler = { [weak self] _ in
@@ -280,7 +280,8 @@ final class MediaController: ObservableObject {
     }
 
     /// 앨범아트 내려받기: HTTPS만, 5초 제한, 10MB 이하만 (백그라운드에서 호출)
-    private static func download(_ url: URL) -> Data? {
+    /// 5초 제한, 10MB까지 (아트워크용)
+    static func download(_ url: URL) -> Data? {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 5)
         request.httpShouldHandleCookies = false
         let sem = DispatchSemaphore(value: 0)

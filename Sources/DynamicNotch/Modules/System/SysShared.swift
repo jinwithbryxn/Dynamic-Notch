@@ -162,7 +162,7 @@ enum SysCommand {
         p.arguments = args
         let out = Pipe()
         p.standardOutput = out
-        p.standardError = Pipe()
+        p.standardError = FileHandle.nullDevice   // 읽지 않는 파이프에 오류 출력이 차면 명령이 멈춘다
         p.standardInput = FileHandle.nullDevice
         do { try p.run() } catch { return nil }
         let killer = DispatchWorkItem { if p.isRunning { p.terminate() } }

@@ -388,11 +388,6 @@ final class ClipboardModule: NotchModule {
         defaults.set(on, "paused")
     }
 
-    func setPref(_ value: Any?, _ name: String) {
-        defaults.set(value, name)
-        ui.prefs = ClipPrefs.load(defaults)
-    }
-
     /// 항목을 클립보드에 넣고, paste면 패널을 열기 전 앱에 붙여넣는다.
     func use(_ item: ClipItem, paste: Bool) {
         if item.kind == .image, store.imageData(for: item) == nil { return }

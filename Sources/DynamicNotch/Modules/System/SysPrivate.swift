@@ -74,16 +74,6 @@ final class SysTemperature {
         }
         return best
     }
-
-    /// 자체 검사용: 센서 이름별 값
-    func allReadings() -> [(String, Double)] {
-        lock.lock(); defer { lock.unlock() }
-        guard let copyEvent, let getFloat else { return [] }
-        return services.compactMap { s in
-            guard let e = copyEvent(s.ref, Self.kTemperatureEvent, 0, 0)?.takeRetainedValue() else { return nil }
-            return (s.name, getFloat(e, Self.kTemperatureField))
-        }
-    }
 }
 
 /// AppleSMC 읽기 전용 접근. 이 앱은 SMC에 값을 쓰지 않는다.
