@@ -1,6 +1,6 @@
 # 기준 상태 (2026-11-02)
 
-Notchy 기능 확장 작업을 시작하기 전의 설치 앱, 로컬 커스텀 변경, upstream 소스를 대조한 기록이다.
+Notchy 기능 확장 작업을 시작하기 전의 설치 앱, 로컬 커스텀 변경, 1.2.2 소스를 대조한 기록이다.
 
 ## 1. 실행 환경
 
@@ -63,19 +63,19 @@ Notchy 기능 확장 작업을 시작하기 전의 설치 앱, 로컬 커스텀 
 - `~/.claude/settings.json`: Stop 훅 `/Users/me/.local/bin/notch-agent-done claude 2>/dev/null || true` (async, timeout 10)
 - `~/.codex/config.toml`: Codex Computer Use가 2026-11-01에 `notify`를 고쳐, 지금은 `SkyComputerUseClient turn-ended --previous-notify '["/Users/me/.local/bin/notch-agent-done","codex"]'`이다. Computer Use가 먼저 실행되고 이 스크립트를 이어서 부른다. 처음 연결할 때(2026-10-27)는 반대로 이 스크립트가 notify였고 Computer Use를 먼저 불렀다. 2026-11-02부터 스크립트는 부모 프로세스가 Computer Use이면 Computer Use를 다시 부르지 않는다(그 전에는 턴마다 두 번 불렸다).
 
-## 4. upstream 비교
+## 4. 1.2.2 비교
 
-- 기준 커밋 `43b1200`(1.0.8) 이후 upstream main `8105e6f`(1.2.2, build 14)까지 19개 커밋, 30개 파일, +3458/−538행.
+- 기준 커밋 `43b1200`(1.0.8) 이후 `8105e6f`(1.2.2, build 14)까지 19개 커밋, 30개 파일, +3458/−538행.
 
-upstream에서 새로 생긴 기능 (설치본에는 없음):
+1.2.2에서 새로 생긴 기능 (설치본에는 없음):
 
 | 기능 | 커밋 | 로컬 변경과의 관계 |
 | --- | --- | --- |
 | AI 사용량 (Claude, ChatGPT, Gemini): 홈 페이지, 노치 표시, 웹 로그인, 갱신 주기 | f6f847d, 8f1e5d2, f464359 | 겹치지 않음 |
-| Claude Code·Codex 완료 알림 (`--agent-done=` 훅, `com.dynamicnotch.app.agent`, 설정에서 연결·해제, 눌러서 앱 열기, 끝난 작업 문구) | 203a5f2, c143a5a | 겹침. upstream 훅은 하위 작업이 남아 있어도 매번 알린다 |
+| Claude Code·Codex 완료 알림 (`--agent-done=` 훅, `com.dynamicnotch.app.agent`, 설정에서 연결·해제, 눌러서 앱 열기, 끝난 작업 문구) | 203a5f2, c143a5a | 겹침. 기존 훅은 하위 작업이 남아 있어도 매번 알린다 |
 | 메모 (홈, 자동 저장, 목록) | 7a704f0, 6932989 | 겹치지 않음 |
 | 홈 기능 순서·끄기, 노치 안 편집 단축키, AirDrop·트레이 숨기기 | 5f2376f | 겹치지 않음 |
-| ⌘⇧5 스크린샷 뒤 녹화 오인 수정 | 1727aa4 | 부분 겹침. ⌘⇧4 영역 선택 오인은 upstream에 없다 |
+| ⌘⇧5 스크린샷 뒤 녹화 오인 수정 | 1727aa4 | 부분 겹침. ⌘⇧4 영역 선택 오인은 1.2.2에 없다 |
 | 설정 창 Liquid Glass 디자인 | 492ebda, 2c0e1b6 | 겹치지 않음 |
 | 라이브 활동 넘겨 보기, 컴팩트 글꼴, 핫스팟·Focus 아이콘 | 8f1e5d2, 7212ade, cc427ae | 겹치지 않음 |
 | Face Unlock 보안·개인정보 설계 문서 (구현 없음) | ce77a70 | - |
@@ -83,21 +83,20 @@ upstream에서 새로 생긴 기능 (설치본에는 없음):
 ## 5. 개발 기준
 
 - 개발 저장소: `~/Developer/Dynamic-Notch`, 브랜치 `notchy-parity`.
-- 기준: upstream 1.2.2(`8105e6f`) 위에 로컬 패치를 옮긴 커밋 `50ebc7b`. 1.0.8 기준으로 진행하면 upstream이 이미 만든 AI 사용량·메모·에이전트 알림을 다시 만들게 되므로 최신 upstream을 기준으로 삼았다.
-- 충돌 처리: `NotchActivity.swift`(양쪽 모두 `.agent` 추가)와 `AppDelegate.swift`(명령 채널)만 충돌했다. `agent:` 명령은 upstream의 에이전트 알림 모양·켜고 끄기 설정을 따르게 했고, 기본 모양은 지금까지 보던 상세 카드로 두었다.
+- 기준: 1.2.2(`8105e6f`) 위에 로컬 패치를 옮긴 커밋 `50ebc7b`. 1.0.8 기준으로 진행하면 1.2.2가 이미 만든 AI 사용량·메모·에이전트 알림을 다시 만들게 되므로 최신 1.2.2를 기준으로 삼았다.
+- 충돌 처리: `NotchActivity.swift`(양쪽 모두 `.agent` 추가)와 `AppDelegate.swift`(명령 채널)만 충돌했다. `agent:` 명령은 1.2.2의 에이전트 알림 모양·켜고 끄기 설정을 따르게 했고, 기본 모양은 지금까지 보던 상세 카드로 두었다.
 - 빌드: `50ebc7b`는 `build-direct.sh`로 빌드된다. 실제 Mac에서 실행 검증은 아직 하지 않았다.
-- 원본 저장소에는 올리지 않는다(로컬 브랜치만).
 
 ## 6. 빌드·설치 안전 수칙
 
-- upstream `scripts/build.sh --install`은 `pkill -x DynamicNotch` 후 `/Applications/Dynamic Notch.app`을 지우고 복사한다. `--run`도 같은 이름의 프로세스를 모두 끝낸다. 검증 전에는 쓰지 않는다.
+- `scripts/build.sh --install`은 `pkill -x DynamicNotch` 후 `/Applications/Dynamic Notch.app`을 지우고 복사한다. `--run`도 같은 이름의 프로세스를 모두 끝낸다. 검증 전에는 쓰지 않는다.
 - 검토용 앱은 `scripts/review.sh`로 만든다. 이름 `Dynamic Notch Review`, 번들 ID `com.dynamicnotch.app.review`, 실행 파일 `DynamicNotchReview`로 설치본과 설정·권한·프로세스가 섞이지 않는다. 분산 알림 채널은 같으므로 두 앱을 동시에 켜지 않는다(`start`가 설치본을 정상 종료하고, `stop`이 다시 띄운다).
 
 ## 7. 복원 자료
 
 | 자료 | 위치 |
 | --- | --- |
-| 원본 1.0.8 앱 | `~/.local/share/dynamic-notch-agent/original-1.0.8/` |
+| 1.0.8 앱 | `~/.local/share/dynamic-notch-agent/original-1.0.8/` |
 | 스크린샷 수정 전 앱 | `~/.local/share/dynamic-notch-agent/previous-app/` |
 | 호버 수정 전 앱 | `~/.local/share/dynamic-notch-agent/previous-app-20261102/` |
 | 패치 이전 판 | `agent-alert.patch.bak-20261101`, `agent-alert.patch.bak-20261102` |

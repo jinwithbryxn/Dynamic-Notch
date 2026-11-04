@@ -3,7 +3,7 @@
 # Install or restore the personal build. The current app and settings are backed up first; the old app is moved, never deleted.
 #
 # 사용법 / Usage: scripts/install-local.sh <build|install|restore <백업 폴더>|backups>
-#   build     ~/Developer/Dynamic-Notch-build/install/ 에 설치용 앱을 만든다 (번들 ID com.dynamicnotch.app)
+#   build     build/install/ 에 설치용 앱을 만든다 (INSTALL_OUT으로 바꿀 수 있음) (번들 ID com.dynamicnotch.app)
 #   install   build 후 백업 → 앱 종료 → 교체 → 다시 실행
 #   restore   백업 폴더의 앱(과 settings.plist)으로 되돌린다
 #   backups   백업 목록
@@ -18,7 +18,7 @@ LEGACY_NAME="Dynamic Notch"
 EXE="DynamicNotch"
 BUNDLE_ID="com.dynamicnotch.app"
 MIN_OS="14.0"
-OUT="$HOME/Developer/Dynamic-Notch-build/install"
+OUT="${INSTALL_OUT:-$PWD/build/install}"
 BUILT="$OUT/$NAME.app"
 TARGET="/Applications/$NAME.app"
 LEGACY_TARGET="/Applications/$LEGACY_NAME.app"

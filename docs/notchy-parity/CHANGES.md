@@ -1,6 +1,6 @@
 # 변경 기록 (notchy-parity)
 
-기준: upstream `8105e6f` (1.2.2) + 로컬 에이전트 알림 패치(`50ebc7b`). 아래는 그 위에 더한 변경이다.
+기준: 1.2.2 `8105e6f` (1.2.2) + 로컬 에이전트 알림 패치(`50ebc7b`). 아래는 그 위에 더한 변경이다.
 
 ## 공통 노치 상태 (P1)
 
@@ -27,7 +27,7 @@
 
 | 변경 | 파일 | 대조표 행 |
 |---|---|---|
-| 개인 빌드 표시(`DMNCustomBuild`)가 있으면 업데이트 확인이 원본 릴리스로 교체하지 않고 알리기만 함 | `App/Updater.swift`, `Resources/Info.plist` | M-L-017 |
+| 개인 빌드 표시(`DMNCustomBuild`)가 있으면 업데이트 확인이 릴리스 파일로 교체하지 않고 알리기만 함 | `App/Updater.swift`, `Resources/Info.plist` | M-L-017 |
 | 메모리 지킴이 기본 기준 70 → 150MB, 켜진 기능당 3MB 여유, 진행 중 작업이 있는 기능은 재시작 막음 | `Settings/AppSettings.swift`, `App/MemoryGuard.swift`, `App/AppDelegate.swift` | M-L-023 |
 | 설치·복원 스크립트 (기존 앱은 지우지 않고 백업 폴더로 이동) | `scripts/install-local.sh` | M-L-017 |
 

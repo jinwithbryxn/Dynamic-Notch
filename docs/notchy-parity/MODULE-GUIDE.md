@@ -43,7 +43,7 @@ Notchy 기능을 옮길 때 모든 기능은 이 규칙을 따르는 모듈로 �
 
 ## 4. 빌드와 검증 (설치 앱을 건드리지 않음)
 
-- 빌드: `REVIEW_OUT=$HOME/Developer/Dynamic-Notch-build/<작업이름> scripts/review.sh build`
+- 빌드: `REVIEW_OUT="$PWD/build/review-<작업이름>" scripts/review.sh build`
 - 실행 파일: `"$REVIEW_OUT/Dynamic Notch Review.app/Contents/MacOS/DynamicNotchReview"`
   - `--list-modules`
   - `--module-selftest=<id>`: 실제 macOS 기능을 호출하되 화면·사용자 데이터·시스템 상태를 바꾸지 않는다.

@@ -73,7 +73,7 @@ final class Updater {
         }
         let latest = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
         guard Self.isNewer(latest, than: Self.currentVersion) else { return .upToDate }
-        // 개인 빌드(확장 기능·로컬 알림 수정 포함)는 원본 릴리스로 바꾸지 않는다. 새 버전이 있다는 것만 알린다.
+        // 개인 빌드(확장 기능·로컬 알림 수정 포함)는 릴리스 파일로 자동 교체하지 않는다. 새 버전이 있다는 것만 알린다.
         if Self.isCustomBuild {
             return .failed(T("새 버전 \(latest)이 있지만 개인 빌드라 자동으로 바꾸지 않습니다",
                              "Version \(latest) is available, but this custom build is not replaced automatically"))

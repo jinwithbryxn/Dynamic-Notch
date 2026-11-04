@@ -56,7 +56,7 @@
 ### 4.1 종료 요청이 도우미에 먼저 감 (`4672cdb`)
 
 - 증상: 검토용 앱이 종료 요청을 받고도 꺼지지 않아 설치 앱과 함께 떠 있었다.
-- 원인: 설정·권한(첫 안내) 창은 같은 실행 파일을 같은 번들 ID의 도우미 프로세스로 띄운다. `tell application id … to quit`이 본 앱이 아니라 도우미에 먼저 가서 도우미만 끝났다. 도우미가 없을 때는 바로 꺼졌다(3회 반복으로 확인). upstream 구조에서 온 동작이며 이번 기능 추가로 생긴 것은 아니다.
+- 원인: 설정·권한(첫 안내) 창은 같은 실행 파일을 같은 번들 ID의 도우미 프로세스로 띄운다. `tell application id … to quit`이 본 앱이 아니라 도우미에 먼저 가서 도우미만 끝났다. 도우미가 없을 때는 바로 꺼졌다(3회 반복으로 확인). 기존 구조에서 온 동작이며 이번 기능 추가로 생긴 것은 아니다.
 - 영향: 설정 창을 연 채로 설치·복원하면 `install-local.sh`가 "did not quit"으로 멈췄을 것이다(교체는 하지 않으므로 안전하지만 설치가 안 됨).
 - 수정: `scripts/install-local.sh`와 `scripts/review.sh`가 본 앱과 도우미가 모두 끝날 때까지 2초마다 다시 종료를 요청한다(최대 15초).
 - 참고: 검토용 앱과 설치 앱은 명령 채널 이름(`com.dynamicnotch.app.command`)이 같다. 둘을 동시에 띄우면 한쪽에 보낸 명령을 다른 쪽도 받는다. 검토용 앱을 띄울 때는 설치 앱을 끄므로 평소에는 겹치지 않는다.
@@ -99,7 +99,7 @@
 ### 4.6 작업 완료 알림이 두 번, 다른 아이콘으로 뜸 (`55f49bf`, `1326b1b`)
 
 - 증상: 사용자가 Claude 작업 완료 알림의 아이콘이 예전 아이콘으로 돌아갔다고 알렸다.
-- 원인: 17:48:18–19에 upstream 완료 훅(`AgentHooks`)이 들어갔다. `~/.claude/settings.json`에 `--agent-done=claude` Stop 훅이 하나 더 생기고, `~/.codex/config.toml`의 notify가 이 앱으로 감싸졌다. 이 훅은 설정 창 'Claude Code · Codex' 페이지의 '연결'로만 들어가므로, 그때 설정 창을 둘러보다 눌린 것으로 본다. 페이지는 기존 알림 스크립트(`~/.local/bin/notch-agent-done`)를 알아보지 못해 '연결 안 됨'으로 보였다. 이 훅은 SF 기호("sparkle") 카드를 띄우고 백그라운드 작업·하위 에이전트 거르기가 없어, 실제 앱 아이콘을 쓰는 기존 스크립트 알림과 함께 두 번 뜬다. 또 settings.json을 `JSONSerialization`으로 다시 써서 파일 전체의 키 순서와 띄어쓰기가 바뀌었다.
+- 원인: 17:48:18–19에 기존 완료 훅(`AgentHooks`)이 들어갔다. `~/.claude/settings.json`에 `--agent-done=claude` Stop 훅이 하나 더 생기고, `~/.codex/config.toml`의 notify가 이 앱으로 감싸졌다. 이 훅은 설정 창 'Claude Code · Codex' 페이지의 '연결'로만 들어가므로, 그때 설정 창을 둘러보다 눌린 것으로 본다. 페이지는 기존 알림 스크립트(`~/.local/bin/notch-agent-done`)를 알아보지 못해 '연결 안 됨'으로 보였다. 이 훅은 SF 기호("sparkle") 카드를 띄우고 백그라운드 작업·하위 에이전트 거르기가 없어, 실제 앱 아이콘을 쓰는 기존 스크립트 알림과 함께 두 번 뜬다. 또 settings.json을 `JSONSerialization`으로 다시 써서 파일 전체의 키 순서와 띄어쓰기가 바뀌었다.
 - 되돌림: 두 파일을 `*.bak-20261102-dupehook`으로 남겼다. settings.json은 내용이 같은 2026-10-27 사본(`settings.json.dynamicnotch.bak`)으로 글자까지 되돌렸고, config.toml은 notify 줄만 17:48 전 줄로 되돌렸다(`config.toml.dynamicnotch.bak`과 같음).
 - 수정
   - 설정 페이지가 notch-agent-done이 이미 연결돼 있으면 '연결됨 (알림 스크립트)'로 보이고 연결 버튼을 숨긴다. `AgentHooks.install`도 이때 건너뛴다.

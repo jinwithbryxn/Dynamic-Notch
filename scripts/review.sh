@@ -3,7 +3,7 @@
 # Build and run a side-by-side review copy without touching the installed app.
 #
 # 사용법 / Usage: scripts/review.sh <build|start|stop|status>
-#   build   ~/Developer/Dynamic-Notch-build/review/ 에 검토용 앱을 만든다
+#   build   build/review/ 에 검토용 앱을 만든다 (REVIEW_OUT으로 바꿀 수 있음)
 #   start   설치된 앱을 정상 종료하고 검토용 앱을 띄운다 (두 앱이 같은 노치에 겹쳐 그리지 않게)
 #   stop    검토용 앱을 끝내고 설치된 앱을 다시 띄운다
 #   status  어느 쪽이 실행 중인지 보여 준다
@@ -20,7 +20,7 @@ BUNDLE_ID="com.dynamicnotch.app.review"
 INSTALLED_ID="com.dynamicnotch.app"
 MIN_OS="14.0"
 # REVIEW_OUT으로 출력 폴더를 바꿀 수 있다 (여러 작업 폴더에서 동시에 빌드할 때)
-OUT="${REVIEW_OUT:-$HOME/Developer/Dynamic-Notch-build/review}"
+OUT="${REVIEW_OUT:-$PWD/build/review}"
 APP="$OUT/$NAME.app"
 
 build() {
