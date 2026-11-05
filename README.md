@@ -34,6 +34,8 @@ This build **does not replace itself**. It is marked as a custom build, so **rig
 To update by hand, quit the app, replace it in Applications, and open it again.
 If Accessibility or Input Monitoring stop working after an update, remove Dynamic Notch from that list in System Settings (−) and allow it again.
 
+**Coming from 1.2.3 or earlier:** since 1.2.4 the bundle ID is `com.dynamicnotch.app`, so macOS treats 1.2.4 as a new app. Before replacing the old app, turn off Long-Running Commands if you use it (that removes the block it added to your shell config). After replacing it, allow the permissions again (Permissions → allow the remaining ones in turn), turn Open at Login back on, and connect Claude Code · Codex again if you connected them in the app. Settings, memos and tray items from 1.2.3 or earlier are not carried over. The old entries can be removed from the System Settings privacy lists (−).
+
 ## Permissions
 
 Every permission is optional — without one, only the matching feature turns off. Manage them anytime from **right-click the notch → Permissions…**.
@@ -186,7 +188,7 @@ Not every module has been tried on a real Mac with its permissions granted. The 
   - `~/Library/Application Support/DynamicNotch/Memos/` — memos
   - `~/Library/Application Support/Dynamic Notch/` — tray copies and the lyrics cache
 
-  The bundle ID and these folders keep the app's earlier name so permissions and saved data carry over. Quit the app and delete them to reset.
+  Quit the app and delete them to reset.
 
 ## Memory & background work
 
@@ -253,6 +255,8 @@ macOS 26에서만 빌드·시험했습니다. macOS 14·15에서는 실행해 �
 이 빌드는 **스스로 업데이트하지 않습니다**. 개인 빌드로 표시돼 있어, **노치 우클릭 → 업데이트 확인…**을 누르면 GitHub에 새 릴리스가 있는지만 알려 줍니다. 새 버전은 [Releases](https://github.com/jinwithbryxn/Dynamic-Notch/releases)에서 받아 직접 바꿔 주세요.
 직접 업데이트하려면 앱을 종료하고 응용 프로그램 폴더의 앱을 새 버전으로 바꾼 뒤 다시 실행합니다.
 업데이트 후 손쉬운 사용·입력 모니터링이 허용돼 있는데도 동작하지 않으면, 시스템 설정의 해당 목록에서 Dynamic Notch를 지우고(−) 다시 허용하세요.
+
+**1.2.3 이하에서 올릴 때:** 1.2.4부터 번들 ID가 `com.dynamicnotch.app`이라 macOS는 1.2.4를 새 앱으로 봅니다. 옛 앱을 바꾸기 전에 오래 걸리는 명령 알림을 쓰고 있었다면 꺼 주세요(셸 설정 파일에 넣은 블록을 지웁니다). 바꾼 뒤에는 권한을 다시 허용하고(권한 → 남은 항목 차례로 허용), 로그인 시 열기를 다시 켜고, 앱에서 Claude Code · Codex를 연결했었다면 다시 연결하세요. 1.2.3 이하의 설정·메모·트레이 항목은 옮겨지지 않습니다. 시스템 설정의 개인정보 목록에 남은 옛 항목은 지워도 됩니다(−).
 
 ## 권한
 
@@ -406,7 +410,7 @@ Claude Code·Codex 작업이 끝나면 노치에 **완료**가 뜨고, 누르면
   - `~/Library/Application Support/DynamicNotch/Memos/` — 메모
   - `~/Library/Application Support/Dynamic Notch/` — 트레이 복사본, 가사 캐시
 
-  번들 ID와 이 폴더들은 권한과 저장한 데이터가 그대로 이어지도록 앱의 예전 이름을 씁니다. 초기화하려면 앱을 종료하고 모두 지우세요.
+  초기화하려면 앱을 종료하고 모두 지우세요.
 
 ## 메모리·백그라운드 작업
 

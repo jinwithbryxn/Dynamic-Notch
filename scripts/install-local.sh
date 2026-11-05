@@ -13,15 +13,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 NAME="Dynamic Notch"
-# 2026-11-04 제품 이름을 바꾸기 전의 앱 이름. 그 이름으로 설치된 앱도 끄고 백업 폴더로 옮긴다
-LEGACY_NAME="Dynamic Notch"
 EXE="DynamicNotch"
 BUNDLE_ID="com.dynamicnotch.app"
 MIN_OS="14.0"
 OUT="${INSTALL_OUT:-$PWD/build/install}"
 BUILT="$OUT/$NAME.app"
 TARGET="/Applications/$NAME.app"
-LEGACY_TARGET="/Applications/$LEGACY_NAME.app"
 BACKUP_ROOT="$HOME/.local/share/dynamic-notch-agent/backups"
 
 build() {
@@ -46,18 +43,28 @@ build() {
   echo "built: $BUILT ($(git rev-parse --short HEAD))"
 }
 
-running() { pgrep -f "/($NAME|$LEGACY_NAME)\.app/Contents/MacOS/$EXE" >/dev/null; }
+# 앱 번들의 Info.plist 값 (번들 ID·실행 파일 이름이 이 빌드와 다른 예전 앱·백업도 그 앱의 값으로 다룬다)
+plist() { /usr/libexec/PlistBuddy -c "Print :$2" "$1/Contents/Info.plist" 2>/dev/null; }
 
 # 설정·권한 창은 같은 번들 ID의 도우미 프로세스라 종료 요청이 도우미에 먼저 갈 수 있다.
 # 본 앱과 도우미가 모두 끝날 때까지 2초마다 다시 요청한다 (최대 15초).
 quit_app() {
+  local id="$1" exe="$2"
   for i in $(seq 0 59); do
-    running || return 0
-    [ $((i % 8)) -eq 0 ] && { osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true; }
+    pgrep -f "/$NAME\.app/Contents/MacOS/$exe" >/dev/null || return 0
+    [ $((i % 8)) -eq 0 ] && { osascript -e "tell application id \"$id\" to quit" >/dev/null 2>&1 || true; }
     sleep 0.25
   done
   echo "error: $NAME did not quit; nothing was replaced" >&2
   exit 1
+}
+
+# 지금 설치된 앱을 끈다. 번들 ID가 이 빌드와 다르면 그 앱의 ID와 실행 파일 이름으로 끈다
+quit_installed() {
+  if [ -d "$TARGET" ]; then
+    quit_app "$(plist "$TARGET" CFBundleIdentifier)" "$(plist "$TARGET" CFBundleExecutable)"
+  fi
+  quit_app "$BUNDLE_ID" "$EXE"
 }
 
 LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
@@ -79,20 +86,20 @@ install() {
   stamp=$(date +%Y%m%d-%H%M%S)
   dir="$BACKUP_ROOT/$stamp"
   mkdir -p "$dir"
-  defaults export "$BUNDLE_ID" "$dir/settings.plist"
+  # 설정은 지금 설치된 앱의 번들 ID로 백업한다 (restore가 같은 ID로 되돌린다)
+  local old_id="$BUNDLE_ID"
+  [ -d "$TARGET" ] && old_id="$(plist "$TARGET" CFBundleIdentifier)"
+  defaults export "$old_id" "$dir/settings.plist" 2>/dev/null || true
   git rev-parse HEAD > "$dir/installed-commit.txt"
-  quit_app
+  quit_installed
   if [ -d "$TARGET" ]; then
     # 기존 앱은 지우지 않고 백업 폴더로 옮긴다 (되돌리기용)
     mv "$TARGET" "$dir/$NAME.app"
+    "$LSREGISTER" -u "$dir/$NAME.app" 2>/dev/null || true
   fi
-  if [ -d "$LEGACY_TARGET" ]; then
-    # 옛 이름의 앱이 남아 있으면 같은 번들 ID가 둘이 되므로 함께 옮긴다
-    mv "$LEGACY_TARGET" "$dir/$LEGACY_NAME.app"
+  if [ "$old_id" != "$BUNDLE_ID" ]; then
+    echo "note: the installed app had bundle ID $old_id; this build is $BUNDLE_ID, so macOS treats it as a new app (permissions and the login item start fresh; settings are not copied)"
   fi
-  for old in "$dir/$NAME.app" "$dir/$LEGACY_NAME.app"; do
-    [ -d "$old" ] && "$LSREGISTER" -u "$old" 2>/dev/null || true
-  done
   ditto "$BUILT" "$TARGET"
   codesign --verify --deep --strict "$TARGET"
   # 빌드 폴더의 사본이 같은 번들 ID로 등록돼 있으면 'open -b'·시스템 설정이 그쪽을 가리킬 수 있어 등록을 지운다
@@ -103,24 +110,26 @@ install() {
 
 restore() {
   local dir="${1:?usage: scripts/install-local.sh restore <backup folder>}"
-  # 이름을 바꾸기 전의 백업에는 옛 이름의 앱이 들어 있다. 그 이름 그대로 되돌린다
-  local name="$NAME"
-  [ -d "$dir/$name.app" ] || name="$LEGACY_NAME"
-  [ -d "$dir/$name.app" ] || { echo "error: no app in $dir" >&2; exit 1; }
-  local stamp
+  # 백업 폴더의 앱 이름·번들 ID·실행 파일 이름이 이 빌드와 달라도 그 앱의 값 그대로 되돌린다
+  local app
+  app="$(find "$dir" -maxdepth 1 -name '*.app' | head -1)"
+  [ -n "$app" ] || { echo "error: no app in $dir" >&2; exit 1; }
+  local id exe stamp
+  id="$(plist "$app" CFBundleIdentifier)"
+  exe="$(plist "$app" CFBundleExecutable)"
   stamp=$(date +%Y%m%d-%H%M%S)
   mkdir -p "$BACKUP_ROOT/replaced-$stamp"
-  quit_app
-  [ -d "$TARGET" ] && mv "$TARGET" "$BACKUP_ROOT/replaced-$stamp/$NAME.app"
-  [ -d "$LEGACY_TARGET" ] && mv "$LEGACY_TARGET" "$BACKUP_ROOT/replaced-$stamp/$LEGACY_NAME.app"
-  for old in "$BACKUP_ROOT/replaced-$stamp"/*.app; do
-    [ -d "$old" ] && "$LSREGISTER" -u "$old" 2>/dev/null || true
-  done
-  TARGET="/Applications/$name.app"
-  ditto "$dir/$name.app" "$TARGET"
+  quit_installed
+  if [ -d "$TARGET" ]; then
+    mv "$TARGET" "$BACKUP_ROOT/replaced-$stamp/$NAME.app"
+    "$LSREGISTER" -u "$BACKUP_ROOT/replaced-$stamp/$NAME.app" 2>/dev/null || true
+  fi
+  TARGET="/Applications/$(basename "$app")"
+  EXE="$exe"
+  ditto "$app" "$TARGET"
   if [ -f "$dir/settings.plist" ]; then
-    defaults export "$BUNDLE_ID" "$BACKUP_ROOT/replaced-$stamp/settings.plist"
-    defaults import "$BUNDLE_ID" "$dir/settings.plist"
+    defaults export "$id" "$BACKUP_ROOT/replaced-$stamp/settings.plist" 2>/dev/null || true
+    defaults import "$id" "$dir/settings.plist"
   fi
   echo "restored from: $dir (replaced app kept in $BACKUP_ROOT/replaced-$stamp)"
   launch

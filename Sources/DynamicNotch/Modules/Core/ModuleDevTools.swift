@@ -12,7 +12,7 @@ import SwiftUI
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
 ///   --render-permissions --out=<png> [--wait=<초>] [--height=<pt>]
 ///                                          권한 관리 창을 밝은 배경에 그려 PNG로 저장 (이 앱의 실제 권한 상태로)
-///   --login-item=off                       이 앱 번들의 '로그인 시 열기' 등록을 지운다 (검토용 앱 정리용)
+///   --login-item=off|on                    이 앱 번들의 '로그인 시 열기' 등록을 지우거나 넣는다 (검토용 앱 정리, 설치본 옮기기용)
 enum ModuleDevTools {
     static func handle(_ arguments: [String]) {
         func value(_ name: String) -> String? {
@@ -22,6 +22,15 @@ enum ModuleDevTools {
             do {
                 try SMAppService.mainApp.unregister()
                 print("login item: unregistered \(Bundle.main.bundleIdentifier ?? "")")
+            } catch {
+                print("login item: \(error.localizedDescription) (status \(SMAppService.mainApp.status.rawValue))")
+            }
+            exit(0)
+        }
+        if value("login-item") == "on" {
+            do {
+                try SMAppService.mainApp.register()
+                print("login item: registered \(Bundle.main.bundleIdentifier ?? "") (status \(SMAppService.mainApp.status.rawValue))")
             } catch {
                 print("login item: \(error.localizedDescription) (status \(SMAppService.mainApp.status.rawValue))")
             }

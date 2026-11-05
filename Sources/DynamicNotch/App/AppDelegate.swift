@@ -407,14 +407,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         for url in urls where !DeepLinkModule.handle(url) { ModuleServices.handle(url) }
     }
 
-    /// 앱 위치가 바뀌면(제품 이름 변경으로 Dynamic Notch.app → Dynamic Notch.app 등) 로그인 항목이 옛 경로를 가리켜
-    /// 로그인할 때 열리지 않는다. 켜져 있었다면 지금 위치로 다시 등록한다. 기록이 없으면 옛 이름의 설치 경로로 본다.
+    /// 앱 위치가 바뀌면(앱 이름이나 폴더를 바꾼 경우) 로그인 항목이 옛 경로를 가리켜
+    /// 로그인할 때 열리지 않는다. 켜져 있었다면 지금 위치로 다시 등록한다.
     private func refreshLoginItemIfMoved() {
         let key = "loginItemBundlePath"
         let path = Bundle.main.bundlePath
-        let last = UserDefaults.standard.string(forKey: key) ?? "/Applications/Dynamic Notch.app"
+        let last = UserDefaults.standard.string(forKey: key)
         UserDefaults.standard.set(path, forKey: key)
-        guard last != path, SMAppService.mainApp.status == .enabled else { return }
+        guard let last, last != path, SMAppService.mainApp.status == .enabled else { return }
         do {
             try SMAppService.mainApp.unregister()
             try SMAppService.mainApp.register()
