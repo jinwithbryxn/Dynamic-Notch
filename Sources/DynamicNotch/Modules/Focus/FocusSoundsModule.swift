@@ -317,7 +317,7 @@ struct FocusSoundQuickMenu: View {
                 Image(systemName: player.current?.symbol ?? "speaker.wave.2")
                 Text(player.current?.label ?? T("배경음", "Sounds"))
             }
-            .font(.system(size: 11, weight: .semibold))
+            .font(.island(.footnote, .semibold))
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -335,8 +335,8 @@ private struct FocusSoundsTab: View {
                 ForEach(FocusSoundPlayer.Sound.allCases) { s in
                     Button { player.toggle(s) } label: {
                         VStack(spacing: 6) {
-                            Image(systemName: s.symbol).font(.system(size: 20))
-                            Text(s.label).font(.system(size: 11, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                            Image(systemName: s.symbol).font(.island(.title2))
+                            Text(s.label).font(.island(.footnote)).lineLimit(1).minimumScaleFactor(0.8)
                         }
                         .foregroundStyle(player.current == s ? Color.black : Color.white)
                         .frame(maxWidth: .infinity, minHeight: 64)
@@ -351,7 +351,7 @@ private struct FocusSoundsTab: View {
                 }
             }
             HStack(spacing: 10) {
-                Image(systemName: "speaker.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "speaker.fill").font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Slider(value: Binding(get: { Double(player.volume) }, set: {
                     player.volume = Float($0)
                     // 같은 프로세스라 알림 없이 바로 저장 (끄는 동안 매번 다른 기능을 깨우지 않게)
@@ -359,10 +359,10 @@ private struct FocusSoundsTab: View {
                 }), in: 0...1)
                 .controlSize(.small)
                 .accessibilityLabel(T("음량", "Volume"))
-                Image(systemName: "speaker.wave.3.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "speaker.wave.3.fill").font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Text(player.current == nil ? T("파일 없이 실시간 합성 · 오프라인", "Generated live · offline")
                                            : T("재생 중 · 잠자기나 출력 변경 시 멈춤", "Playing · stops on sleep or output change"))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                     .lineLimit(1)
                     .fixedSize()
             }

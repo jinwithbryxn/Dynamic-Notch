@@ -260,16 +260,16 @@ private struct KeepAwakeTab: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 12) {
                 Image(systemName: engine.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")
-                    .font(.system(size: 26))
+                    .font(.island(.title1))
                     .foregroundStyle(engine.isActive ? Color(red: 0.85, green: 0.62, blue: 0.38) : .white.opacity(0.5))
                     .frame(width: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(engine.isActive ? T("깨어 있는 중", "Staying awake") : T("평소처럼 잠들어요", "Sleeping as usual"))
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.island(.title3, .semibold))
                     Text(engine.isActive ? engine.statusText
                                          : (engine.attached ? T("기간을 고르면 그동안 Mac이 잠들지 않아요", "Pick a duration to keep your Mac awake")
                                                             : T("기능이 켜진 본 앱에서 동작해요", "Works in the running app when the feature is on")))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 }
                 Spacer()
                 if engine.isActive {
@@ -284,7 +284,7 @@ private struct KeepAwakeTab: View {
                 }
             }
             HStack(spacing: 8) {
-                Text(T("종료 시각", "Until")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                Text(T("종료 시각", "Until")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 DatePicker("", selection: $untilTime, displayedComponents: .hourAndMinute)
                     .labelsHidden()
                     .datePickerStyle(.stepperField)
@@ -299,7 +299,7 @@ private struct KeepAwakeTab: View {
             }
             Text(T("덮개를 닫아도 깨어 있기는 관리자 권한(pmset)이 필요해 지원하지 않아요. 대안: 전원·외부 화면을 연결한 클램쉘 모드.",
                    "Staying awake with the lid closed needs admin rights (pmset) and isn't supported. Alternative: clamshell mode with power and an external display."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(.white)

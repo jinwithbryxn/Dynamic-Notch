@@ -163,7 +163,7 @@ private struct VideoSaverTab: View {
                     ProgressView(value: min(max(p, 0), 1)).tint(.white).controlSize(.small)
                 }
                 Text(module.error ?? (module.detail.isEmpty ? T("다운로드 폴더에 저장 · ffmpeg ", "Saves to Downloads · ffmpeg ") + (module.ffmpeg != nil ? T("있음", "found") : T("없음(합치기 없이 저장)", "missing (no merging)")) : module.detail))
-                    .font(.system(size: 11)).foregroundStyle(module.error != nil ? Color.red.opacity(0.85) : LaunchUI.secondary).lineLimit(2)
+                    .font(.island(.footnote)).foregroundStyle(module.error != nil ? Color.red.opacity(0.85) : LaunchUI.secondary).lineLimit(2)
                 if let f = module.lastFile {
                     LaunchChip(title: T("Finder에서 보기", "Show in Finder"), symbol: "folder") { NSWorkspace.shared.activateFileViewerSelecting([f]) }
                 }

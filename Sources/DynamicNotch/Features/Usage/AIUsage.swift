@@ -365,16 +365,16 @@ struct UsagePage: View {
         VStack(spacing: 6) {
             HStack {
                 Text(T("AI 사용량", "AI Usage"))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.island(.subhead, .semibold))
                     .foregroundStyle(.white.opacity(0.85))
                 Spacer()
                 if store.refreshing {
                     ProgressView().controlSize(.mini).tint(.white)
                 } else if let latest = services.compactMap({ store.usage[$0]?.fetched }).max() {
-                    Text(Self.ago(latest)).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                    Text(Self.ago(latest)).font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
                 }
                 Button { store.refresh() } label: {
-                    Image(systemName: "arrow.clockwise").font(.system(size: 10, weight: .semibold))
+                    Image(systemName: "arrow.clockwise").font(.island(.caption, .semibold))
                         .foregroundStyle(.white.opacity(0.7))
                         .frame(width: 18, height: 18)
                         .contentShape(Rectangle())
@@ -386,9 +386,9 @@ struct UsagePage: View {
                 Spacer(minLength: 0)
                 Button(action: openSettings) {
                     VStack(spacing: 4) {
-                        Image(systemName: "person.crop.circle.badge.plus").font(.system(size: 18))
+                        Image(systemName: "person.crop.circle.badge.plus").font(.island(.title2))
                         Text(T("설정 → 상호작용 → AI 사용량에서 로그인하세요", "Sign in under Settings → Interactions → AI Usage"))
-                            .font(.system(size: 10.5))
+                            .font(.island(.caption))
                             .multilineTextAlignment(.center)
                     }
                     .foregroundStyle(.white.opacity(0.6))
@@ -412,13 +412,13 @@ struct UsagePage: View {
                 HStack(spacing: 5) {
                     Circle().fill(service.tint).frame(width: 7, height: 7)
                     Text(service.shortName)
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.island(.footnote, .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     if let u, u.hasData, u.error != nil {
                         // 이전 값을 보여 주는 중: 이번 새로고침은 실패 (예: 다시 로그인 필요)
                         Image(systemName: "exclamationmark.circle.fill")
-                            .font(.system(size: 9))
+                            .font(.island(.caption2))
                             .foregroundStyle(.orange)
                             .help(Self.errorText(u.error, loading: false))
                     }
@@ -435,7 +435,7 @@ struct UsagePage: View {
                 }
             } else {
                 Text(Self.errorText(u?.error, loading: u == nil))
-                    .font(.system(size: 10))
+                    .font(.island(.caption))
                     .foregroundStyle(.white.opacity(0.5))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -446,15 +446,15 @@ struct UsagePage: View {
     private func meter(_ label: String, _ w: UsageWindow?, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
-                Text(label).font(.system(size: 9, weight: .semibold)).foregroundStyle(.white.opacity(0.5))
+                Text(label).font(.island(.caption2, .semibold)).foregroundStyle(.white.opacity(0.5))
                 Spacer(minLength: 0)
                 Text(w.map { "\(Int($0.percent.rounded()))%" } ?? "–")
-                    .font(.system(size: 10.5, weight: .semibold, design: .rounded)).monospacedDigit()
+                    .font(.island(.caption, .semibold)).monospacedDigit()
                     .foregroundStyle(.white)
             }
             BarGauge(value: (w?.percent ?? 0) / 100, tint: UsageGlyph.color(w?.percent, tint: tint))
             Text(w?.resetsAt.map(Self.resetText) ?? " ")
-                .font(.system(size: 8.5)).foregroundStyle(.white.opacity(0.4)).lineLimit(1)
+                .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).lineLimit(1)
         }
         .frame(maxWidth: .infinity)
     }

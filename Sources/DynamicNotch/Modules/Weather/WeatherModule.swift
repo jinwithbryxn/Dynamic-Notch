@@ -572,10 +572,10 @@ private struct WeatherHomeCard: View {
         if let s = model.summary {
             HStack(spacing: 10) {
                 Image(systemName: s.symbol).symbolRenderingMode(.multicolor)
-                    .font(.system(size: 24)).frame(width: 34)
+                    .font(.island(.title1)).frame(width: 34)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("\(s.temperature) \(s.condition)").font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
-                    Text("\(s.place) · \(s.detail)").font(.system(size: 11)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                    Text("\(s.temperature) \(s.condition)").font(.island(.subhead, .semibold)).lineLimit(1)
+                    Text("\(s.place) · \(s.detail)").font(.island(.footnote)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                 }
                 Spacer(minLength: 0)
             }
@@ -583,10 +583,10 @@ private struct WeatherHomeCard: View {
         } else {
             VStack(alignment: .leading, spacing: 4) {
                 Label(T("날씨", "Weather"), systemImage: "cloud.sun")
-                    .font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                    .font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.6))
                 Text(model.place == nil && model.mode == "city" ? T("설정에서 도시를 고르세요", "Pick a city in Settings")
                                                                  : (model.loading ? T("불러오는 중…", "Loading…") : T("아직 정보 없음", "No data yet")))
-                    .font(.system(size: 12)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+                    .font(.island(.subhead)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
             }
         }
     }
@@ -624,28 +624,28 @@ private struct WeatherTab: View {
         let unit = model.unit
         return HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(model.placeName).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
+                Text(model.placeName).font(.island(.subhead, .semibold)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
                 HStack(alignment: .center, spacing: 8) {
                     Text(WeatherModel.format(f.current.temp, unit: unit))
-                        .font(.system(size: 50, weight: .light, design: .rounded)).monospacedDigit()
+                        .font(.system(size: 50, weight: .medium)).monospacedDigit()
                     Image(systemName: WxCode.symbol(f.current.code, isDay: f.current.isDay))
-                        .symbolRenderingMode(.multicolor).font(.system(size: 30))
+                        .symbolRenderingMode(.multicolor).font(.island(.largeTitle))
                 }
-                Text(WxCode.text(f.current.code)).font(.system(size: 13, weight: .semibold))
+                Text(WxCode.text(f.current.code)).font(.island(.subhead, .semibold))
                 Text(T("체감 \(WeatherModel.format(f.current.feels, unit: unit)) · 습도 \(Int(f.current.humidity))%",
                        "Feels \(WeatherModel.format(f.current.feels, unit: unit)) · Humidity \(Int(f.current.humidity))%"))
-                    .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.7))
                 if let d = f.daily.first {
                     Text(T("최고 \(WeatherModel.format(d.hi, unit: unit)) · 최저 \(WeatherModel.format(d.lo, unit: unit))",
                            "High \(WeatherModel.format(d.hi, unit: unit)) · Low \(WeatherModel.format(d.lo, unit: unit))"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.7))
                     Text(T("자외선 \(d.uv.map { String(format: "%.0f", $0) } ?? "–") \(uvLevel(d.uv)) · 강수 \(d.precip.map { String(format: "%.1f", $0) } ?? "0") mm",
                            "UV \(d.uv.map { String(format: "%.0f", $0) } ?? "–") \(uvLevel(d.uv)) · Precip \(d.precip.map { String(format: "%.1f", $0) } ?? "0") mm"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.7))
                 }
                 Spacer(minLength: 0)
                 Text(T("업데이트 \(PIMFormat.time(f.fetched)) · Open-Meteo", "Updated \(PIMFormat.time(f.fetched)) · Open-Meteo"))
-                    .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.45))
+                    .font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
             }
             .frame(width: 178, alignment: .leading)
             VStack(alignment: .leading, spacing: 6) {
@@ -683,10 +683,10 @@ private struct WeatherTab: View {
         return HStack(spacing: 0) {
             ForEach(Array(hours.enumerated()), id: \.offset) { i, h in
                 VStack(spacing: 3) {
-                    Text(i == 0 ? T("지금", "Now") : hourText(h.time, tz: tz)).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.65))
-                    Image(systemName: WxCode.symbol(h.code, isDay: h.isDay)).symbolRenderingMode(.multicolor).font(.system(size: 13)).frame(height: 16)
-                    Text(WeatherModel.format(h.temp, unit: unit)).font(.system(size: 11, weight: .medium, design: .rounded)).monospacedDigit()
-                    Text((h.pop ?? 0) >= 20 ? "\(h.pop!)%" : " ").font(.system(size: 8.5)).foregroundStyle(Color(red: 0.55, green: 0.8, blue: 1))
+                    Text(i == 0 ? T("지금", "Now") : hourText(h.time, tz: tz)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.65))
+                    Image(systemName: WxCode.symbol(h.code, isDay: h.isDay)).symbolRenderingMode(.multicolor).font(.island(.subhead)).frame(height: 16)
+                    Text(WeatherModel.format(h.temp, unit: unit)).font(.island(.footnote)).monospacedDigit()
+                    Text((h.pop ?? 0) >= 20 ? "\(h.pop!)%" : " ").font(.island(.caption2)).foregroundStyle(Color(red: 0.55, green: 0.8, blue: 1))
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -709,11 +709,11 @@ private struct WeatherTab: View {
         return VStack(spacing: 1) {
             ForEach(Array(f.daily.prefix(7).enumerated()), id: \.offset) { i, d in
                 HStack(spacing: 6) {
-                    Text(i == 0 ? T("오늘", "Today") : weekday(d.date, tz: tz)).font(.system(size: 11)).frame(width: 34, alignment: .leading)
-                    Image(systemName: WxCode.symbol(d.code)).symbolRenderingMode(.multicolor).font(.system(size: 12)).frame(width: 20)
-                    Text((d.pop ?? 0) >= 20 ? "\(d.pop!)%" : "").font(.system(size: 9.5)).foregroundStyle(Color(red: 0.55, green: 0.8, blue: 1))
+                    Text(i == 0 ? T("오늘", "Today") : weekday(d.date, tz: tz)).font(.island(.footnote)).frame(width: 34, alignment: .leading)
+                    Image(systemName: WxCode.symbol(d.code)).symbolRenderingMode(.multicolor).font(.island(.subhead)).frame(width: 20)
+                    Text((d.pop ?? 0) >= 20 ? "\(d.pop!)%" : "").font(.island(.caption2)).foregroundStyle(Color(red: 0.55, green: 0.8, blue: 1))
                         .frame(width: 30, alignment: .leading)
-                    Text(WeatherModel.format(d.lo, unit: unit)).font(.system(size: 11, design: .rounded)).monospacedDigit()
+                    Text(WeatherModel.format(d.lo, unit: unit)).font(.island(.footnote)).monospacedDigit()
                         .foregroundStyle(.white.opacity(0.6)).frame(width: 30, alignment: .trailing)
                     GeometryReader { g in
                         let x0 = CGFloat((d.lo - lo) / span) * g.size.width
@@ -726,8 +726,8 @@ private struct WeatherTab: View {
                         }
                     }
                     .frame(height: 4)
-                    Text(WeatherModel.format(d.hi, unit: unit)).font(.system(size: 11, design: .rounded)).monospacedDigit().frame(width: 30, alignment: .leading)
-                    Text(d.uv.map { "UV \(Int($0.rounded()))" } ?? "").font(.system(size: 9)).foregroundStyle(.white.opacity(0.5)).frame(width: 34, alignment: .trailing)
+                    Text(WeatherModel.format(d.hi, unit: unit)).font(.island(.footnote)).monospacedDigit().frame(width: 30, alignment: .leading)
+                    Text(d.uv.map { "UV \(Int($0.rounded()))" } ?? "").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).frame(width: 34, alignment: .trailing)
                 }
                 .frame(height: 17)
                 .accessibilityElement(children: .combine)

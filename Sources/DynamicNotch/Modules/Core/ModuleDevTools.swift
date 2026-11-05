@@ -7,7 +7,7 @@ import SwiftUI
 ///
 ///   --list-modules                         기능 목록
 ///   --module-selftest=<id|all|permissions|core>  기능 자체 검사 (실제 macOS 기능 호출). core = 명령 봉투·AppleScript 큐·공통 부품
-///   --render-notch=<home|palette|module:id|detail-actions|compact-two> --out=<png> [--wait=<초>]
+///   --render-notch=<home|dashboard|palette|module:id|compact|compact-two|compact-bubble|detail|detail-actions> --out=<png> [--wait=<초>]
 ///                                          노치 전체를 실제 뷰로 그려 PNG로 저장
 ///   --render-tab=<id> --out=<png> [--start] [--wait=<초>] [--size=<폭>x<높이>]
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
@@ -55,6 +55,10 @@ enum ModuleDevTools {
             exit(0)
         }
         if arguments.contains("--list-modules") {
+            // 탭 화면을 만들어 보려면 앱 객체가 있어야 한다 (없으면 중단됨)
+            AppSettings.isHelper = true
+            _ = NSApplication.shared
+            NSApp.setActivationPolicy(.prohibited)
             for m in ModuleCatalog.makeAll() {
                 print("\(m.id)\t\(m.title)\tdefault=\(m.enabledByDefault ? "on" : "off")\ttab=\(m.tabView() != nil)\tsize=\(Int(m.tabContentSize.width))x\(Int(m.tabContentSize.height))")
             }
@@ -117,7 +121,7 @@ enum ModuleDevTools {
     }
 
     /// 노치 전체(도형·독·카드)를 실제 뷰 그대로 회색 바탕에 그린다.
-    ///   home | palette | module:<id> | detail-actions | compact-two
+    ///   home | dashboard | palette | module:<id> | compact | compact-two | compact-bubble | detail | detail-actions
     private static func renderNotch(_ state: String, wait: TimeInterval, to url: URL) {
         let center = ActivityCenter()
         let vm = NotchViewModel(center: center)
@@ -141,6 +145,13 @@ enum ModuleDevTools {
         case "dashboard": vm.selectHomeOption(.dashboard); vm.expand(page: .home)
         case "palette": vm.expand(page: .palette)
         case let s where s.hasPrefix("module:"): vm.expand(page: .module(String(s.dropFirst(7))))
+        case "compact":
+            center.setPersistent(NotchActivity(kind: .timer, priority: ActivityPriority.timer, symbol: "timer", tint: .orange,
+                                               value: .text("24:12")))
+        case "detail":
+            center.post(NotchActivity(kind: .bluetooth, priority: ActivityPriority.info, presentation: .detail, duration: 60,
+                                      symbol: "airpodspro", tint: .green, value: .ringPercent(0.82),
+                                      title: "AirPods Pro", subtitle: T("연결됨", "Connected")))
         case "detail-actions":
             center.post(NotchActivity(kind: .agentApproval, priority: ActivityPriority.call, presentation: .detail, duration: 60,
                                       symbol: "terminal.fill", tint: .orange, title: "Claude Code",

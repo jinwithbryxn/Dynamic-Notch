@@ -79,12 +79,12 @@ struct LockPlayerView: View {
                     .help(T("전체화면으로 보기", "Full Screen"))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(hideInfo ? T("재생 중", "Playing") : (np?.title ?? ""))
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.island(.headline, .semibold))
                         .lineLimit(1)
                         .matchedGeometryEffect(id: "title", in: ns)
                     if !hideInfo {
                         Text(np?.artist ?? "")
-                            .font(.system(size: 13))
+                            .font(.island(.subhead))
                             .foregroundStyle(.white.opacity(0.6))
                             .lineLimit(1)
                             .matchedGeometryEffect(id: "artist", in: ns)
@@ -135,12 +135,12 @@ struct LockPlayerView: View {
                     .onTapGesture { toggleFull() }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(hideInfo ? T("재생 중", "Playing") : (media.nowPlaying?.title ?? ""))
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.island(.title1, .bold))
                         .lineLimit(2)
                         .matchedGeometryEffect(id: "title", in: ns)
                     if !hideInfo {
                         Text(media.nowPlaying?.artist ?? "")
-                            .font(.system(size: 19))
+                            .font(.island(.title2))
                             .foregroundStyle(.white.opacity(0.65))
                             .matchedGeometryEffect(id: "artist", in: ns)
                     }
@@ -159,7 +159,7 @@ struct LockPlayerView: View {
         .overlay(alignment: .topTrailing) {
             Button(action: toggleFull) {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.island(.title2, .bold))
                     .frame(width: 44, height: 44)
                     .background(Color.white.opacity(0.15), in: Circle())
             }
@@ -205,7 +205,7 @@ struct LockPlayerView: View {
             Button(T("실시간 가사 켜기", "Turn On Live Lyrics")) { settings.lyricsOnline = true; lyricsReload() }
                 .buttonStyle(.borderedProminent)
             Text(T("곡 제목·아티스트가 외부 가사 서비스(LRCLIB)로 전송됩니다.", "The song title and artist are sent to an external lyrics service (LRCLIB)."))
-                .font(.system(size: 12))
+                .font(.island(.subhead))
                 .foregroundStyle(.white.opacity(0.55))
         }
     }
@@ -218,7 +218,7 @@ struct LockPlayerView: View {
     private var lyricsFont: CGFloat { [22, 28, 34][max(0, min(2, settings.lyricsSize))] }
 
     private func placeholder(_ text: String) -> some View {
-        Text(text).font(.system(size: 16, weight: .medium)).foregroundStyle(.white.opacity(0.5))
+        Text(text).font(.island(.title3)).foregroundStyle(.white.opacity(0.5))
     }
 
     // MARK: - 공용 부품
@@ -262,7 +262,7 @@ struct LockPlayerView: View {
         }, trailing: {
             Text("-" + MediaPage.time(max(0, dur - pos)))
         })
-        .font(.system(size: 11, weight: .medium).monospacedDigit())
+        .font(.island(.footnote).monospacedDigit())
         .foregroundStyle(.white.opacity(0.55))
     }
 
@@ -286,7 +286,7 @@ struct LockPlayerView: View {
         // 잠금 화면 위에는 메뉴 창을 띄울 수 없으므로, 누르면 카드 안에 출력 기기 목록을 펼친다.
         Button { showOutputs.toggle() } label: {
             OutputIcon()
-                .font(.system(size: 15, weight: .semibold))
+                .font(.island(.headline, .semibold))
                 .foregroundStyle(.white.opacity(showOutputs ? 1 : 0.8))
                 .frame(width: 28, height: 28)
                 .background(Circle().fill(Color.white.opacity(showOutputs ? 0.18 : 0)))
@@ -429,14 +429,14 @@ struct LockOutputList: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: symbol)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.island(.subhead, .semibold))
                     .frame(width: 20)
                 Text(name)
                     .font(.system(size: 13, weight: selected ? .semibold : .regular))
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 if selected {
-                    Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
+                    Image(systemName: "checkmark").font(.island(.subhead, .bold))
                 }
             }
             .foregroundStyle(.white.opacity(dimmed ? 0.55 : 0.9))

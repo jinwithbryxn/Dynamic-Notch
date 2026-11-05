@@ -283,10 +283,10 @@ private struct LauncherWheelView: View {
                         if let icon = item.icon {
                             Image(nsImage: icon).resizable().frame(width: 38, height: 38)
                         } else {
-                            Image(systemName: item.symbol).font(.system(size: 20))
+                            Image(systemName: item.symbol).font(.island(.title2))
                         }
                         if i < 9 {
-                            Text("\(i + 1)").font(.system(size: 9, weight: .bold, design: .rounded))
+                            Text("\(i + 1)").font(.island(.caption2, .bold))
                                 .foregroundStyle(LaunchUI.secondary).offset(x: 22, y: -22)
                         }
                     }
@@ -304,10 +304,10 @@ private struct LauncherWheelView: View {
                 }
                 .scaleEffect(0.82)
                 Text(items.indices.contains(model.selected) ? items[model.selected].label : emptyText)
-                    .font(.system(size: 13, weight: .semibold)).lineLimit(2).multilineTextAlignment(.center)
+                    .font(.island(.subhead, .semibold)).lineLimit(2).multilineTextAlignment(.center)
                     .frame(width: 150)
                 Text(T("←→ 이동 · ↩ 실행 · Space 전환", "←→ move · ↩ open · Space switch"))
-                    .font(.system(size: 9)).foregroundStyle(LaunchUI.secondary)
+                    .font(.island(.caption2)).foregroundStyle(LaunchUI.secondary)
             }
         }
         .foregroundStyle(.white)

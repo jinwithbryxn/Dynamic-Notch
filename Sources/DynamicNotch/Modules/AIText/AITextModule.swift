@@ -113,9 +113,9 @@ private struct AITextTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 6) {
-                Image(systemName: "wand.and.stars").font(.system(size: 11, weight: .semibold))
-                Text(T("AI 글 다듬기", "AI Text Tools")).font(.system(size: 12, weight: .semibold))
-                Text(T("온디바이스 · 네트워크 사용 안 함", "On device · no network")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                Image(systemName: "wand.and.stars").font(.island(.footnote, .semibold))
+                Text(T("AI 글 다듬기", "AI Text Tools")).font(.island(.subhead, .semibold))
+                Text(T("온디바이스 · 네트워크 사용 안 함", "On device · no network")).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 Spacer()
             }
             switch model.state {
@@ -147,19 +147,19 @@ private struct AITextTab: View {
     private var inputBox: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(T("원문", "Original")).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                Text(T("원문", "Original")).font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.6))
                 Spacer()
-                Text("\(model.input.count)/\(AITextEngine.maxChars)").font(.system(size: 10).monospacedDigit())
+                Text("\(model.input.count)/\(AITextEngine.maxChars)").font(.island(.caption).monospacedDigit())
                     .foregroundStyle(model.input.count > AITextEngine.maxChars ? .orange : .white.opacity(0.45))
             }
             ZStack(alignment: .topLeading) {
                 TextEditor(text: $model.input)
-                    .font(.system(size: 12))
+                    .font(.island(.subhead))
                     .scrollContentBackground(.hidden)
                     .onTapGesture { focus() }
                 if model.input.isEmpty {
                     Text(T("여기에 붙여넣거나 아래 버튼으로 클립보드 글을 가져오세요", "Paste here or load the clipboard below"))
-                        .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.35)).padding(.top, 1).padding(.leading, 5)
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.35)).padding(.top, 1).padding(.leading, 5)
                         .allowsHitTesting(false)
                 }
             }
@@ -179,9 +179,9 @@ private struct AITextTab: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(model.lastTool.map { T("결과 · \($0.title)", "Result · \($0.title)") } ?? T("결과", "Result"))
-                    .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                    .font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.6))
                 Spacer()
-                if let e = model.elapsed { Text(String(format: "%.1fs", e)).font(.system(size: 10).monospacedDigit()).foregroundStyle(.white.opacity(0.45)) }
+                if let e = model.elapsed { Text(String(format: "%.1fs", e)).font(.island(.caption).monospacedDigit()).foregroundStyle(.white.opacity(0.45)) }
             }
             ScrollView {
                 Group {
@@ -196,7 +196,7 @@ private struct AITextTab: View {
                         Text(model.output).textSelection(.enabled)
                     }
                 }
-                .font(.system(size: 12))
+                .font(.island(.subhead))
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             HStack(spacing: 5) {
@@ -206,7 +206,7 @@ private struct AITextTab: View {
                     AIDevPill(title: T("결과 복사", "Copy Result"), symbol: "doc.on.doc", role: .primary, help: T("복사한 뒤 원래 앱에서 ⌘V", "Copy, then press ⌘V in your app")) { AIDevPasteboard.copy(model.output) }
                 }
                 if model.clipped {
-                    Text(T("앞 \(AITextEngine.maxChars)자만 사용함", "Used the first \(AITextEngine.maxChars) characters")).font(.system(size: 10)).foregroundStyle(.orange)
+                    Text(T("앞 \(AITextEngine.maxChars)자만 사용함", "Used the first \(AITextEngine.maxChars) characters")).font(.island(.caption)).foregroundStyle(.orange)
                 }
             }
         }

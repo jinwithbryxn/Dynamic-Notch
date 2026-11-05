@@ -326,16 +326,16 @@ private struct MusicToolsTab: View {
         HStack(spacing: 10) {
             Group {
                 if let art = feed.artwork { Image(nsImage: art).resizable().aspectRatio(contentMode: .fill) }
-                else { Image(systemName: "music.note").font(.system(size: 16)).foregroundStyle(.white.opacity(0.5)) }
+                else { Image(systemName: "music.note").font(.island(.title3)).foregroundStyle(.white.opacity(0.5)) }
             }
             .frame(width: 40, height: 40)
             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.08)))
             .clipShape(RoundedRectangle(cornerRadius: 6))
             VStack(alignment: .leading, spacing: 2) {
-                Text(t?.title ?? T("재생 중인 곡 없음", "Nothing playing")).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                Text(t?.title ?? T("재생 중인 곡 없음", "Nothing playing")).font(.island(.subhead, .semibold)).lineLimit(1)
                 Text(t.map { [$0.artist, $0.appName].filter { !$0.isEmpty }.joined(separator: " · ") }
                      ?? (feed.adapterRunning || !MBPlayerFeed.adapterAvailable ? "" : T("재생 정보를 기다리는 중", "Waiting for now playing")))
-                    .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                    .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
             Spacer()
             if t == nil {
@@ -343,7 +343,7 @@ private struct MusicToolsTab: View {
                              symbol: "arrow.up.forward.app") { MBMusicToolsModel.open(model.defaultApp) }
                     .help(T("설정에서 고른 기본 음악 앱", "The default music app chosen in Settings"))
             } else if t?.isLongForm == true {
-                Text(T("장편", "Long-form")).font(.system(size: 9.5, weight: .bold)).padding(.horizontal, 6).padding(.vertical, 2)
+                Text(T("장편", "Long-form")).font(.island(.caption2, .bold)).padding(.horizontal, 6).padding(.vertical, 2)
                     .background(Capsule().fill(Color.orange.opacity(0.8))).foregroundStyle(.black)
                     .help(T("팟캐스트·오디오북 또는 20분 넘는 오디오", "Podcast, audiobook or audio longer than 20 minutes"))
             }
@@ -362,7 +362,7 @@ private struct MusicToolsTab: View {
                                                  : T("반복: 끔 → 전체 → 한 곡", "Repeat: off → all → one"))
         } else {
             Text(T("\(t.appName)은(는) 셔플·반복 상태를 알려 주지 않아 버튼을 숨겼습니다", "\(t.appName) doesn't report shuffle or repeat, so the buttons are hidden"))
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
         }
         Spacer()
     }
@@ -381,13 +381,13 @@ private struct MusicToolsTab: View {
                 .help(T("15초 뒤로", "Back 15 seconds")).disabled(!MBPlayer.canSeek(t))
             TimelineView(.periodic(from: .now, by: 1)) { ctx in
                 Text("\(MBStorage.duration(t.position(at: ctx.date))) / \(MBStorage.duration(t.duration))")
-                    .font(.system(size: 11, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
+                    .font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
             }
             MBPillButton(title: T("15초", "15s"), symbol: "goforward.15") { MBPlayer.skip(t, by: 15) }
                 .help(T("15초 앞으로", "Forward 15 seconds")).disabled(!MBPlayer.canSeek(t))
             Spacer()
             if !MBPlayer.canSeek(t) {
-                Text(T("이 소스는 위치 이동을 알려 주지 않음", "This source can't seek")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                Text(T("이 소스는 위치 이동을 알려 주지 않음", "This source can't seek")).font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
             }
         }
     }
@@ -396,9 +396,9 @@ private struct MusicToolsTab: View {
         let isBrowser = t?.bundleID.flatMap { MBBrowserSpeed.Browser(rawValue: $0) } != nil
         VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 6) {
-                Text(T("재생 속도", "Speed")).font(.system(size: 11.5, weight: .semibold))
+                Text(T("재생 속도", "Speed")).font(.island(.footnote, .semibold))
                 if let t, t.rate > 0, !isBrowser {
-                    Text(String(format: T("지금 %.2g×", "now %.2g×"), t.rate)).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                    Text(String(format: T("지금 %.2g×", "now %.2g×"), t.rate)).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 }
                 Spacer()
                 ForEach(rates, id: \.self) { r in
@@ -409,13 +409,13 @@ private struct MusicToolsTab: View {
                 }
             }
             if let msg = model.browserMessage {
-                Text(msg).font(.system(size: 10.5)).foregroundStyle(.yellow.opacity(0.9)).fixedSize(horizontal: false, vertical: true)
+                Text(msg).font(.island(.caption)).foregroundStyle(.yellow.opacity(0.9)).fixedSize(horizontal: false, vertical: true)
             } else if let r = model.browserRate, let b = model.browserTarget {
-                Text(T("\(b.name): \(String(format: "%g", r))×", "\(b.name): \(String(format: "%g", r))×")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                Text(T("\(b.name): \(String(format: "%g", r))×", "\(b.name): \(String(format: "%g", r))×")).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
             } else {
                 Text(T("속도 버튼은 Safari·Chrome 계열 브라우저 탭에 적용됩니다. Music·Spotify·팟캐스트 앱 속도는 기존 MediaRemote 어댑터에 속도 명령이 없어 지원하지 않습니다(대안: 앱의 재생 속도 메뉴).",
                        "Speed buttons apply to Safari or Chromium browser tabs. App speed (Music, Spotify, Podcasts) isn't supported because the MediaRemote adapter has no rate command (alternative: the app's own speed menu)."))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45)).fixedSize(horizontal: false, vertical: true)
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.45)).fixedSize(horizontal: false, vertical: true)
             }
         }
     }

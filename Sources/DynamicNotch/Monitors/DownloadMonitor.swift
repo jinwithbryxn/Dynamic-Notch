@@ -380,7 +380,7 @@ struct DownloadPage: View {
                     MarqueeText(text: activity.title ?? T("다운로드", "Download"), font: .systemFont(ofSize: 14, weight: .semibold), color: .white)
                         .frame(height: 18)
                     Text(activity.subtitle ?? "")
-                        .font(.system(size: 11))
+                        .font(.island(.footnote))
                         .foregroundStyle(.white.opacity(0.55))
                         .lineLimit(1)
                 }
@@ -399,14 +399,14 @@ struct DownloadPage: View {
                     } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "folder.fill")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.island(.callout, .semibold))
                                 .foregroundStyle(.blue)
                             Text(T("Finder에서 보기", "Show in Finder"))
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.island(.subhead, .semibold))
                                 .foregroundStyle(.white)
                             Spacer(minLength: 0)
                             Text(url.deletingLastPathComponent().lastPathComponent)
-                                .font(.system(size: 11))
+                                .font(.island(.footnote))
                                 .foregroundStyle(.white.opacity(0.5))
                                 .lineLimit(1)
                         }
@@ -425,14 +425,14 @@ struct DownloadPage: View {
                     }
                     .frame(height: 6)
                     Text("\(Int((f * 100).rounded()))%")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.island(.subhead, .semibold))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                         .frame(width: 40, alignment: .trailing)
                 } else {
                     SpinnerRing(tint: .blue).frame(width: 16, height: 16)
                     Text(T("진행률 확인 중", "Checking progress"))
-                        .font(.system(size: 11))
+                        .font(.island(.footnote))
                         .foregroundStyle(.white.opacity(0.6))
                     Spacer(minLength: 0)
                 }

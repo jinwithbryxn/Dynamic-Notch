@@ -82,10 +82,10 @@ private struct AgentHubTab: View {
             }
             if hub.sessions.isEmpty && hub.approvals.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(T("진행 중인 에이전트 세션이 없습니다", "No agent sessions right now")).font(.system(size: 13, weight: .semibold))
+                    Text(T("진행 중인 에이전트 세션이 없습니다", "No agent sessions right now")).font(.island(.subhead, .semibold))
                     Text(T("Claude Code나 Codex에서 요청을 보내면 여기에 작업 중·입력 대기·승인 대기가 보입니다. 훅 연결은 설정 → 코딩 에이전트에서 미리보기를 확인한 뒤 합니다.",
                            "Send a prompt in Claude Code or Codex to see working, waiting and approval states here. Connect the hooks in Settings → Coding Agents after reviewing the preview."))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 }
                 Spacer(minLength: 0)
             } else {
@@ -101,7 +101,7 @@ private struct AgentHubTab: View {
                 statusChip("Claude Code", claudeStatus)
                 statusChip("Codex", codexStatus)
                 Spacer()
-                if let m = hub.message { Text(m).font(.system(size: 10.5)).foregroundStyle(.orange) }
+                if let m = hub.message { Text(m).font(.island(.caption)).foregroundStyle(.orange) }
             }
         }
         .foregroundStyle(.white)
@@ -122,7 +122,7 @@ private struct AgentHubTab: View {
         }()
         return HStack(spacing: 4) {
             Circle().fill(color).frame(width: 6, height: 6)
-            Text("\(name) \(text)").font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+            Text("\(name) \(text)").font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
         }
     }
 }
@@ -137,20 +137,20 @@ private struct ApprovalPanel: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack {
                     Image(systemName: "hand.raised.fill").foregroundStyle(.orange)
-                    Text("\(a.source.name) · \(a.project) — \(a.tool)").font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
+                    Text("\(a.source.name) · \(a.project) — \(a.tool)").font(.island(.subhead, .semibold)).lineLimit(1)
                     Spacer()
-                    if count > 1 { Text(T("대기 \(count)건", "\(count) waiting")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)) }
+                    if count > 1 { Text(T("대기 \(count)건", "\(count) waiting")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)) }
                     TimelineView(.periodic(from: .now, by: 1)) { ctx in
                         Text(AIDevFormat.elapsed(max(0, hub.approvalTimeout - ctx.date.timeIntervalSince(a.created))))
-                            .font(.system(size: 10.5, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
+                            .font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
                     }
                 }
                 if a.hasHidden {
                     Text(T("⚠︎ 숨은 문자가 있습니다 (⟨U+…⟩로 표시)", "⚠︎ Contains hidden characters (shown as ⟨U+…⟩)"))
-                        .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.orange)
+                        .font(.island(.caption, .semibold)).foregroundStyle(.orange)
                 }
                 ScrollView {
-                    Text(a.fullText).font(.system(size: 11, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                    Text(a.fullText).font(.island(.footnote, .medium, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
                 }
                 .frame(maxHeight: 64)
                 HStack(spacing: 6) {
@@ -181,12 +181,12 @@ private struct SessionRow: View {
         HStack(spacing: 8) {
             Image(systemName: s.source.symbol).foregroundStyle(s.source.tint).frame(width: 16)
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(s.source.name) · \(s.project)").font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                Text("\(s.source.name) · \(s.project)").font(.island(.subhead, .semibold)).lineLimit(1)
                 Text(s.detail.isEmpty ? s.phase.label : "\(s.phase.label) · \(s.detail)")
-                    .font(.system(size: 10.5)).foregroundStyle(color).lineLimit(1)
+                    .font(.island(.caption)).foregroundStyle(color).lineLimit(1)
             }
             Spacer()
-            Text(AIDevFormat.clock(s.updated)).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+            Text(AIDevFormat.clock(s.updated)).font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
             if !s.folder.isEmpty {
                 Button { AgentProcessTree.openFolder(s.folder) } label: { Image(systemName: "folder") }
                     .buttonStyle(.plain).help(T("프로젝트 폴더 열기", "Open project folder")).accessibilityLabel(T("프로젝트 폴더 열기", "Open project folder"))

@@ -123,10 +123,10 @@ private struct LauncherTab: View {
                 ForEach(apps, id: \.self) { k in tile(k) }
                 Button { picking = true } label: {
                     VStack(spacing: 4) {
-                        Image(systemName: "plus").font(.system(size: 18, weight: .medium))
+                        Image(systemName: "plus").font(.island(.title2))
                             .frame(width: 44, height: 44)
                             .background(RoundedRectangle(cornerRadius: 11).strokeBorder(Color.white.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [4])))
-                        Text(T("앱 추가", "Add app")).font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary)
+                        Text(T("앱 추가", "Add app")).font(.island(.caption)).foregroundStyle(LaunchUI.secondary)
                     }
                     .frame(width: 78, height: 70)
                 }
@@ -135,7 +135,7 @@ private struct LauncherTab: View {
             .padding(.top, 2)
             if apps.isEmpty {
                 Text(T("앱을 추가하면 한 번 눌러 실행할 수 있음 · 끌어서 순서 변경", "Add apps to launch them with one click · drag to reorder"))
-                    .font(.system(size: 11)).foregroundStyle(LaunchUI.secondary).padding(.top, 8)
+                    .font(.island(.footnote)).foregroundStyle(LaunchUI.secondary).padding(.top, 8)
             }
         }
     }
@@ -149,9 +149,9 @@ private struct LauncherTab: View {
                     if let url {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: url.path)).resizable().frame(width: 44, height: 44)
                     } else {
-                        Image(systemName: "questionmark.app.dashed").font(.system(size: 30)).frame(width: 44, height: 44)
+                        Image(systemName: "questionmark.app.dashed").font(.island(.largeTitle)).frame(width: 44, height: 44)
                     }
-                    Text(name).font(.system(size: 10.5)).lineLimit(1).truncationMode(.middle)
+                    Text(name).font(.island(.caption)).lineLimit(1).truncationMode(.middle)
                         .foregroundStyle(url == nil ? LaunchUI.secondary : .white)
                 }
                 .frame(width: 78, height: 70)
@@ -166,7 +166,7 @@ private struct LauncherTab: View {
                     LauncherStore.remove(k)
                     apps = LauncherStore.apps
                 } label: {
-                    Image(systemName: "xmark.circle.fill").font(.system(size: 14))
+                    Image(systemName: "xmark.circle.fill").font(.island(.callout))
                         .foregroundStyle(.white, Color.gray.opacity(0.8))
                 }
                 .buttonStyle(.plain).help(T("목록에서 빼기", "Remove from launcher"))
@@ -237,9 +237,9 @@ private struct LauncherPicker: View {
                         } label: {
                             HStack(spacing: 8) {
                                 Image(nsImage: NSWorkspace.shared.icon(forFile: u.path)).resizable().frame(width: 20, height: 20)
-                                Text(LaunchApps.name(of: u)).font(.system(size: 12.5))
+                                Text(LaunchApps.name(of: u)).font(.island(.subhead))
                                 Spacer()
-                                Image(systemName: isIn ? "checkmark" : "plus").font(.system(size: 11)).foregroundStyle(LaunchUI.secondary)
+                                Image(systemName: isIn ? "checkmark" : "plus").font(.island(.footnote)).foregroundStyle(LaunchUI.secondary)
                             }
                             .padding(.horizontal, 8).padding(.vertical, 3)
                             .contentShape(Rectangle())

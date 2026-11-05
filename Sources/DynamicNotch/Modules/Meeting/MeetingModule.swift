@@ -333,7 +333,7 @@ private struct MeetingTab: View {
                         Image(nsImage: icon).resizable().frame(width: 30, height: 30)
                     }
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(T("\(call.app.name) 통화 중", "\(call.app.name) call")).font(.system(size: 14, weight: .semibold))
+                        Text(T("\(call.app.name) 통화 중", "\(call.app.name) call")).font(.island(.callout, .semibold))
                         HStack(spacing: 6) {
                             TimelineView(.periodic(from: .now, by: 1)) { ctx in
                                 let s = Int(ctx.date.timeIntervalSince(call.since))
@@ -342,7 +342,7 @@ private struct MeetingTab: View {
                             if call.guessed { Text(T("· 추정", "· guessed")) }
                             if let m = state.muted { Text(m ? T("· 음소거됨", "· muted") : T("· 마이크 켜짐", "· mic on")) }
                         }
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                     }
                     Spacer()
                 }
@@ -354,19 +354,19 @@ private struct MeetingTab: View {
                 }
             } else {
                 HStack(spacing: 8) {
-                    Image(systemName: "video.bubble").font(.system(size: 18)).foregroundStyle(.white.opacity(0.4))
+                    Image(systemName: "video.bubble").font(.island(.title2)).foregroundStyle(.white.opacity(0.4))
                     Text(T("지금 통화 없음. 회의 앱이 마이크를 쓰기 시작하면 3초 뒤 여기와 노치에 나온다.",
                            "No call now. When a meeting app starts using the microphone, it shows here and in the notch after 3 s."))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.vertical, 4)
             }
             Text(T("지원: Zoom(메뉴 항목) · Teams·Slack·Webex·Discord·Meet(단축키, 앱이 앞으로 옴) · WhatsApp(상태만). Meet은 브라우저 창 제목으로 알아보며 손쉬운 사용 권한이 필요하다.",
                    "Supported: Zoom (menu items) · Teams, Slack, Webex, Discord, Meet (shortcuts; the app comes to front) · WhatsApp (status only). Meet is recognized by the browser window title and needs Accessibility."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
             CPPermissionLine(permission: .accessibility, granted: state.axGranted)
             if let m = state.message {
-                Text(m).font(.system(size: 10.5)).foregroundStyle(.orange).lineLimit(2)
+                Text(m).font(.island(.caption)).foregroundStyle(.orange).lineLimit(2)
             }
             CPUnsupported(title: T("마이크 레벨 표시 보류", "Mic level meter deferred"),
                           reason: T("소리 크기를 읽으려면 마이크 권한과 Info.plist 사용 목적 문구가 필요한데 지금 앱에는 없다.",

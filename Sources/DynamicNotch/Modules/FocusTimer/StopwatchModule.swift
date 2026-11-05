@@ -177,16 +177,16 @@ private struct StopwatchTab: View {
                         .disabled(engine.isIdle)
                 }
                 Text(T("시작 시각 기준으로 계산해 잠자기·재실행 뒤에도 정확해요", "Counted from the start time, so it stays exact across sleep and relaunch"))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(width: 250, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(T("랩", "Laps")).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.7))
+                Text(T("랩", "Laps")).font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.7))
                 if engine.state.laps.isEmpty {
                     Text(T("실행 중에 깃발을 누르면 랩이 기록돼요", "Press the flag while running to record a lap"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.45))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                 } else {
@@ -204,7 +204,7 @@ private struct StopwatchTab: View {
                                         .foregroundStyle(splits[i] == best ? .green : (splits[i] == worst ? .red : .white))
                                     Text(StopwatchEngine.format(laps[i])).foregroundStyle(.white.opacity(0.45)).frame(width: 70, alignment: .trailing)
                                 }
-                                .font(.system(size: 11, design: .rounded)).monospacedDigit()
+                                .font(.island(.footnote)).monospacedDigit()
                                 .padding(.vertical, 2)
                                 .accessibilityElement(children: .combine)
                             }
@@ -219,7 +219,7 @@ private struct StopwatchTab: View {
 
     private func timeText(_ t: Double) -> some View {
         Text(StopwatchEngine.format(t))
-            .font(.system(size: 44, weight: .light, design: .rounded))
+            .font(.system(size: 44, weight: .medium))
             .monospacedDigit()
             .lineLimit(1)
             .minimumScaleFactor(0.6)

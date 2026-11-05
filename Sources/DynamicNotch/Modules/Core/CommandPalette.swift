@@ -34,7 +34,7 @@ struct ExpandedDock: View {
     private func dockButton(symbol: String, title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.island(.caption, .semibold))
                 .foregroundStyle(Color.white.opacity(selected ? 1 : 0.45))
                 .frame(width: 22, height: 16)
                 .contentShape(Rectangle())
@@ -66,12 +66,12 @@ struct CommandPaletteView: View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.island(.subhead, .semibold))
                     .foregroundStyle(.white.opacity(0.55))
                 TextField(T("검색하거나 명령 입력 (예: 10분 타이머, 12*7)", "Search or type a command (e.g. timer 10m, 12*7)"),
                           text: $query)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 14))
+                    .font(.island(.callout))
                     .foregroundStyle(.white)
                     .focused($focused)
                     .onSubmit { if items.indices.contains(selection) { run(items[selection]) } }
@@ -100,7 +100,7 @@ struct CommandPaletteView: View {
                         }
                         if items.isEmpty, !query.isEmpty {
                             Text(T("결과 없음", "No results"))
-                                .font(.system(size: 12))
+                                .font(.island(.subhead))
                                 .foregroundStyle(.white.opacity(0.45))
                                 .frame(maxWidth: .infinity)
                                 .padding(.top, 20)
@@ -128,10 +128,10 @@ struct CommandPaletteView: View {
                     VStack(spacing: 4) {
                         ZStack {
                             Circle().fill(Color.white.opacity(0.1))
-                            Image(systemName: m.symbol).font(.system(size: 14, weight: .medium))
+                            Image(systemName: m.symbol).font(.island(.callout))
                         }
                         .frame(width: 34, height: 34)
-                        Text(m.title).font(.system(size: 10)).lineLimit(1).foregroundStyle(.white.opacity(0.75))
+                        Text(m.title).font(.island(.caption)).lineLimit(1).foregroundStyle(.white.opacity(0.75))
                     }
                     .frame(maxWidth: .infinity)
                     .contentShape(Rectangle())
@@ -147,18 +147,18 @@ struct CommandPaletteView: View {
     private func row(_ action: PaletteAction, selected: Bool) -> some View {
         HStack(spacing: 10) {
             Image(systemName: action.symbol)
-                .font(.system(size: 12, weight: .medium))
+                .font(.island(.subhead))
                 .frame(width: 22, height: 22)
                 .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
             VStack(alignment: .leading, spacing: 1) {
-                Text(action.title).font(.system(size: 13)).lineLimit(1)
+                Text(action.title).font(.island(.subhead)).lineLimit(1)
                 if let sub = action.subtitle, !sub.isEmpty {
-                    Text(sub).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    Text(sub).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                 }
             }
             Spacer(minLength: 0)
             if selected {
-                Image(systemName: "return").font(.system(size: 10, weight: .semibold)).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "return").font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.5))
             }
         }
         .foregroundStyle(.white)

@@ -260,19 +260,19 @@ private struct PortsTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(T("사용 중인 포트", "Listening ports")).font(.system(size: 14, weight: .semibold))
-                Text(verbatim: "\(model.ports.count)").font(.system(size: 11, design: .rounded)).foregroundStyle(.white.opacity(0.5))
+                Text(T("사용 중인 포트", "Listening ports")).font(.island(.callout, .semibold))
+                Text(verbatim: "\(model.ports.count)").font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                 Spacer()
                 if let t = model.lastScan {
-                    Text(SysFmt.time(t)).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4))
+                    Text(SysFmt.time(t)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))
                 }
                 SysPillButton(title: T("새로 고침", "Refresh"), symbol: "arrow.clockwise") { model.refresh() }
             }
-            if let e = model.error { Text(e).font(.system(size: 10.5)).foregroundStyle(.orange) }
+            if let e = model.error { Text(e).font(.island(.caption)).foregroundStyle(.orange) }
             SysCard(padding: 4) {
                 if model.ports.isEmpty {
                     Text(model.scanning ? T("읽는 중…", "Reading…") : T("LISTEN 중인 TCP 포트 없음", "No listening TCP ports"))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
@@ -284,7 +284,7 @@ private struct PortsTab: View {
             }
             Text(T("비특권 lsof로 이 사용자 프로세스만 봅니다. 종료는 확인 뒤 SIGTERM, 끝나지 않으면 SIGKILL을 제안합니다.",
                    "Unprivileged lsof shows only this user's processes. Stopping asks first and sends SIGTERM, then offers SIGKILL."))
-                .font(.system(size: 9)).foregroundStyle(.white.opacity(0.4))
+                .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))
         }
         .foregroundStyle(.white)
         .onAppear { model.startLive() }
@@ -293,10 +293,10 @@ private struct PortsTab: View {
 
     private func row(_ p: ListeningPort) -> some View {
         HStack(spacing: 8) {
-            Text(verbatim: ":\(p.port)").font(.system(size: 13, weight: .semibold, design: .monospaced)).frame(width: 62, alignment: .leading)
+            Text(verbatim: ":\(p.port)").font(.island(.subhead, .semibold, design: .monospaced)).frame(width: 62, alignment: .leading)
             VStack(alignment: .leading, spacing: 1) {
-                Text(p.name).font(.system(size: 11.5)).lineLimit(1)
-                Text(verbatim: "pid \(p.pid) · \(p.bindings)").font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                Text(p.name).font(.island(.footnote)).lineLimit(1)
+                Text(verbatim: "pid \(p.pid) · \(p.bindings)").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
             }
             Spacer()
             controls(p)
@@ -310,20 +310,20 @@ private struct PortsTab: View {
         let mine = p.pid == getpid()
         switch model.stage[p.id] {
         case .confirmTerm?:
-            Text(T("종료할까요?", "Stop it?")).font(.system(size: 10.5))
+            Text(T("종료할까요?", "Stop it?")).font(.island(.caption))
             SysPillButton(title: "SIGTERM", tint: .orange, prominent: true) { model.terminate(p) }
             SysPillButton(title: T("취소", "Cancel")) { model.stage[p.id] = nil }
         case .stopping?:
             ProgressView().controlSize(.mini)
         case .offerKill?:
-            Text(T("아직 실행 중", "Still running")).font(.system(size: 10.5)).foregroundStyle(.orange)
+            Text(T("아직 실행 중", "Still running")).font(.island(.caption)).foregroundStyle(.orange)
             SysPillButton(title: T("강제 종료", "Force quit"), tint: .red) { model.stage[p.id] = .confirmKill }
         case .confirmKill?:
-            Text(T("SIGKILL을 보낼까요?", "Send SIGKILL?")).font(.system(size: 10.5))
+            Text(T("SIGKILL을 보낼까요?", "Send SIGKILL?")).font(.island(.caption))
             SysPillButton(title: "SIGKILL", tint: .red, prominent: true) { model.forceKill(p) }
             SysPillButton(title: T("취소", "Cancel")) { model.stage[p.id] = .offerKill }
         case .failed(let msg)?:
-            Text(msg).font(.system(size: 9.5)).foregroundStyle(.red).lineLimit(1)
+            Text(msg).font(.island(.caption2)).foregroundStyle(.red).lineLimit(1)
         case nil:
             if !mine {
                 SysPillButton(title: T("종료", "Stop"), symbol: "xmark",

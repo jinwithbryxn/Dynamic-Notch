@@ -12,7 +12,7 @@ struct HomePager: View {
             if vm.homePages.isEmpty && !vm.isFileDragging {
                 // 설정에서 홈 기능을 모두 껐을 때
                 Text(T("설정 → 상호작용 → 기본에서 기능을 켜세요", "Turn on features in Settings → Interactions → Basics"))
-                    .font(.system(size: 11))
+                    .font(.island(.footnote))
                     .foregroundStyle(.white.opacity(0.5))
                     .multilineTextAlignment(.center)
             } else {
@@ -99,11 +99,11 @@ struct PersistentInfoPage: View {
                 .frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 3) {
                 Text(activity.title ?? "")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.island(.callout, .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                 if let sub = activity.subtitle, !sub.isEmpty {
-                    Text(sub).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).lineLimit(2)
+                    Text(sub).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).lineLimit(2)
                 }
             }
             Spacer(minLength: 0)
@@ -148,7 +148,7 @@ struct TimerPage: View {
                 ZStack {
                     RingGauge(value: timer.progress, tint: .orange, lineWidth: 5)
                     Text(TimerController.format(timer.remaining))
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.island(.title3, .semibold))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                 }
@@ -183,7 +183,7 @@ struct TimerPage: View {
                 HStack(spacing: 2) {
                     ForEach(TimerController.Unit.allCases, id: \.self) { unit in
                         if unit != .hour {
-                            Text(":").font(.system(size: 20, weight: .semibold, design: .rounded))
+                            Text(":").font(.island(.title2, .semibold))
                                 .foregroundStyle(.white.opacity(0.4))
                                 .padding(.bottom, 14)
                         }
@@ -195,7 +195,7 @@ struct TimerPage: View {
                     timer.startDraft()
                 } label: {
                     Label(T("시작", "Start"), systemImage: "play.fill")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.island(.subhead, .semibold))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 5)
                         .background(Color.orange.opacity(timer.draftSeconds > 0 ? 0.85 : 0.3), in: Capsule())
@@ -216,7 +216,7 @@ struct TimerPage: View {
                     TimerDigitField(timer: timer, unit: unit)
                 } else {
                     RollingText(text: String(format: "%02d", timer.draft[unit.rawValue]), up: timer.lastStepUp)
-                        .font(.system(size: 23, weight: .semibold, design: .rounded))
+                        .font(.island(.title1, .semibold))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                 }
@@ -226,7 +226,7 @@ struct TimerPage: View {
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.orange.opacity(editing ? 0.9 : 0), lineWidth: 1.5))
             .animation(.interactiveSpring(response: 0.2, dampingFraction: 0.8), value: timer.draft[unit.rawValue])
             Text(unit.label)
-                .font(.system(size: 9.5, weight: .medium))
+                .font(.island(.caption2))
                 .foregroundStyle(.white.opacity(hovered ? 0.9 : 0.45))
         }
         .contentShape(Rectangle())
@@ -343,15 +343,15 @@ struct PlaceholderPage: View {
             ZStack {
                 Circle().fill(Color.white.opacity(0.08))
                 Image(systemName: option.symbol)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.island(.title2, .semibold))
                     .foregroundStyle(.white.opacity(0.85))
             }
             .frame(width: 46, height: 46)
             Text(option.title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.island(.subhead, .semibold))
                 .foregroundStyle(.white)
             Text(note)
-                .font(.system(size: 10.5))
+                .font(.island(.caption))
                 .foregroundStyle(.white.opacity(0.5))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

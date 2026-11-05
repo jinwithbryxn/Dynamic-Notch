@@ -357,7 +357,7 @@ private struct ActivityRingTab: View {
                     Label(T("클릭 \(TFFormat.number(d.clicks))", "\(TFFormat.number(d.clicks)) clicks"), systemImage: "cursorarrow.click")
                     Label(T("연속 \(store.streakDays)일", "\(store.streakDays)-day streak"), systemImage: "flame.fill")
                 }
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
             }
             Spacer(minLength: 0)
         }
@@ -366,9 +366,9 @@ private struct ActivityRingTab: View {
     private func row(_ label: String, _ tint: Color, _ value: String, _ goal: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Circle().fill(tint).frame(width: 7, height: 7)
-            Text(label).font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.7)).frame(width: 54, alignment: .leading)
-            Text(value).font(.system(size: 17, weight: .semibold, design: .rounded)).monospacedDigit().foregroundStyle(tint)
-            Text(goal).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+            Text(label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.7)).frame(width: 54, alignment: .leading)
+            Text(value).font(.island(.title3, .semibold)).monospacedDigit().foregroundStyle(tint)
+            Text(goal).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
         }
         .accessibilityElement(children: .combine)
     }

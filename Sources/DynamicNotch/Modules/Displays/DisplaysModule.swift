@@ -172,7 +172,7 @@ private struct DisplaysTab: View {
                     }
                 }
                 if model.displays.isEmpty {
-                    Text(T("화면을 읽는 중…", "Reading displays…")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                    Text(T("화면을 읽는 중…", "Reading displays…")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                 }
             }
         }
@@ -184,9 +184,9 @@ private struct DisplaysTab: View {
         SysCard {
             VStack(alignment: .leading, spacing: 7) {
                 HStack(spacing: 6) {
-                    Image(systemName: d.isBuiltin ? "laptopcomputer" : "display").font(.system(size: 13))
-                    Text(d.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
-                    if d.isMain { Text(T("주 화면", "Main")).font(.system(size: 9)).padding(.horizontal, 5).padding(.vertical, 1)
+                    Image(systemName: d.isBuiltin ? "laptopcomputer" : "display").font(.island(.subhead))
+                    Text(d.name).font(.island(.subhead, .semibold)).lineLimit(1)
+                    if d.isMain { Text(T("주 화면", "Main")).font(.island(.caption2)).padding(.horizontal, 5).padding(.vertical, 1)
                         .background(Capsule().fill(Color.white.opacity(0.15))) }
                     Spacer()
                     refreshControl(d)
@@ -213,25 +213,25 @@ private struct DisplaysTab: View {
                     Button((abs(r - d.currentRefresh) < 0.01 ? "✓ " : "") + SysDisplays.rateText(r)) { model.setRefresh(d.id, r) }
                 }
             } label: {
-                Text(SysDisplays.rateText(d.currentRefresh)).font(.system(size: 11, weight: .medium)).monospacedDigit()
+                Text(SysDisplays.rateText(d.currentRefresh)).font(.island(.footnote)).monospacedDigit()
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
             .help(T("주사율 바꾸기 (현재 해상도에서 가능한 값만)", "Change refresh rate (only rates available at this resolution)"))
         } else if d.currentRefresh > 0 {
-            Text(SysDisplays.rateText(d.currentRefresh)).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+            Text(SysDisplays.rateText(d.currentRefresh)).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
         }
     }
 
     private func dimRow(_ d: SysDisplay) -> some View {
         let level = model.dim[d.id] ?? 0
         return HStack(spacing: 8) {
-            Text("Extra Dim").font(.system(size: 11)).foregroundStyle(.white.opacity(0.7)).frame(width: 74, alignment: .leading)
+            Text("Extra Dim").font(.island(.footnote)).foregroundStyle(.white.opacity(0.7)).frame(width: 74, alignment: .leading)
             // 사용자가 끌 때만 감마를 바꾼다
             Slider(value: Binding(get: { level }, set: { model.setDim(d.id, $0) }), in: 0...0.8)
                 .controlSize(.small)
                 .accessibilityLabel(T("\(d.name) 추가로 어둡게", "\(d.name) extra dim"))
-            Text(level > 0 ? "−\(Int(level * 100))%" : T("꺼짐", "Off")).font(.system(size: 10.5)).monospacedDigit()
+            Text(level > 0 ? "−\(Int(level * 100))%" : T("꺼짐", "Off")).font(.island(.caption)).monospacedDigit()
                 .foregroundStyle(.white.opacity(0.6)).frame(width: 40, alignment: .trailing)
         }
     }
@@ -244,7 +244,7 @@ private struct DisplaysTab: View {
                  T("이 Mac(또는 macOS)에서 IOAVService를 찾지 못했습니다. Apple silicon이 필요합니다. 대안: 위 Extra Dim(소프트웨어 감광).",
                    "IOAVService is not available on this Mac or macOS; Apple silicon is required. Alternative: Extra Dim above (software dimming)."))
         } else if st == nil || st?.checked == false {
-            HStack(spacing: 6) { ProgressView().controlSize(.mini); Text(T("DDC 응답 확인 중…", "Checking DDC…")).font(.system(size: 10.5)) }
+            HStack(spacing: 6) { ProgressView().controlSize(.mini); Text(T("DDC 응답 확인 중…", "Checking DDC…")).font(.island(.caption)) }
         } else if st?.responded != true {
             note(T("모니터가 DDC에 응답하지 않음", "Monitor did not answer DDC"),
                  T("DDC/CI가 꺼져 있거나, 일부 허브·KVM·Mac 내장 HDMI 포트는 DDC를 전달하지 않습니다. 대안: Extra Dim(소프트웨어 감광), 모니터 OSD 메뉴.",
@@ -270,17 +270,17 @@ private struct DisplaysTab: View {
             }
             if model.pairedByOrder {
                 Text(T("외장 화면이 여러 대라 연결 순서로 짝지었습니다.", "Several external displays: matched by connection order."))
-                    .font(.system(size: 9)).foregroundStyle(.white.opacity(0.4))
+                    .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))
             }
         }
     }
 
     private func vcpSlider(_ title: String, _ id: CGDirectDisplayID, _ vcp: SysDDC.VCP, _ v: (Int, Int)) -> some View {
         HStack(spacing: 8) {
-            Text(title).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7)).frame(width: 74, alignment: .leading)
+            Text(title).font(.island(.footnote)).foregroundStyle(.white.opacity(0.7)).frame(width: 74, alignment: .leading)
             Slider(value: Binding(get: { Double(v.0) }, set: { model.writeDDC(id, vcp, Int($0.rounded())) }), in: 0...Double(max(1, v.1)))
                 .controlSize(.small)
-            Text(verbatim: "\(v.0)").font(.system(size: 10.5)).monospacedDigit().foregroundStyle(.white.opacity(0.6)).frame(width: 40, alignment: .trailing)
+            Text(verbatim: "\(v.0)").font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6)).frame(width: 40, alignment: .trailing)
         }
     }
 

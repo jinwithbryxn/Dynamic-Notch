@@ -154,8 +154,8 @@ struct ColorToolsTab: View {
             VStack(alignment: .leading, spacing: 8) {
                 Button(action: module.pick) {
                     HStack(spacing: 6) {
-                        Image(systemName: "eyedropper").font(.system(size: 13, weight: .semibold))
-                        Text(T("화면에서 색 뽑기", "Pick from Screen")).font(.system(size: 12.5, weight: .medium))
+                        Image(systemName: "eyedropper").font(.island(.subhead, .semibold))
+                        Text(T("화면에서 색 뽑기", "Pick from Screen")).font(.island(.subhead))
                     }
                     .padding(.horizontal, 12).frame(height: 30)
                     .background(Color.white.opacity(0.14), in: Capsule())
@@ -174,9 +174,9 @@ struct ColorToolsTab: View {
                         .help(T("뽑으면 \(f.label)로 복사", "Copy picks as \(f.label)"))
                     }
                 }
-                Text(T("최근 색", "Recent")).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.55))
+                Text(T("최근 색", "Recent")).font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.55))
                 if state.recent.isEmpty {
-                    Text(T("아직 고른 색이 없음", "No colors picked yet")).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    Text(T("아직 고른 색이 없음", "No colors picked yet")).font(.island(.footnote)).foregroundStyle(.secondary)
                 } else {
                     LazyVGrid(columns: Array(repeating: GridItem(.fixed(30), spacing: 6), count: 6), alignment: .leading, spacing: 6) {
                         ForEach(state.recent, id: \.self) { hex in swatch(hex) }
@@ -195,10 +195,10 @@ struct ColorToolsTab: View {
                         let s = ClipColors.format(c, f)
                         Button { module.copy(s, remember: nil) } label: {
                             HStack(spacing: 6) {
-                                Text(f.label).font(.system(size: 10, weight: .semibold)).foregroundStyle(.white.opacity(0.5)).frame(width: 44, alignment: .leading)
-                                Text(s).font(.system(size: 11, design: .monospaced)).lineLimit(1).minimumScaleFactor(0.7).truncationMode(.middle)
+                                Text(f.label).font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.5)).frame(width: 44, alignment: .leading)
+                                Text(s).font(.island(.footnote, .medium, design: .monospaced)).lineLimit(1).minimumScaleFactor(0.7).truncationMode(.middle)
                                 Spacer(minLength: 0)
-                                Image(systemName: state.copied == s ? "checkmark" : "doc.on.doc").font(.system(size: 10))
+                                Image(systemName: state.copied == s ? "checkmark" : "doc.on.doc").font(.island(.caption))
                                     .foregroundStyle(state.copied == s ? .green : .white.opacity(0.6))
                             }
                             .padding(.horizontal, 7).frame(height: 22)
@@ -210,7 +210,7 @@ struct ColorToolsTab: View {
                     }
                 } else {
                     Text(T("색을 뽑으면 HEX·RGB·HSL·SwiftUI 형식이 여기에 나옴", "Pick a color to see HEX, RGB, HSL and SwiftUI values here"))
-                        .font(.system(size: 11.5)).foregroundStyle(.secondary)
+                        .font(.island(.footnote)).foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 120)
                         .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }

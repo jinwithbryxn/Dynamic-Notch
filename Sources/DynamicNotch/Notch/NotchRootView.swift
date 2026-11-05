@@ -19,6 +19,8 @@ struct NotchRootView: View {
     let timer: TimerController
     let features: NotchFeatures
     var openSettings: () -> Void
+    /// 시스템 화면 모드 (아래에서 내용은 어두운 모드로 고정하므로 여기서 먼저 읽는다)
+    @Environment(\.colorScheme) private var systemScheme
 
     var body: some View {
         let size = vm.displaySize
@@ -34,6 +36,17 @@ struct NotchRootView: View {
                     .fill(Color.black)
                     .frame(width: size.width, height: size.height)
                     .shadow(color: .black.opacity(state == .expanded || state == .detail ? 0.4 : 0), radius: 14, y: 6)
+                    // 어두운 모드에서는 아일랜드처럼 둘레에 가는 선을 그려 검은 메뉴 막대와 구분한다.
+                    // 쉬는 노치는 물리 노치와 섞여야 하므로 그리지 않고, 화면 맨 위 가장자리(위쪽 1.5pt)는 가린다.
+                    .overlay {
+                        if systemScheme == .dark && state != .idle {
+                            shape
+                                .stroke(Color.white.opacity(Island.keylineOpacity), lineWidth: 1)
+                                .frame(width: size.width, height: size.height)
+                                .mask(VStack(spacing: 0) { Color.clear.frame(height: 1.5); Color.black })
+                                .transition(.opacity)
+                        }
+                    }
 
                 ZStack(alignment: .topLeading) {
                     content(state: state)
@@ -95,7 +108,7 @@ struct NotchRootView: View {
             let inMediaPage = vm.state == .expanded && vm.expandedPage == .activity(.media)
             // 상시 항목을 점·스와이프로 넘길 때는 음악 팝업의 다른 내용과 같은 거리·방향으로 밀려나고 들어온다
             let shift = vm.mediaArtPageShift
-            let pageWidth = vm.displaySize.width - 2 * (vm.topRadius + 22)
+            let pageWidth = vm.displaySize.width - 2 * (vm.topRadius + Island.panelMargin)
             // 확장된 음악 팝업에서만 곡이 바뀔 때 앨범아트가 돌아간다 (곡 변경 알림 팝업에서는 안 함)
             MediaArtView(media: features.media, size: rect.size, flipEnabled: inMediaPage && !vm.reduceMotion)
                 // 좌우로 쓸어 곡을 넘길 때 팝업의 글자·아이콘과 함께 움직인다
@@ -117,7 +130,7 @@ struct NotchRootView: View {
                 // 노치 없는 화면의 쉬는 알약 가운데 시계
                 TimelineView(.everyMinute) { ctx in
                     Text(ctx.date, format: .dateTime.hour().minute())
-                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                        .font(.island(.subhead, .semibold))
                         .monospacedDigit()
                         .foregroundStyle(.white.opacity(0.85))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -202,10 +215,10 @@ struct ExpandedView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            // 모든 확장 팝업 공통 여백 (음악 팝업 기준): 팝업 크기는 그대로, 글자·아이콘만 안쪽으로
-            .padding(.horizontal, vm.topRadius + 22)
+            // 모든 확장 팝업 공통 여백: 옆과 아래를 같게 (Island.panelMargin). 팝업 크기는 그대로, 글자·아이콘만 안쪽으로
+            .padding(.horizontal, vm.topRadius + Island.panelMargin)
             .padding(.top, 6)
-            .padding(.bottom, 22)
+            .padding(.bottom, Island.panelMargin)
             .clipped()
         }
     }

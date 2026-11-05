@@ -135,9 +135,9 @@ private struct TerminalTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: "terminal").font(.system(size: 11, weight: .semibold))
+                Image(systemName: "terminal").font(.island(.footnote, .semibold))
                 Text(controller.title.isEmpty ? controller.shellName : controller.title)
-                    .font(.system(size: 12, weight: .semibold)).lineLimit(1).truncationMode(.middle)
+                    .font(.island(.subhead, .semibold)).lineLimit(1).truncationMode(.middle)
                 statusText
                 Spacer(minLength: 6)
                 switch controller.status {
@@ -160,13 +160,13 @@ private struct TerminalTab: View {
     @ViewBuilder private var statusText: some View {
         switch controller.status {
         case .running:
-            Text(T("실행 중", "Running")).font(.system(size: 10.5)).foregroundStyle(.green.opacity(0.85))
+            Text(T("실행 중", "Running")).font(.island(.caption)).foregroundStyle(.green.opacity(0.85))
         case .exited(let code):
-            Text(T("종료됨 (코드 \(code))", "Exited (code \(code))")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+            Text(T("종료됨 (코드 \(code))", "Exited (code \(code))")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
         case .failed:
-            Text(T("시작 실패", "Failed to start")).font(.system(size: 10.5)).foregroundStyle(.red.opacity(0.85))
+            Text(T("시작 실패", "Failed to start")).font(.island(.caption)).foregroundStyle(.red.opacity(0.85))
         case .idle:
-            Text(T("멈춤", "Stopped")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+            Text(T("멈춤", "Stopped")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
         }
     }
 
@@ -177,7 +177,7 @@ private struct TerminalTab: View {
                 .frame(maxWidth: 420)
         case .idle where controller.session == nil:
             Text(T("셸이 멈춰 있습니다. 시작을 누르세요.", "The shell is stopped. Press Start."))
-                .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.6))
+                .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
         default:
             EmptyView()
         }

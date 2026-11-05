@@ -232,7 +232,7 @@ private struct SpectrumTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(T("오디오 반응 막대", "Audio-reactive bars")).font(.system(size: 12, weight: .semibold))
+                Text(T("오디오 반응 막대", "Audio-reactive bars")).font(.island(.subhead, .semibold))
                 Spacer()
                 MBPillButton(title: analyzer.wanted ? T("켜짐", "On") : T("꺼짐", "Off"), symbol: "waveform",
                              active: analyzer.wanted, tint: .purple) { analyzer.setWanted(!analyzer.wanted) }
@@ -266,11 +266,11 @@ private struct SpectrumTab: View {
         case .capturing:
             Text(T("시스템 오디오 탭 사용 중 · 메뉴 막대에 보라색 녹음 표시가 뜹니다. 소리는 저장하지 않습니다.",
                    "Using a system audio tap · the purple recording dot shows. Nothing is recorded."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
         case .off:
             Text(T("켜면 이 탭이 보이는 동안만 탭을 만들고, 닫으면 바로 지웁니다. 필요: macOS 14.2+(API), 시스템 오디오 녹음 권한.",
                    "When on, a tap exists only while this tab is visible. Needs macOS 14.2+ (API) and System Audio Recording permission."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
         case .unsupportedOS:
             MBUnsupportedBox(title: T("지원 안 됨", "Unsupported"), reason: T("macOS 14.2 이상이 필요합니다", "Needs macOS 14.2 or later"),
                              alternative: T("대안: 노치의 기본 파형 표시", "Alternative: the notch's built-in waveform"))

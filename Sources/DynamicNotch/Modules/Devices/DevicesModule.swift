@@ -203,9 +203,9 @@ private struct DevicesTab: View {
                     WiFiBars(bars: w.bars, active: w.associated)
                         .frame(width: 22, height: 16)
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(title(w)).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                        Text(title(w)).font(.island(.subhead, .semibold)).lineLimit(1)
                         Text(w.interfaceName.map { "\($0) · \(w.phy)" } ?? T("Wi-Fi 없음", "No Wi-Fi"))
-                            .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                            .font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                     }
                     Spacer()
                 }
@@ -216,12 +216,12 @@ private struct DevicesTab: View {
                     row(T("보안", "Security"), w.security)
                     row(T("로컬 IP", "Local IP"), w.ipv4 ?? "–")
                     HStack {
-                        Text(T("공인 IP", "Public IP")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
+                        Text(T("공인 IP", "Public IP")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
                         Spacer()
                         if let ip = model.publicIP {
-                            Text(ip).font(.system(size: 11.5, weight: .medium, design: .rounded)).textSelection(.enabled)
+                            Text(ip).font(.island(.footnote)).textSelection(.enabled)
                         } else {
-                            if let s = model.publicIPState { Text(s).font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)) }
+                            if let s = model.publicIPState { Text(s).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)) }
                             SysPillButton(title: T("조회", "Look up"),
                                           help: T("api.ipify.org에 한 번 요청합니다", "Sends one request to api.ipify.org")) { model.lookUpPublicIP() }
                         }
@@ -229,7 +229,7 @@ private struct DevicesTab: View {
                     passwordRow
                 } else {
                     Text(w.powerOn ? T("연결된 네트워크 없음", "Not connected") : T("Wi-Fi 꺼짐", "Wi-Fi is off"))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
                 }
                 Spacer(minLength: 0)
                 if w.associated, w.ssid == nil { locationNote }
@@ -245,17 +245,17 @@ private struct DevicesTab: View {
 
     private var passwordRow: some View {
         HStack(spacing: 6) {
-            Text(T("암호", "Password")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
+            Text(T("암호", "Password")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
             Spacer()
             if let pw = model.password {
-                Text(pw).font(.system(size: 11.5, weight: .medium, design: .monospaced)).lineLimit(1).truncationMode(.middle)
+                Text(pw).font(.island(.footnote, .medium, design: .monospaced)).lineLimit(1).truncationMode(.middle)
                 SysPillButton(title: T("복사", "Copy"), symbol: "doc.on.doc") { model.copyPassword() }
                 SysPillButton(title: T("가리기", "Hide"), symbol: "eye.slash") { model.forgetSecrets() }
             } else if model.passwordBusy {
                 ProgressView().controlSize(.mini)
             } else {
                 if let s = model.passwordState {
-                    Text(s).font(.system(size: 9)).foregroundStyle(.white.opacity(0.5)).lineLimit(2).frame(maxWidth: 150, alignment: .trailing)
+                    Text(s).font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).lineLimit(2).frame(maxWidth: 150, alignment: .trailing)
                 }
                 SysPillButton(title: T("보기", "Show"), symbol: "key",
                               help: T("현재 네트워크의 키체인 항목을 macOS 인증 후 한 번 읽습니다. 저장하지 않습니다.",
@@ -268,7 +268,7 @@ private struct DevicesTab: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(T("macOS가 네트워크 이름을 가림: 위치 권한 \(WiFiCardInfo.locationStatusText(model.location))",
                    "macOS hides the network name: Location access \(WiFiCardInfo.locationStatusText(model.location))"))
-                .font(.system(size: 9.5)).foregroundStyle(.yellow.opacity(0.85))
+                .font(.island(.caption2)).foregroundStyle(.yellow.opacity(0.85))
             if model.location == .notDetermined, DevicesModel.hasLocationUsageString {
                 SysPillButton(title: T("위치 권한 요청", "Allow Location"), symbol: "location") { model.requestLocation() }
             } else {
@@ -279,10 +279,10 @@ private struct DevicesTab: View {
 
     private func row(_ title: String, _ value: String, hint: String? = nil) -> some View {
         HStack(spacing: 6) {
-            Text(title).font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
+            Text(title).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
             Spacer()
-            if let hint { Text(hint).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4)) }
-            Text(value).font(.system(size: 11.5, weight: .medium, design: .rounded)).monospacedDigit().lineLimit(1)
+            if let hint { Text(hint).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)) }
+            Text(value).font(.island(.footnote)).monospacedDigit().lineLimit(1)
         }
         .accessibilityElement(children: .combine)
     }
@@ -293,10 +293,10 @@ private struct DevicesTab: View {
                 SysHeader(text: T("USB 장치 · 빠른 순", "USB devices · fastest first"))
                 if model.usb.isEmpty {
                     VStack(spacing: 6) {
-                        Image(systemName: "cable.connector.slash").font(.system(size: 22)).foregroundStyle(.white.opacity(0.35))
-                        Text(T("연결된 USB 장치 없음", "No USB devices connected")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
+                        Image(systemName: "cable.connector.slash").font(.island(.title1)).foregroundStyle(.white.opacity(0.35))
+                        Text(T("연결된 USB 장치 없음", "No USB devices connected")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
                         Text(T("내장 키보드·트랙패드·허브는 목록에서 뺍니다", "Built-in keyboard, trackpad and hubs are not listed"))
-                            .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4)).multilineTextAlignment(.center)
+                            .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -304,15 +304,15 @@ private struct DevicesTab: View {
                         VStack(spacing: 6) {
                             ForEach(model.usb) { d in
                                 HStack(spacing: 8) {
-                                    Image(systemName: "cable.connector").font(.system(size: 12)).foregroundStyle(.white.opacity(0.7))
+                                    Image(systemName: "cable.connector").font(.island(.subhead)).foregroundStyle(.white.opacity(0.7))
                                     VStack(alignment: .leading, spacing: 1) {
-                                        Text(d.name).font(.system(size: 11.5, weight: .medium)).lineLimit(1)
-                                        Text(d.vendor ?? "–").font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                                        Text(d.name).font(.island(.footnote)).lineLimit(1)
+                                        Text(d.vendor ?? "–").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                                     }
                                     Spacer()
                                     VStack(alignment: .trailing, spacing: 1) {
-                                        Text(d.speedText).font(.system(size: 11.5, weight: .medium, design: .rounded)).monospacedDigit()
-                                        Text(d.speedClass).font(.system(size: 8.5)).foregroundStyle(.white.opacity(0.45))
+                                        Text(d.speedText).font(.island(.footnote)).monospacedDigit()
+                                        Text(d.speedClass).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
                                     }
                                 }
                                 .accessibilityElement(children: .combine)

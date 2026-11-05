@@ -92,10 +92,10 @@ private struct FocusSwitchTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(T("Focus 전환", "Switch Focus")).font(.system(size: 14, weight: .semibold))
+                Text(T("Focus 전환", "Switch Focus")).font(.island(.callout, .semibold))
                 if let on = TFSystem.focusState {
                     Text(on ? T("지금 켜짐", "On now") : T("지금 꺼짐", "Off now"))
-                        .font(.system(size: 10.5)).foregroundStyle(on ? .indigo : .white.opacity(0.5))
+                        .font(.island(.caption)).foregroundStyle(on ? .indigo : .white.opacity(0.5))
                 }
                 Spacer()
                 TFPillButton(title: module.loading ? T("불러오는 중", "Loading") : T("새로 고침", "Refresh"), symbol: "arrow.clockwise",
@@ -109,7 +109,7 @@ private struct FocusSwitchTab: View {
                                  buttonTitle: T("Focus 설정", "Focus Settings")) { FocusSwitchModule.openFocusSettings() }
             } else if module.shortcuts == nil {
                 Text(module.loading ? T("단축어 목록을 읽는 중…", "Reading shortcuts…") : T("목록을 불러오면 모드 버튼이 보여요.", "Load the list to see mode buttons."))
-                    .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 Spacer(minLength: 0)
             } else if module.modeShortcuts.isEmpty {
                 TFUnsupportedBox(title: T("'\(module.prefix)'로 시작하는 단축어가 없어요", "No shortcuts start with '\(module.prefix)'"),
@@ -125,7 +125,7 @@ private struct FocusSwitchTab: View {
                                 Image(systemName: icon(for: module.modeName(name)))
                                 Text(module.modeName(name)).lineLimit(1)
                             }
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.island(.subhead))
                             .frame(maxWidth: .infinity, minHeight: 34)
                             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.white.opacity(0.1)))
                             .contentShape(RoundedRectangle(cornerRadius: 10))
@@ -137,7 +137,7 @@ private struct FocusSwitchTab: View {
                 }
                 if let r = module.lastRun {
                     Text(r.ok ? T("'\(r.name)' 실행함", "Ran '\(r.name)'") : T("'\(r.name)' 실패: \(r.message ?? "")", "'\(r.name)' failed: \(r.message ?? "")"))
-                        .font(.system(size: 10)).foregroundStyle(r.ok ? .white.opacity(0.5) : .yellow).lineLimit(1)
+                        .font(.island(.caption)).foregroundStyle(r.ok ? .white.opacity(0.5) : .yellow).lineLimit(1)
                 }
                 Spacer(minLength: 0)
             }

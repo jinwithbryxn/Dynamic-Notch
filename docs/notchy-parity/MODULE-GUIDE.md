@@ -33,7 +33,8 @@ Notchy 기능을 옮길 때 모든 기능은 이 규칙을 따르는 모듈로 �
 
 ## 3. 화면
 
-- 노치 안은 검은 배경, 흰 글자, 어두운 화면 모드. 글꼴은 시스템(숫자는 `.rounded`, `.monospacedDigit()`).
+- 노치 안은 검은 배경, 흰 글자, 어두운 화면 모드. 글꼴은 시스템 기본(SF Pro), 숫자는 `.monospacedDigit()`.
+- 글자 크기는 `Font.island(_:_:)`의 단계(`IslandText`: caption2 9.5 · caption 10.5 · footnote 11.5 · subhead 13 · callout 14 · headline 15 · title3 17.5 · title2 19 · title1 24.5 · largeTitle 29.5pt)만 쓴다. 아이폰 다이내믹 아일랜드의 iOS 글자 크기를 MacBook 노치 높이에 맞춰 0.873배로 줄인 값이고, 기본 굵기는 medium이다(HIG: 중간 굵기 이상, 작은 글자는 아껴서). 모서리·여백 기준은 `Island`(`Notch/IslandStyle.swift`).
 - 탭 내용 크기 `tabContentSize`: 폭 360–640, 높이 120–300pt. 노치 도형이 이 크기에 맞춰 스프링으로 커진다.
 - 보조 글자 `.secondary` 또는 `.white.opacity(0.6)`, 구분은 `Color.white.opacity(0.08)` 둥근 배경.
 - 버튼은 작고 둥글게(`.buttonStyle(.plain)` + 캡슐 배경). 아이콘은 SF Symbols.

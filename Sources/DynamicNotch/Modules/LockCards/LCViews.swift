@@ -121,21 +121,21 @@ struct LCCardView: View {
         HStack(spacing: 10) {
             ZStack {
                 Circle().fill(content.tint.opacity(0.22))
-                Image(systemName: content.symbol).font(.system(size: 14, weight: .semibold)).foregroundStyle(content.tint)
+                Image(systemName: content.symbol).font(.island(.callout, .semibold)).foregroundStyle(content.tint)
             }
             .frame(width: 34, height: 34)
             .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
-                Text(content.label).font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                Text(content.label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
                 if content.available {
                     Text(content.value)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded)).monospacedDigit()
+                        .font(.island(.title3, .semibold)).monospacedDigit()
                         .lineLimit(1).minimumScaleFactor(0.7)
                     if let d = content.detail {
-                        Text(d).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                        Text(d).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                     }
                 } else {
-                    Text(content.value).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7)).lineLimit(2)
+                    Text(content.value).font(.island(.caption)).foregroundStyle(.white.opacity(0.7)).lineLimit(2)
                 }
             }
             Spacer(minLength: 0)
@@ -169,7 +169,7 @@ struct LCStripView: View {
             ForEach(contents) { c in
                 HStack(spacing: 5) {
                     Image(systemName: c.symbol).foregroundStyle(c.tint).accessibilityHidden(true)
-                    Text(c.value).font(.system(size: 13, weight: .semibold, design: .rounded)).monospacedDigit().lineLimit(1)
+                    Text(c.value).font(.island(.subhead, .semibold)).monospacedDigit().lineLimit(1)
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(c.label + " " + c.value)
@@ -235,7 +235,7 @@ struct LCTab: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: module.stateSymbol).foregroundStyle(module.stateTint)
-                Text(module.stateText).font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
+                Text(module.stateText).font(.island(.footnote)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
                 Spacer()
                 button(status.previewing ? T("미리보는 중", "Previewing") : T("배치 미리보기", "Preview layout"), symbol: "rectangle.dashed") {
                     module.previewOnDesktop()
@@ -263,7 +263,7 @@ struct LCTab: View {
                         .foregroundStyle(.white.opacity(0.45))
                 }
             }
-            .font(.system(size: 10.5)).lineLimit(1)
+            .font(.island(.caption)).lineLimit(1)
         }
         .foregroundStyle(.white)
         .onAppear { module.refreshData() }
@@ -272,7 +272,7 @@ struct LCTab: View {
     private func button(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: symbol)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.island(.footnote, .semibold))
                 .padding(.horizontal, 9).padding(.vertical, 4)
                 .background(Capsule().fill(Color.white.opacity(0.12)))
         }

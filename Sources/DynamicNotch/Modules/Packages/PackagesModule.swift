@@ -192,14 +192,14 @@ private struct PkgBrewView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     HStack(spacing: 5) {
-                        Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                        Image(systemName: "magnifyingglass").font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                         TextField(T("검색 (이름·설명) 후 ↩", "Search name or description, then ↩"), text: $brew.query)
-                            .textFieldStyle(.plain).font(.system(size: 12))
+                            .textFieldStyle(.plain).font(.island(.subhead))
                             .focused($focused)
                             .onSubmit { brew.search() }
                         if brew.searching { ProgressView().controlSize(.small).scaleEffect(0.6).frame(width: 12, height: 12) }
                         if !brew.query.isEmpty {
-                            Button { brew.clearSearch() } label: { Image(systemName: "xmark.circle.fill").font(.system(size: 11)) }
+                            Button { brew.clearSearch() } label: { Image(systemName: "xmark.circle.fill").font(.island(.footnote)) }
                                 .buttonStyle(.plain).foregroundStyle(.white.opacity(0.5))
                                 .help(T("검색 지우기", "Clear search")).accessibilityLabel(T("검색 지우기", "Clear search"))
                         }
@@ -237,13 +237,13 @@ private struct PkgBrewView: View {
             VStack(spacing: 4) {
                 if brew.loadingLists && brew.searchedQuery.isEmpty {
                     ProgressView().controlSize(.small)
-                    Text(T("Homebrew 목록 읽는 중", "Reading Homebrew lists")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    Text(T("Homebrew 목록 읽는 중", "Reading Homebrew lists")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 } else {
-                    Image(systemName: brew.searchedQuery.isEmpty ? "checkmark.circle" : "questionmark.circle").font(.system(size: 20, weight: .light))
+                    Image(systemName: brew.searchedQuery.isEmpty ? "checkmark.circle" : "questionmark.circle").font(.island(.title2))
                     Text(!brew.searchedQuery.isEmpty ? T("'\(brew.searchedQuery)' 결과 없음", "No results for '\(brew.searchedQuery)'")
                          : ui.brewList == .outdated ? T("오래된 항목 없음", "Everything is up to date")
                          : T("설치된 항목 없음", "Nothing installed"))
-                        .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.7))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.7))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -253,7 +253,7 @@ private struct PkgBrewView: View {
                     if brew.searchedQuery.isEmpty, ui.brewList == .outdated {
                         HStack {
                             Text(T("\(items.count)개 오래됨 (마지막 brew update 기준)", "\(items.count) outdated (as of the last brew update)"))
-                                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                                .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                             Spacer()
                             Button(T("모두 업그레이드", "Upgrade all")) { brew.perform(.upgradeAll) }.buttonStyle(FAPillStyle(tone: .primary))
                                 .help("brew upgrade")
@@ -268,24 +268,24 @@ private struct PkgBrewView: View {
 
     private func row(_ item: PkgBrewItem) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: item.isCask ? "macwindow" : "terminal").font(.system(size: 11)).frame(width: 16)
+            Image(systemName: item.isCask ? "macwindow" : "terminal").font(.island(.footnote)).frame(width: 16)
                 .foregroundStyle(.white.opacity(0.7))
                 .help(item.isCask ? "cask" : "formula")
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) {
-                    Text(item.name).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                    Text(item.name).font(.island(.subhead, .semibold)).lineLimit(1)
                     if let d = item.displayName, d.lowercased() != item.name.lowercased() {
-                        Text(d).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                        Text(d).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                     }
-                    if item.pinned { Image(systemName: "pin.fill").font(.system(size: 8)).foregroundStyle(.white.opacity(0.5)) }
+                    if item.pinned { Image(systemName: "pin.fill").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)) }
                 }
                 if !item.desc.isEmpty {
-                    Text(item.desc).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                    Text(item.desc).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
                 }
             }
             Spacer(minLength: 4)
             if let v = item.version {
-                Text(item.latest.map { "\(v) → \($0)" } ?? v).font(.system(size: 10, design: .rounded)).monospacedDigit()
+                Text(item.latest.map { "\(v) → \($0)" } ?? v).font(.island(.caption)).monospacedDigit()
                     .foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
             actions(item)
@@ -319,7 +319,7 @@ private struct PkgBrewView: View {
     private var footer: some View {
         HStack(spacing: 6) {
             if let e = brew.error {
-                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 9)).foregroundStyle(.orange)
+                Image(systemName: "exclamationmark.triangle.fill").font(.island(.caption2)).foregroundStyle(.orange)
                 Text(e).lineLimit(1)
             } else if brew.loadingLists {
                 Text(T("목록 새로 읽는 중", "Refreshing lists"))
@@ -334,7 +334,7 @@ private struct PkgBrewView: View {
             Button("brew update") { brew.perform(.update) }.buttonStyle(FAPillStyle()).disabled(brew.job?.running == true)
                 .help(T("Homebrew 패키지 목록을 새로 받는다 (인터넷)", "Download the latest package index (internet)"))
         }
-        .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+        .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
     }
 }
 
@@ -353,7 +353,7 @@ private struct PkgJobView: View {
                         Image(systemName: job.status == 0 ? "checkmark.circle.fill" : "xmark.octagon.fill")
                             .foregroundStyle(job.status == 0 ? .green : .orange)
                     }
-                    Text(job.title).font(.system(size: 12, weight: .semibold))
+                    Text(job.title).font(.island(.subhead, .semibold))
                     Spacer()
                     if job.running {
                         Button(T("중단", "Stop")) { brew.cancelJob() }.buttonStyle(FAPillStyle(tone: .destructive))
@@ -365,12 +365,12 @@ private struct PkgJobView: View {
                         Button(T("닫기", "Close")) { brew.dismissJob() }.buttonStyle(FAPillStyle())
                     }
                 }
-                Text(job.command).font(.system(size: 10, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
+                Text(job.command).font(.island(.caption, .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: 1) {
                             ForEach(Array(job.log.suffix(200).enumerated()), id: \.offset) { i, line in
-                                Text(line).font(.system(size: 9.5, design: .monospaced)).foregroundStyle(.white.opacity(0.75))
+                                Text(line).font(.island(.caption2, .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.75))
                                     .frame(maxWidth: .infinity, alignment: .leading).id(i)
                             }
                         }
@@ -378,7 +378,7 @@ private struct PkgJobView: View {
                     .onChange(of: job.log.count) { _, _ in proxy.scrollTo(min(199, job.log.count - 1), anchor: .bottom) }
                 }
                 if let hint = job.hint {
-                    Text(hint).font(.system(size: 10.5)).foregroundStyle(.orange)
+                    Text(hint).font(.island(.caption)).foregroundStyle(.orange)
                 }
             }
         }
@@ -401,7 +401,7 @@ private struct PkgUpdatesView: View {
                 if let at = updates.checkedAt {
                     Text(T("\(updates.items.count)개 · \(at.formatted(date: .omitted, time: .shortened)) 확인",
                            "\(updates.items.count) · checked \(at.formatted(date: .omitted, time: .shortened))"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 }
                 Spacer()
                 if updates.items.contains(where: { $0.source == .brew }) {
@@ -414,7 +414,7 @@ private struct PkgUpdatesView: View {
             }
             if updates.checkedAt == nil && !updates.checking {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(T("누를 때만 확인한다:", "Checks only when you click:")).font(.system(size: 11.5, weight: .medium))
+                    Text(T("누를 때만 확인한다:", "Checks only when you click:")).font(.island(.footnote))
                     Text(T("• Homebrew: 이 Mac의 brew 목록 기준 오래된 항목", "• Homebrew: outdated items from this Mac's brew index"))
                     Text(T("• App Store 앱: 번들 ID를 Apple 조회 API(itunes.apple.com)에 보내 버전 비교", "• App Store apps: bundle IDs sent to Apple's lookup API (itunes.apple.com)"))
                     Text(T("• Sparkle 앱: 각 앱 Info.plist의 업데이트 주소(appcast)를 읽어 비교", "• Sparkle apps: reads each app's own appcast feed"))
@@ -422,13 +422,13 @@ private struct PkgUpdatesView: View {
                            "Nothing installs automatically: Homebrew upgrades here, App Store opens the store page, Sparkle apps open themselves."))
                         .foregroundStyle(.white.opacity(0.5))
                 }
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.75))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.75))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else if updates.items.isEmpty {
                 VStack(spacing: 4) {
-                    Image(systemName: updates.checking ? "hourglass" : "checkmark.circle").font(.system(size: 20, weight: .light))
+                    Image(systemName: updates.checking ? "hourglass" : "checkmark.circle").font(.island(.title2))
                     Text(updates.checking ? T("확인 중", "Checking") : T("모두 최신", "Everything is up to date"))
-                        .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.7))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.7))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -437,7 +437,7 @@ private struct PkgUpdatesView: View {
                 }
             }
             if !updates.notes.isEmpty {
-                Text(updates.notes.joined(separator: " · ")).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.45)).lineLimit(2)
+                Text(updates.notes.joined(separator: " · ")).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).lineLimit(2)
             }
         }
     }
@@ -445,13 +445,13 @@ private struct PkgUpdatesView: View {
     private func row(_ u: PkgUpdate) -> some View {
         HStack(spacing: 6) {
             if let url = u.appURL { FAFileIcon(url: url, size: 18) }
-            else { Image(systemName: u.brewItem?.isCask == true ? "macwindow" : "terminal").font(.system(size: 11)).frame(width: 18) }
+            else { Image(systemName: u.brewItem?.isCask == true ? "macwindow" : "terminal").font(.island(.footnote)).frame(width: 18) }
             VStack(alignment: .leading, spacing: 0) {
-                Text(u.name).font(.system(size: 12, weight: .medium)).lineLimit(1)
-                Text("\(u.installed) → \(u.latest)").font(.system(size: 10, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
+                Text(u.name).font(.island(.subhead)).lineLimit(1)
+                Text("\(u.installed) → \(u.latest)").font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
             }
             Spacer(minLength: 4)
-            Text(u.source.label).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.45))
+            Text(u.source.label).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
             switch u.source {
             case .brew:
                 Button(T("업그레이드", "Upgrade")) { if let b = u.brewItem { brew.perform(.upgrade, b) } }
@@ -485,7 +485,7 @@ private struct PkgUninstallView: View {
             FACard {
                 VStack(alignment: .leading, spacing: 5) {
                     TextField(T("앱 찾기", "Find an app"), text: $store.filter)
-                        .textFieldStyle(.plain).font(.system(size: 11.5))
+                        .textFieldStyle(.plain).font(.island(.footnote))
                         .padding(.horizontal, 6).padding(.vertical, 3)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.1)))
                     if store.loadingApps && store.apps.isEmpty {
@@ -497,7 +497,7 @@ private struct PkgUninstallView: View {
                                 Button { confirm = false; store.select(app) } label: {
                                     HStack(spacing: 6) {
                                         FAFileIcon(url: app.url, size: 18)
-                                        Text(app.name).font(.system(size: 11.5)).lineLimit(1)
+                                        Text(app.name).font(.island(.footnote)).lineLimit(1)
                                         Spacer(minLength: 0)
                                     }
                                     .padding(.horizontal, 4).padding(.vertical, 2)
@@ -523,19 +523,19 @@ private struct PkgUninstallView: View {
                 HStack(spacing: 8) {
                     FAFileIcon(url: app.url, size: 28)
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(app.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
-                        Text("\(app.shortVersion) · \(app.bundleID)").font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                        Text(app.name).font(.island(.subhead, .semibold)).lineLimit(1)
+                        Text("\(app.shortVersion) · \(app.bundleID)").font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                     }
                     Spacer()
                 }
                 if let r = store.running {
                     Label(T("\(r) 실행 중: 먼저 끝내야 지울 수 있음", "\(r) is running: quit it first"), systemImage: "exclamationmark.triangle.fill")
-                        .font(.system(size: 10.5)).foregroundStyle(.orange)
+                        .font(.island(.caption)).foregroundStyle(.orange)
                 }
                 if store.scanning {
                     HStack(spacing: 6) {
                         ProgressView().controlSize(.small).scaleEffect(0.6).frame(width: 12, height: 12)
-                        Text(T("관련 파일 찾는 중", "Finding related files")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        Text(T("관련 파일 찾는 중", "Finding related files")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                     }
                 } else {
                     ScrollView {
@@ -544,15 +544,15 @@ private struct PkgUninstallView: View {
                                 HStack(spacing: 6) {
                                     Toggle("", isOn: Binding(get: { item.selected }, set: { _ in confirm = false; store.toggle(item) }))
                                         .toggleStyle(.checkbox).labelsHidden()
-                                    Text(item.category).font(.system(size: 10.5, weight: .medium)).frame(width: 74, alignment: .leading)
-                                    Text(FAKit.shortPath(item.url)).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                                    Text(item.category).font(.island(.caption)).frame(width: 74, alignment: .leading)
+                                    Text(FAKit.shortPath(item.url)).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                                         .lineLimit(1).truncationMode(.middle)
                                         .help(item.byName ? T("앱 이름으로 찾은 항목 (기본 선택 안 함)", "Matched by app name (not selected by default)") : item.url.path)
                                     if item.byName {
-                                        Text(T("이름 일치", "name")).font(.system(size: 9)).foregroundStyle(.yellow.opacity(0.8))
+                                        Text(T("이름 일치", "name")).font(.island(.caption2)).foregroundStyle(.yellow.opacity(0.8))
                                     }
                                     Spacer(minLength: 2)
-                                    Text(item.size.map { FAKit.bytes($0) } ?? "—").font(.system(size: 10)).monospacedDigit()
+                                    Text(item.size.map { FAKit.bytes($0) } ?? "—").font(.island(.caption)).monospacedDigit()
                                         .foregroundStyle(.white.opacity(0.6))
                                 }
                             }
@@ -561,10 +561,10 @@ private struct PkgUninstallView: View {
                 }
                 HStack(spacing: 6) {
                     if let m = store.message {
-                        Text(m).font(.system(size: 10)).foregroundStyle(store.messageIsError ? .orange : .white.opacity(0.6)).lineLimit(2)
+                        Text(m).font(.island(.caption)).foregroundStyle(store.messageIsError ? .orange : .white.opacity(0.6)).lineLimit(2)
                     } else {
                         Text(T("선택 \(FAKit.bytes(store.selectedBytes)) · 지원 파일 먼저, 앱은 마지막", "\(FAKit.bytes(store.selectedBytes)) selected · support files first, app last"))
-                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                     }
                     Spacer()
                     if store.trashing {
@@ -585,11 +585,11 @@ private struct PkgUninstallView: View {
             }
         } else {
             VStack(spacing: 5) {
-                Image(systemName: "trash").font(.system(size: 22, weight: .light))
-                Text(T("앱을 고르면 함께 지울 파일을 보여 줌", "Pick an app to see the files that go with it")).font(.system(size: 11.5, weight: .medium))
+                Image(systemName: "trash").font(.island(.title1))
+                Text(T("앱을 고르면 함께 지울 파일을 보여 줌", "Pick an app to see the files that go with it")).font(.island(.footnote))
                 Text(T("번들 ID가 정확히 같은 지원 파일·캐시·환경설정·컨테이너·저장 상태·로그·런치 에이전트. 모두 휴지통으로 옮기며 영구 삭제하지 않음. Apple 앱과 이 앱은 목록에 없음.",
                        "Support files, caches, preferences, containers, saved state, logs and launch agents with the exact bundle ID. Everything goes to the Trash, never deleted. Apple apps and this app aren't listed."))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).multilineTextAlignment(.center)
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

@@ -13,6 +13,7 @@
 | ⌘1–9 칸 이동, Esc 닫기, 두 손가락 좌우로 홈 → 고정 탭 순서 넘기기 | `Notch/NotchPanel.swift`, `NotchViewModel.swift` | M-H-006, M-A-016 |
 | 상세 카드 버튼(`ActivityAction`) — 에이전트 승인 허용·거부 등 | `Activity/NotchActivity.swift`, `ActivityViews.swift` | M-K-018 |
 | 두 번째 라이브 활동을 노치 오른쪽에 떨어진 동그라미로 (다이나믹 아일랜드 minimal) | `Notch/IslandExtras.swift`, `NotchRootView.swift`, `NotchController.swift` | M-A-008, M-A-010 |
+| 다이내믹 아일랜드 모양 맞추기 (1.2.5): 연속 곡률 아래 모서리, 작은 표시 양끝 반원, 펼친 카드·확장 반경 38pt, 어두운 모드 둘레 선, 카드의 노치 옆 아이콘·값 칸, 글자 단계(`IslandText`)와 medium 이상 굵기, SF Pro | `Notch/IslandStyle.swift`, `NotchShape.swift`, `NotchViewModel.swift`, `NotchRootView.swift`, `Activity/ActivityViews.swift`, 노치 화면 96개 파일의 글자 크기 | M-A-008, M-A-010 |
 | 음악 호버 미리보기(미니 플레이어), 지연 설정 | `Notch/IslandExtras.swift`, `NotchController.swift` | M-A-005 |
 | 더 중요한 알림에 밀려난 알림을 대기열로 되돌림 | `Activity/ActivityCenter.swift` | M-A-007 |
 | 노치 없는 화면에서 메뉴바 아래 떠 있는 알약 | `Notch/NotchRootView.swift`, `NotchViewModel.swift` | M-A-002 |
@@ -65,5 +66,5 @@
 
 - `--list-modules`, `--module-selftest=<id|all>`: 기능 목록·자체 검사.
 - `--render-tab=<id>`: 탭 화면만 PNG로.
-- `--render-notch=<home|dashboard|palette|module:id|detail-actions|compact-two|compact-bubble>`: 노치 전체를 실제 뷰로 PNG로. `DMN_NO_NOTCH=1`이면 노치 없는 화면.
+- `--render-notch=<home|dashboard|palette|module:id|compact|compact-two|compact-bubble|detail|detail-actions>`: 노치 전체를 실제 뷰로 PNG로. `DMN_NO_NOTCH=1`이면 노치 없는 화면.
 - 화면 녹화 권한 없이 앱이 스스로 그리므로, 실제 화면 캡처와는 다르다(창 그림자·블러·실제 노치 위치는 확인 못 함).

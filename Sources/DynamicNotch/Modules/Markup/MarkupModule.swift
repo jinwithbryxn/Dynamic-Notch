@@ -153,9 +153,9 @@ private struct MarkupTab: View {
             }
             Text(T("화살표·사각형·타원·직선·형광펜·글자·모자이크·가림, 7색·3굵기, ⌘Z 실행 취소. 저장하면 원본 옆에 'annotated' 사본이 생기고 원본은 그대로다. 캡처 직후 편집은 '화면 캡처' 탭의 '캡처 후 편집'.",
                    "Arrow, rectangle, ellipse, line, highlighter, text, pixelate and redact; 7 colors, 3 widths, ⌘Z undo. Saving writes an 'annotated' copy next to the original. To edit right after capturing, use Capture & Mark Up in Screen Capture."))
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
             if let s = state.status {
-                Text(s).font(.system(size: 11)).foregroundStyle(.orange)
+                Text(s).font(.island(.footnote)).foregroundStyle(.orange)
             }
         }
         .foregroundStyle(.white)

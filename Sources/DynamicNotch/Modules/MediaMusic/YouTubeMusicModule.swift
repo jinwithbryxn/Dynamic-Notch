@@ -231,7 +231,7 @@ private struct YTMusicTab: View {
                                            "Click Connect and YouTube Music shows an Allow dialog. The token is kept in the Keychain only."))
                 MBPillButton(title: T("연결", "Connect"), symbol: "link") { client.authorize() }
             case .nothingPlaying:
-                Text(T("YouTube Music에서 재생 중인 곡이 없습니다", "Nothing is playing in YouTube Music")).font(.system(size: 12)).foregroundStyle(.secondary)
+                Text(T("YouTube Music에서 재생 중인 곡이 없습니다", "Nothing is playing in YouTube Music")).font(.island(.subhead)).foregroundStyle(.secondary)
             case .connected:
                 if let s = client.song { player(s) }
             }
@@ -251,8 +251,8 @@ private struct YTMusicTab: View {
                 }
                 .frame(width: 52, height: 52).background(Color.white.opacity(0.08)).clipShape(RoundedRectangle(cornerRadius: 8))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(s.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
-                    Text(s.artist).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                    Text(s.title).font(.island(.subhead, .semibold)).lineLimit(1)
+                    Text(s.artist).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
                 }
                 Spacer()
             }
@@ -260,8 +260,8 @@ private struct YTMusicTab: View {
                 let pos = s.position(at: ctx.date)
                 ScrubBar(fraction: s.duration > 0 ? pos / s.duration : 0, enabled: true, spacing: 6, thickness: 4,
                          onScrub: { f in client.send("seek-to", body: ["seconds": Int(f * s.duration)]) }, onEnd: {},
-                         leading: { Text(MBStorage.duration(pos)).font(.system(size: 10, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
-                         trailing: { Text(MBStorage.duration(s.duration)).font(.system(size: 10, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
+                         leading: { Text(MBStorage.duration(pos)).font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
+                         trailing: { Text(MBStorage.duration(s.duration)).font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
             }
             HStack(spacing: 8) {
                 MBPillButton(title: "", symbol: "shuffle", active: client.shuffle == true, tint: .green) { client.send("shuffle") }

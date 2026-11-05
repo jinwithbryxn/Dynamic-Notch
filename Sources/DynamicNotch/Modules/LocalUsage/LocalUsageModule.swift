@@ -294,10 +294,10 @@ private struct LocalUsageTab: View {
                     Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
                         .buttonStyle(.plain).help(T("다시 읽기", "Refresh")).accessibilityLabel(T("다시 읽기", "Refresh"))
                 }
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             } else {
                 Spacer()
-                HStack { Spacer(); ProgressView().controlSize(.small); Text(T("로컬 로그 읽는 중…", "Reading local logs…")).font(.system(size: 12)); Spacer() }
+                HStack { Spacer(); ProgressView().controlSize(.small); Text(T("로컬 로그 읽는 중…", "Reading local logs…")).font(.island(.subhead)); Spacer() }
                 Spacer()
             }
         }
@@ -310,7 +310,7 @@ private struct LocalUsageTab: View {
             VStack(alignment: .leading, spacing: 5) {
                 header("Claude Code", AgentSource.claude.tint, s.claudeTopModel)
                 if !s.hasClaudeLogs {
-                    Text(T("~/.claude/projects 로그가 없습니다", "No logs in ~/.claude/projects")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    Text(T("~/.claude/projects 로그가 없습니다", "No logs in ~/.claude/projects")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 } else {
                     if let b = s.claudeBlock {
                         let budget = ModuleDefaults(module: "localusage").double("budget5h", default: 0)
@@ -326,10 +326,10 @@ private struct LocalUsageTab: View {
                     if let acc = s.claudeAccount {
                         Text(T("계정(웹 로그인): ", "Account (web login): ") + acc.windows.map { "\($0.label) \(Int($0.percent))%" }.joined(separator: " · ")
                              + " · " + AIDevFormat.clock(acc.fetched))
-                            .font(.system(size: 10.5)).foregroundStyle(.green.opacity(0.9)).lineLimit(1)
+                            .font(.island(.caption)).foregroundStyle(.green.opacity(0.9)).lineLimit(1)
                     } else {
                         Text(T("실제 한도: 홈 'AI 사용량'에서 웹 로그인하면 함께 표시", "Real limits: sign in under Home → AI Usage to show them here"))
-                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45)).lineLimit(2)
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.45)).lineLimit(2)
                     }
                 }
             }
@@ -341,7 +341,7 @@ private struct LocalUsageTab: View {
             VStack(alignment: .leading, spacing: 5) {
                 header("Codex", AgentSource.codex.tint, s.codexSnapshot?.plan.map { T("요금제 ", "plan ") + $0 })
                 if !s.hasCodexLogs {
-                    Text(T("~/.codex/sessions 로그가 없습니다", "No logs in ~/.codex/sessions")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    Text(T("~/.codex/sessions 로그가 없습니다", "No logs in ~/.codex/sessions")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 } else {
                     if let snap = s.codexSnapshot {
                         ForEach(Array([snap.primary, snap.secondary].compactMap { $0 }.enumerated()), id: \.offset) { _, w in
@@ -365,26 +365,26 @@ private struct LocalUsageTab: View {
     private func header(_ name: String, _ tint: Color, _ sub: String?) -> some View {
         HStack {
             Circle().fill(tint).frame(width: 7, height: 7)
-            Text(name).font(.system(size: 12.5, weight: .semibold))
+            Text(name).font(.island(.subhead, .semibold))
             Spacer()
-            if let sub { Text(sub).font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).lineLimit(1) }
+            if let sub { Text(sub).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).lineLimit(1) }
         }
     }
 
     private func line(_ label: String, _ value: String) -> some View {
         HStack {
-            Text(label).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+            Text(label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
             Spacer()
-            Text(value).font(.system(size: 11.5, design: .rounded)).monospacedDigit()
+            Text(value).font(.island(.footnote)).monospacedDigit()
         }
     }
 
     private func meter(_ label: String, percent: Double?, value: String, note: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(label).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                Text(label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 Spacer()
-                Text(value).font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit()
+                Text(value).font(.island(.subhead, .semibold)).monospacedDigit()
             }
             if let p = percent {
                 GeometryReader { g in
@@ -395,7 +395,7 @@ private struct LocalUsageTab: View {
                 }
                 .frame(height: 4)
             }
-            Text(note).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+            Text(note).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
         }
     }
 }

@@ -170,14 +170,14 @@ private struct PresenterTab: View {
                             .help(T("⌘·⌃·⌥ 조합과 특수 키만 보여 주고 일반 글자는 숨긴다", "Show only ⌘/⌃/⌥ combos and special keys"))
                         Toggle(T("노치에 표시", "Show in notch"), isOn: $state.inNotch)
                     }
-                    .toggleStyle(.checkbox).font(.system(size: 10.5)).padding(.leading, 8)
+                    .toggleStyle(.checkbox).font(.island(.caption)).padding(.leading, 8)
                     CPPermissionLine(permission: .inputMonitoring, granted: state.inputGranted).padding(.leading, 8)
                     CPToggleRow(symbol: "cursorarrow.motionlines", title: T("멈춘 포인터 숨기기", "Hide idle pointer"),
                                 detail: CPIdleCursorHider.available ? T("\(Int(state.idleSeconds))초 동안 안 움직이면 숨김 · 비공개 API", "Hides after \(Int(state.idleSeconds)) s · private API")
                                     : T("지원 안 됨: 비공개 함수를 찾지 못함", "Unsupported: private functions missing"),
                                 isOn: $state.idleHide)
                     Stepper(T("숨기기까지 \(Int(state.idleSeconds))초", "Hide after \(Int(state.idleSeconds)) s"), value: $state.idleSeconds, in: 1...30)
-                        .font(.system(size: 10.5)).controlSize(.mini).padding(.leading, 8)
+                        .font(.island(.caption)).controlSize(.mini).padding(.leading, 8)
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     CPToggleRow(symbol: "cursorarrow.click", title: T("클릭 물결", "Click ripples"),
@@ -190,7 +190,7 @@ private struct PresenterTab: View {
                 }
             }
             if let m = state.message {
-                Text(m).font(.system(size: 10.5)).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                Text(m).font(.island(.caption)).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
             }
             CPUnsupported(title: T("포인터 테마·크기 보류", "Pointer themes deferred"),
                           reason: T("다른 앱 위의 시스템 커서를 다시 칠하는 공개 API가 없어 비공개 커서 API가 필요하고, macOS 업데이트마다 깨질 위험이 크다.",

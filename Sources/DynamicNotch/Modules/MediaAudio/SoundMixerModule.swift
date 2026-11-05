@@ -365,14 +365,14 @@ private struct SoundMixerTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(T("앱별 사운드", "Sound Mixer")).font(.system(size: 12, weight: .semibold))
-                Text(T("프로토타입", "Prototype")).font(.system(size: 9, weight: .bold))
+                Text(T("앱별 사운드", "Sound Mixer")).font(.island(.subhead, .semibold))
+                Text(T("프로토타입", "Prototype")).font(.island(.caption2, .bold))
                     .padding(.horizontal, 5).padding(.vertical, 1)
                     .background(Capsule().fill(Color.orange.opacity(0.8))).foregroundStyle(.black)
                 Spacer()
                 if engine.tappedCount > 0 {
                     Label(T("탭 \(engine.tappedCount)개 · 보라색 표시", "\(engine.tappedCount) tapped · purple dot"), systemImage: "record.circle")
-                        .font(.system(size: 10)).foregroundStyle(.purple)
+                        .font(.island(.caption)).foregroundStyle(.purple)
                         .help(T("소리를 바꾼 앱마다 시스템 오디오 탭이 하나씩 있습니다. 모두 100%로 되돌리면 사라집니다.",
                                 "One system audio tap per changed app. Resetting them to 100% removes it."))
                 }
@@ -381,7 +381,7 @@ private struct SoundMixerTab: View {
             if engine.apps.isEmpty {
                 Spacer()
                 Text(T("지금 소리를 내는 앱이 없습니다", "No app is playing audio right now"))
-                    .font(.system(size: 11.5)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                    .font(.island(.footnote)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                 Spacer()
             } else {
                 ScrollView {
@@ -433,10 +433,10 @@ private struct MixerRow: View {
         VStack(spacing: 6) {
             HStack(spacing: 8) {
                 Image(nsImage: MBMixerEngine.icon(for: app.id)).resizable().frame(width: 20, height: 20)
-                Text(app.name).font(.system(size: 11.5, weight: .medium)).lineLimit(1).frame(width: 96, alignment: .leading)
+                Text(app.name).font(.island(.footnote)).lineLimit(1).frame(width: 96, alignment: .leading)
                 Button { engine.update(app.id) { $0.muted.toggle() } } label: {
                     Image(systemName: s.muted ? "speaker.slash.fill" : (app.playing ? "speaker.wave.2.fill" : "speaker.fill"))
-                        .font(.system(size: 10)).frame(width: 16)
+                        .font(.island(.caption)).frame(width: 16)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(s.muted ? .red : .white.opacity(0.7))
@@ -453,13 +453,13 @@ private struct MixerRow: View {
                          leading: { EmptyView() },
                          trailing: {
                              Text("\(Int(((dragVolume ?? s.volume) * 100).rounded()))%")
-                                 .font(.system(size: 10, design: .rounded)).monospacedDigit()
+                                 .font(.island(.caption)).monospacedDigit()
                                  .foregroundStyle((dragVolume ?? s.volume) > 1.001 ? .orange : .white.opacity(0.6))
                                  .frame(width: 36, alignment: .trailing)
                          })
                     .help(T("앱 음량 (최대 150%)", "App volume (up to 150%)"))
                 Button { engine.expanded = open ? nil : app.id } label: {
-                    Image(systemName: "slider.horizontal.3").font(.system(size: 10)).frame(width: 18, height: 18)
+                    Image(systemName: "slider.horizontal.3").font(.island(.caption)).frame(width: 18, height: 18)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(s.eqOn || s.outputUID != nil ? .green : .white.opacity(0.6))
@@ -480,7 +480,7 @@ private struct MixerRow: View {
                         }
                     } label: {
                         Text(s.outputUID.flatMap { MBAudio.device(uid: $0) }.map { AudioOutput.displayName($0) } ?? T("시스템 기본 출력", "System default output"))
-                            .font(.system(size: 10.5))
+                            .font(.island(.caption))
                     }
                     .menuStyle(.borderlessButton)
                     .fixedSize()
@@ -496,13 +496,13 @@ private struct MixerRow: View {
 
     private func eqSlider(_ label: String, _ value: Float, _ set: @escaping (Float) -> Void) -> some View {
         HStack(spacing: 4) {
-            Text(label).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.6)).frame(width: 24, alignment: .leading)
+            Text(label).font(.island(.caption2)).foregroundStyle(.white.opacity(0.6)).frame(width: 24, alignment: .leading)
             ScrubBar(fraction: Double((value + 12) / 24), enabled: engine.status == .ready, spacing: 4, thickness: 3,
                      onScrub: { f in
                          let db = Float(f) * 24 - 12
                          set(abs(db) < 0.6 ? 0 : (db * 2).rounded() / 2)
                      }, onEnd: {}, leading: { EmptyView() },
-                     trailing: { Text(String(format: "%+.0f", value)).font(.system(size: 9, design: .rounded)).monospacedDigit()
+                     trailing: { Text(String(format: "%+.0f", value)).font(.island(.caption2)).monospacedDigit()
                          .foregroundStyle(.white.opacity(0.6)).frame(width: 22, alignment: .trailing) })
         }
         .help(T("\(label) ±12 dB", "\(label) ±12 dB"))

@@ -24,11 +24,12 @@ struct LaunchChip: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                if let symbol { Image(systemName: symbol).font(.system(size: 10, weight: .semibold)) }
+                if let symbol { Image(systemName: symbol).font(.island(.caption, .semibold)) }
                 if !title.isEmpty { Text(title).lineLimit(1) }
             }
-            .font(.system(size: 11, weight: .medium))
-            .padding(.horizontal, 9).padding(.vertical, 4)
+            .font(.island(.footnote))
+            // 글자가 아일랜드 단계로 커진 만큼 옆 여백을 줄여 한 줄(빠른 검색 엔진 9개)에 그대로 들어가게
+            .padding(.horizontal, 7).padding(.vertical, 4)
             .background(Capsule().fill(selected ? Color.white.opacity(0.85) : LaunchUI.fill))
             .foregroundStyle(selected ? Color.black : Color.white)
         }
@@ -49,11 +50,11 @@ struct LaunchUnsupportedView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 20)).foregroundStyle(LaunchUI.secondary)
-            Text(title).font(.system(size: 13, weight: .semibold))
-            Text(reason).font(.system(size: 11)).foregroundStyle(LaunchUI.secondary).multilineTextAlignment(.center)
+            Image(systemName: symbol).font(.island(.title2)).foregroundStyle(LaunchUI.secondary)
+            Text(title).font(.island(.subhead, .semibold))
+            Text(reason).font(.island(.footnote)).foregroundStyle(LaunchUI.secondary).multilineTextAlignment(.center)
             if let alternative {
-                Text(alternative).font(.system(size: 11)).foregroundStyle(LaunchUI.secondary).multilineTextAlignment(.center)
+                Text(alternative).font(.island(.footnote)).foregroundStyle(LaunchUI.secondary).multilineTextAlignment(.center)
             }
             if let buttonTitle, let buttonAction { LaunchChip(title: buttonTitle, action: buttonAction).padding(.top, 2) }
         }
@@ -72,10 +73,10 @@ struct LaunchField: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 12)).foregroundStyle(LaunchUI.secondary)
+            Image(systemName: symbol).font(.island(.subhead)).foregroundStyle(LaunchUI.secondary)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 14))
+                .font(.island(.callout))
                 .focused(focus)
                 .onSubmit(onSubmit)
             if !text.isEmpty {

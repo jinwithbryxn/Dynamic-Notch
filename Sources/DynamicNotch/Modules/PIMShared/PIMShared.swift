@@ -382,7 +382,7 @@ struct PIMPillStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 11, weight: .semibold))
+            .font(.island(.footnote, .semibold))
             .foregroundStyle(prominent ? Color.black : tint)
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
@@ -402,11 +402,11 @@ struct PIMEmptyState: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 20)).foregroundStyle(.white.opacity(0.75))
-            Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.9))
+            Image(systemName: symbol).font(.island(.title2)).foregroundStyle(.white.opacity(0.75))
+            Text(title).font(.island(.subhead, .semibold)).foregroundStyle(.white.opacity(0.9))
                 .multilineTextAlignment(.center)
             if let detail {
-                Text(detail).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                Text(detail).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             }
             if let buttonTitle, let action {

@@ -10,7 +10,19 @@ enum CoreSelfTest {
         lines.append(mediaRemoteFeed())
         lines.append(contentsOf: httpFetch())
         lines.append(contentsOf: recordingCheck())
+        lines.append(islandScale())
         return lines
+    }
+
+    /// 아일랜드 글자 단계가 iOS 글자 크기 × 환산 비율(0.5pt 단위)과 같고, 작은 것부터 커지는지
+    private static func islandScale() -> String {
+        let cases = IslandText.allCases
+        let off = cases.filter { abs($0.rawValue - ($0.iosSize * Island.scale * 2).rounded() / 2) > 0.01 }
+        let ordered = zip(cases, cases.dropFirst()).allSatisfy { $0.rawValue < $1.rawValue }
+        guard off.isEmpty, ordered else {
+            return "FAIL island type scale: off \(off.map { "\($0)" }), ordered \(ordered)"
+        }
+        return "PASS island type scale (\(cases.count) steps, iOS sizes x \(String(format: "%.3f", Island.scale)))"
     }
 
     /// 녹화 도구 이름 거르기가 ps와 같은지, 평소 확인(화면 캡처 여부)이 프로세스 목록 읽기보다 가벼운지

@@ -237,12 +237,12 @@ private struct WindowSnapTab: View {
                 }
             } else {
                 Text(T("앞에 있던 창: ", "Target window: ") + (WindowSnapper.targetApp()?.localizedName ?? T("없음", "none")))
-                    .font(.system(size: 11)).foregroundStyle(LaunchUI.secondary)
+                    .font(.island(.footnote)).foregroundStyle(LaunchUI.secondary)
                 ForEach(grid.indices, id: \.self) { r in
                     HStack(spacing: 8) {
                         ForEach(grid[r]) { pos in
                             Button { WindowSnapper.snapFrontmost(pos, context: module.context) } label: {
-                                Image(systemName: pos.symbol).font(.system(size: 20))
+                                Image(systemName: pos.symbol).font(.island(.title2))
                                     .frame(width: 64, height: 44)
                                     .background(RoundedRectangle(cornerRadius: 10).fill(LaunchUI.fill))
                             }
@@ -252,7 +252,7 @@ private struct WindowSnapTab: View {
                 }
                 Text(module.keyboardSnap ? T("단축키 ⌃⌥⌘ ←/→/↑/↓/↩ · 같은 자리면 다음 화면", "Shortcuts ⌃⌥⌘ ←/→/↑/↓/↩ · repeat moves to next display")
                                          : T("키보드 배치 꺼짐", "Keyboard snapping off"))
-                    .font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary)
+                    .font(.island(.caption)).foregroundStyle(LaunchUI.secondary)
             }
         }
         .foregroundStyle(.white)

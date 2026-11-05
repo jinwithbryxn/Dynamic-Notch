@@ -243,7 +243,7 @@ private struct BatteryTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Text(T("블루투스 기기", "Bluetooth devices")).font(.system(size: 12, weight: .semibold))
+                Text(T("블루투스 기기", "Bluetooth devices")).font(.island(.subhead, .semibold))
                 if model.loading { ProgressView().controlSize(.small).scaleEffect(0.7) }
                 Spacer()
                 MBPillButton(title: T("새로 고침", "Refresh"), symbol: "arrow.clockwise") { model.refresh() }
@@ -252,7 +252,7 @@ private struct BatteryTab: View {
             if model.devices.isEmpty {
                 Spacer()
                 Text(model.loading ? T("기기 정보를 읽는 중…", "Reading devices…") : T("페어링된 블루투스 기기가 없습니다", "No paired Bluetooth devices"))
-                    .font(.system(size: 11.5)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                    .font(.island(.footnote)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                 Spacer()
             } else {
                 ScrollView {
@@ -263,7 +263,7 @@ private struct BatteryTab: View {
             }
             Text(model.canConnect ? T("배터리 부족 알림: \(model.threshold)% 이하일 때 한 번 (10분마다 확인)", "Low battery alert at \(model.threshold)% or less, once (checked every 10 min)")
                                   : T("연결 버튼은 블루투스 권한이 허용된 뒤에 보입니다. 배터리 부족 알림: \(model.threshold)% 이하", "Connect buttons appear once Bluetooth access is allowed. Low battery alert at \(model.threshold)%"))
-                .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4))
+                .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))
         }
         .foregroundStyle(.white)
         .onAppear { model.refresh() }
@@ -271,11 +271,11 @@ private struct BatteryTab: View {
 
     private func row(_ d: MBBTDevice) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: d.symbol).font(.system(size: 12)).frame(width: 20)
+            Image(systemName: d.symbol).font(.island(.subhead)).frame(width: 20)
             VStack(alignment: .leading, spacing: 1) {
-                Text(d.name).font(.system(size: 11.5, weight: .medium)).lineLimit(1)
+                Text(d.name).font(.island(.footnote)).lineLimit(1)
                 Text(d.connected ? (detailText(d) ?? T("연결됨 · 배터리 정보 없음", "Connected · no battery info")) : T("연결 안 됨", "Not connected"))
-                    .font(.system(size: 10)).foregroundStyle(lowColor(d)).lineLimit(1)
+                    .font(.island(.caption)).foregroundStyle(lowColor(d)).lineLimit(1)
             }
             Spacer()
             if let p = d.battery?.primary, d.connected {
@@ -309,7 +309,7 @@ private struct BatteryBar: View {
     let warn: Bool
     var body: some View {
         HStack(spacing: 4) {
-            Text("\(level)%").font(.system(size: 11, design: .rounded)).monospacedDigit()
+            Text("\(level)%").font(.island(.footnote)).monospacedDigit()
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2).stroke(Color.white.opacity(0.5), lineWidth: 1).frame(width: 22, height: 10)
                 RoundedRectangle(cornerRadius: 1).fill(warn ? Color.red : Color.green)

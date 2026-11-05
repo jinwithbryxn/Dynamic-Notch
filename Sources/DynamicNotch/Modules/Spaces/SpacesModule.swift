@@ -181,8 +181,8 @@ private struct SpacesTab: View {
                                 Button { module.switchTo(s, in: d) } label: {
                                     VStack(spacing: 3) {
                                         Image(systemName: s.fullscreen ? "arrow.up.left.and.arrow.down.right" : "rectangle")
-                                            .font(.system(size: 16))
-                                        Text(module.label(s, index: i)).font(.system(size: 11)).lineLimit(1)
+                                            .font(.island(.title3))
+                                        Text(module.label(s, index: i)).font(.island(.footnote)).lineLimit(1)
                                     }
                                     .frame(width: 86, height: 52)
                                     .background(RoundedRectangle(cornerRadius: 10).fill(s.id == d.current ? Color.white.opacity(0.25) : LaunchUI.fill))
@@ -208,7 +208,7 @@ private struct SpacesTab: View {
                     .onAppear { module.context?.focusInput(); DispatchQueue.main.async { focused = true } }
                 } else {
                     Text(T("눌러서 전환 · 오른쪽 클릭으로 이름 바꾸기 · 전환은 ⌃←/⌃→ 단축키를 씀", "Click to switch · right-click to rename · uses the ⌃←/⌃→ shortcuts"))
-                        .font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary)
+                        .font(.island(.caption)).foregroundStyle(LaunchUI.secondary)
                 }
             }
             .foregroundStyle(.white)

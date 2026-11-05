@@ -213,14 +213,14 @@ private struct CalculatorTab: View {
                 }
                 Spacer()
                 Text(a.map { $0.value != nil ? "= " + $0.text : $0.text } ?? (model.input.isEmpty ? " " : "…"))
-                    .font(.system(size: 26, weight: .medium, design: .rounded))
+                    .font(.island(.title1))
                     .monospacedDigit()
                     .lineLimit(1).minimumScaleFactor(0.5)
                     .foregroundStyle(a?.value != nil ? Color.white : LaunchUI.secondary)
                     .textSelection(.enabled)
             }
             Text(copied ? T("복사함", "Copied") : (a?.note ?? T("Return: 확정·복사 · ans = 직전 답", "Return: confirm & copy · ans = last answer")))
-                .font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
+                .font(.island(.caption)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -228,7 +228,7 @@ private struct CalculatorTab: View {
     @ViewBuilder private var historyView: some View {
         if history.isEmpty {
             Text(T("기록 없음", "No history"))
-                .font(.system(size: 11)).foregroundStyle(LaunchUI.secondary)
+                .font(.island(.footnote)).foregroundStyle(LaunchUI.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ScrollView {
@@ -240,7 +240,7 @@ private struct CalculatorTab: View {
                                 Spacer()
                                 Text(e.result).lineLimit(1).monospacedDigit()
                             }
-                            .font(.system(size: 12))
+                            .font(.island(.subhead))
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.04)))
                         }

@@ -289,10 +289,10 @@ struct TrayPage: View {
     private func zoneLabel(_ z: TrayStore.DropZone, symbol: String, title: String, on: Bool) -> some View {
         VStack(spacing: 5) {
             Image(systemName: symbol)
-                .font(.system(size: 19, weight: .semibold))
-            Text(title).font(.system(size: 11, weight: .semibold))
+                .font(.island(.title2, .semibold))
+            Text(title).font(.island(.footnote, .semibold))
             if !vm.isFileDragging {
-                Text(T("클릭 또는 끌어다 놓기", "Click or drop files")).font(.system(size: 9)).foregroundStyle(.white.opacity(0.45))
+                Text(T("클릭 또는 끌어다 놓기", "Click or drop files")).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
             }
         }
         .foregroundStyle(on ? Color.white : Color.white.opacity(0.7))
@@ -331,7 +331,7 @@ struct TrayPage: View {
         VStack(spacing: 6) {
             HStack(spacing: 8) {
                 Text(T("트레이 \(store.items.count)", "Tray \(store.items.count)"))
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.island(.caption, .semibold))
                     .foregroundStyle(.white.opacity(0.7))
                 Spacer()
                 Button {
@@ -347,7 +347,7 @@ struct TrayPage: View {
                     .help(T("모두 비우기", "Clear all"))
             }
             .buttonStyle(.plain)
-            .font(.system(size: 11))
+            .font(.island(.footnote))
             .foregroundStyle(.white.opacity(0.8))
 
             ScrollView(.vertical, showsIndicators: false) {
@@ -392,7 +392,7 @@ struct TrayItemView: View {
                 .resizable()
                 .frame(width: 30, height: 30)
             Text(url.lastPathComponent)
-                .font(.system(size: 8.5))
+                .font(.island(.caption2))
                 .foregroundStyle(.white.opacity(selected ? 1 : 0.8))
                 .lineLimit(1)
                 .truncationMode(.middle)

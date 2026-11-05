@@ -328,29 +328,29 @@ private struct RemindersTab: View {
     private var input: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 6) {
-                Image(systemName: "plus.circle.fill").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "plus.circle.fill").font(.island(.subhead)).foregroundStyle(.white.opacity(0.6))
                 TextField(T("새 미리 알림 (예: 내일 9시 알렉스에게 전화)", "New reminder (e.g. tomorrow at 9 call Alex)"), text: $model.draft)
-                    .textFieldStyle(.plain).font(.system(size: 12))
+                    .textFieldStyle(.plain).font(.island(.subhead))
                     .focused($focused)
                     .onSubmit(add)
                     .onChange(of: model.draft) { _, _ in if model.draft.isEmpty { model.dropDate = false } }
                     .accessibilityLabel(T("새 미리 알림", "New reminder"))
-                Text(model.destinationName).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+                Text(model.destinationName).font(.island(.caption)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
             .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.08)))
             if let p = PIMDateParser.parse(model.draft) {
                 HStack(spacing: 6) {
-                    Image(systemName: "calendar").font(.system(size: 9.5))
+                    Image(systemName: "calendar").font(.island(.caption2))
                     Text(model.dropDate ? T("날짜 없이 추가", "Add without a date") : "\(PIMFormat.preview(p)) · '\(p.title.isEmpty ? model.draft : p.title)'")
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     Button(model.dropDate ? T("날짜 쓰기", "Use date") : T("날짜 빼기", "No date")) { model.dropDate.toggle() }
                         .buttonStyle(PIMPillStyle())
                 }
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.65))
             } else if let msg = model.message {
-                Text(msg).font(.system(size: 10.5)).foregroundStyle(.orange)
+                Text(msg).font(.island(.caption)).foregroundStyle(.orange)
             }
         }
     }
@@ -364,7 +364,7 @@ private struct RemindersTab: View {
 
     @ViewBuilder private var list: some View {
         if let err = model.todoistError {
-            Text("Todoist: \(err)").font(.system(size: 10)).foregroundStyle(.orange).lineLimit(1)
+            Text("Todoist: \(err)").font(.island(.caption)).foregroundStyle(.orange).lineLimit(1)
         }
         if model.items.isEmpty {
             PIMEmptyState(symbol: "checkmark.circle", title: T("미완료 미리 알림 없음", "No open reminders"))
@@ -388,18 +388,18 @@ private struct RemindersTab: View {
                 .help(done ? T("완료 취소", "Mark incomplete") : T("완료", "Complete"))
                 .accessibilityLabel(done ? T("\(item.title) 완료 취소", "Mark \(item.title) incomplete") : T("\(item.title) 완료", "Complete \(item.title)"))
             VStack(alignment: .leading, spacing: 0) {
-                Text(item.title).font(.system(size: 12)).lineLimit(1).strikethrough(done)
+                Text(item.title).font(.island(.subhead)).lineLimit(1).strikethrough(done)
                     .foregroundStyle(done ? Color.white.opacity(0.4) : .white)
                 if let due = item.due {
                     Text(dueText(due, hasTime: item.hasTime, overdue: overdue))
-                        .font(.system(size: 10)).foregroundStyle(overdue ? Color.red : (soon ? Color.orange : Color.white.opacity(0.5)))
+                        .font(.island(.caption)).foregroundStyle(overdue ? Color.red : (soon ? Color.orange : Color.white.opacity(0.5)))
                 }
             }
             Spacer(minLength: 4)
             if done {
                 Button(T("되돌리기", "Undo")) { model.complete(item) }.buttonStyle(PIMPillStyle())
             } else {
-                Text(item.list).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.35)).lineLimit(1)
+                Text(item.list).font(.island(.caption2)).foregroundStyle(.white.opacity(0.35)).lineLimit(1)
             }
         }
         .padding(.vertical, 3)

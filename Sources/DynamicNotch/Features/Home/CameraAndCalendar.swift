@@ -29,7 +29,7 @@ struct CameraPage: View {
                 .overlay(alignment: .topTrailing) {
                     Button { active = false } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 16))
+                            .font(.island(.title3))
                             .foregroundStyle(.white.opacity(0.85))
                             .padding(6)
                     }
@@ -42,12 +42,12 @@ struct CameraPage: View {
                     ZStack {
                         Circle().fill(Color.white.opacity(0.1))
                         Image(systemName: status == .denied || status == .restricted ? "video.slash.fill" : "video.fill")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.island(.title2, .semibold))
                             .foregroundStyle(.white.opacity(0.85))
                     }
                     .frame(width: 50, height: 50)
                     Text(status == .denied || status == .restricted ? T("카메라 권한 필요", "Camera permission needed") : T("눌러서 카메라 켜기", "Click to turn on camera"))
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.island(.footnote, .semibold))
                         .foregroundStyle(.white.opacity(0.75))
                 }
                 .contentShape(Rectangle())
@@ -273,25 +273,25 @@ struct CalendarPage: View {
     var body: some View {
         if !calendar.authorized {
             VStack(spacing: 6) {
-                Image(systemName: "calendar").font(.system(size: 20)).foregroundStyle(.white.opacity(0.8))
+                Image(systemName: "calendar").font(.island(.title2)).foregroundStyle(.white.opacity(0.8))
                 Button(T("캘린더 허용", "Allow Calendar")) { calendar.requestAccess() }
                     .buttonStyle(.borderedProminent).controlSize(.small)
             }
         } else if calendar.events.isEmpty {
             VStack(spacing: 6) {
-                Image(systemName: "calendar.badge.checkmark").font(.system(size: 20)).foregroundStyle(.green)
-                Text(T("오늘 남은 일정 없음", "No more events today")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "calendar.badge.checkmark").font(.island(.title2)).foregroundStyle(.green)
+                Text(T("오늘 남은 일정 없음", "No more events today")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
             }
         } else {
             VStack(alignment: .leading, spacing: 6) {
-                Text(T("오늘 일정", "Today")).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                Text(T("오늘 일정", "Today")).font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.6))
                 ForEach(calendar.events) { e in
                     Button { calendar.open(e) } label: {
                         HStack(spacing: 6) {
                             Capsule().fill(e.color).frame(width: 3, height: 24)
                             VStack(alignment: .leading, spacing: 0) {
-                                Text(e.title).font(.system(size: 11, weight: .semibold)).lineLimit(1)
-                                Text(CalendarController.timeText(e)).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.55))
+                                Text(e.title).font(.island(.footnote, .semibold)).lineLimit(1)
+                                Text(CalendarController.timeText(e)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.55))
                             }
                             Spacer(minLength: 0)
                         }

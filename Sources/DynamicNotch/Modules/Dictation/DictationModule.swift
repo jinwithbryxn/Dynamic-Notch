@@ -244,7 +244,7 @@ private struct DictationTab: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Button { module.toggle() } label: {
-                        Image(systemName: module.listening ? "stop.fill" : "mic.fill").font(.system(size: 18))
+                        Image(systemName: module.listening ? "stop.fill" : "mic.fill").font(.island(.title2))
                             .frame(width: 44, height: 44)
                             .background(Circle().fill(module.listening ? Color.red.opacity(0.8) : LaunchUI.fill))
                     }
@@ -253,17 +253,17 @@ private struct DictationTab: View {
                     .accessibilityLabel(module.listening ? T("받아쓰기 끝내기", "Stop dictation") : T("받아쓰기 시작", "Start dictation"))
                     VStack(alignment: .leading, spacing: 2) {
                         Text(module.listening ? T("듣는 중 · 2.5초 조용하면 끝남", "Listening · stops after 2.5s of silence") : T("기기 안 음성 인식 · \(module.shortcut.display)", "On-device recognition · \(module.shortcut.display)"))
-                            .font(.system(size: 12, weight: .semibold))
-                        Text(TranslateModule.name(module.language)).font(.system(size: 11)).foregroundStyle(LaunchUI.secondary)
+                            .font(.island(.subhead, .semibold))
+                        Text(TranslateModule.name(module.language)).font(.island(.footnote)).foregroundStyle(LaunchUI.secondary)
                     }
                     Spacer()
                 }
                 ScrollView {
                     Text(module.listening ? module.transcript : (module.lastResult.isEmpty ? T("결과는 노치를 열기 전 앱에 붙여넣음", "The result is pasted into the app you were using") : module.lastResult))
-                        .font(.system(size: 13)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                        .font(.island(.subhead)).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
                 }
                 if !module.message.isEmpty {
-                    Text(module.message).font(.system(size: 11)).foregroundStyle(.orange).lineLimit(2)
+                    Text(module.message).font(.island(.footnote)).foregroundStyle(.orange).lineLimit(2)
                 }
             }
             .foregroundStyle(.white)

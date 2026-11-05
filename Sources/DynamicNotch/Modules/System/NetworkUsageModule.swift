@@ -210,12 +210,12 @@ private struct NetUsageTab: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(T("데이터 사용량", "Data usage")).font(.system(size: 14, weight: .semibold))
-                    Text(sinceText).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                    Text(T("데이터 사용량", "Data usage")).font(.island(.callout, .semibold))
+                    Text(sinceText).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 }
                 Spacer()
                 if confirmClear {
-                    Text(T("기록을 지울까요?", "Clear history?")).font(.system(size: 11))
+                    Text(T("기록을 지울까요?", "Clear history?")).font(.island(.footnote))
                     SysPillButton(title: T("지우기", "Clear"), tint: .red, prominent: true) { store.clear(); confirmClear = false }
                     SysPillButton(title: T("취소", "Cancel")) { confirmClear = false }
                 } else {
@@ -262,16 +262,16 @@ private struct NetUsageTab: View {
         let t = store.total(p)
         return SysCard {
             VStack(alignment: .leading, spacing: 3) {
-                Text(name(p)).font(.system(size: 11, weight: .semibold))
+                Text(name(p)).font(.island(.footnote, .semibold))
                 HStack(spacing: 3) {
-                    Image(systemName: "arrow.down").font(.system(size: 8, weight: .bold)).foregroundStyle(.cyan)
-                    Text(SysFmt.bytes(Int64(t.rx))).font(.system(size: 11, design: .rounded)).monospacedDigit()
+                    Image(systemName: "arrow.down").font(.island(.caption2, .bold)).foregroundStyle(.cyan)
+                    Text(SysFmt.bytes(Int64(t.rx))).font(.island(.footnote)).monospacedDigit()
                 }
                 HStack(spacing: 3) {
-                    Image(systemName: "arrow.up").font(.system(size: 8, weight: .bold)).foregroundStyle(.pink)
-                    Text(SysFmt.bytes(Int64(t.tx))).font(.system(size: 11, design: .rounded)).monospacedDigit()
+                    Image(systemName: "arrow.up").font(.island(.caption2, .bold)).foregroundStyle(.pink)
+                    Text(SysFmt.bytes(Int64(t.tx))).font(.island(.footnote)).monospacedDigit()
                 }
-                Text(SysFmt.seconds(t.seconds)).font(.system(size: 9)).foregroundStyle(.white.opacity(0.45))
+                Text(SysFmt.seconds(t.seconds)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
             }
             .lineLimit(1)
         }
@@ -293,7 +293,7 @@ private struct NetUsageTab: View {
                         Spacer(minLength: 0)
                         Rectangle().fill(Color.pink.opacity(0.8)).frame(height: h * CGFloat(Double(v.1) / Double(peak)))
                         Rectangle().fill(Color.cyan.opacity(0.85)).frame(height: h * CGFloat(Double(v.0) / Double(peak)))
-                        Text(String(keys[i].suffix(2))).font(.system(size: 7.5)).foregroundStyle(.white.opacity(0.4)).frame(height: 12)
+                        Text(String(keys[i].suffix(2))).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).frame(height: 12)
                     }
                     .frame(maxWidth: .infinity)
                     .help("\(keys[i]) ↓ \(SysFmt.bytes(Int64(v.0))) ↑ \(SysFmt.bytes(Int64(v.1)))")

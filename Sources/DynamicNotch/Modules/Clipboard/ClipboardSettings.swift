@@ -229,7 +229,7 @@ struct ClipExcludedApps: View {
                         Image(systemName: "app.dashed").frame(width: 18, height: 18).foregroundStyle(.secondary)
                     }
                     Text(url.map { FileManager.default.displayName(atPath: $0.path).replacingOccurrences(of: ".app", with: "") } ?? id)
-                    Text(url == nil ? T("\(id) · 설치 안 됨", "\(id) · not installed") : id).font(.system(size: 10.5)).foregroundStyle(.secondary)
+                    Text(url == nil ? T("\(id) · 설치 안 됨", "\(id) · not installed") : id).font(.island(.caption)).foregroundStyle(.secondary)
                     Spacer()
                     Button { list.removeAll { $0 == id } } label: { Image(systemName: "minus.circle") }
                         .buttonStyle(.borderless).help(T("목록에서 빼기", "Remove")).accessibilityLabel(T("\(id) 빼기", "Remove \(id)"))

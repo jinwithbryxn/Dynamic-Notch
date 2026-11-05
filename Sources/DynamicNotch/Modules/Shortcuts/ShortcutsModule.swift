@@ -166,7 +166,7 @@ private struct ShortcutsTab: View {
                         if let first = filtered.first { module.run(first) }
                     }
                     Button { store.refresh() } label: {
-                        Image(systemName: "arrow.clockwise").font(.system(size: 12, weight: .semibold))
+                        Image(systemName: "arrow.clockwise").font(.island(.subhead, .semibold))
                             .rotationEffect(.degrees(store.loading ? 180 : 0))
                             .frame(width: 30, height: 30)
                             .background(Circle().fill(LaunchUI.fill))
@@ -174,7 +174,7 @@ private struct ShortcutsTab: View {
                     .buttonStyle(.plain).help(T("새로 고침", "Refresh")).accessibilityLabel(T("새로 고침", "Refresh"))
                 }
                 if let e = store.error {
-                    Text(e).font(.system(size: 11)).foregroundStyle(.red.opacity(0.8)).lineLimit(2)
+                    Text(e).font(.island(.footnote)).foregroundStyle(.red.opacity(0.8)).lineLimit(2)
                 }
                 if store.items.isEmpty && !store.loading {
                     LaunchUnsupportedView(title: T("단축어 없음", "No shortcuts"),
@@ -215,7 +215,7 @@ struct ShortcutChip: View {
                     }
                 }
                 .frame(width: 16, height: 16)
-                Text(item.name).font(.system(size: 12, weight: .medium)).lineLimit(1)
+                Text(item.name).font(.island(.subhead)).lineLimit(1).minimumScaleFactor(0.85)
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
@@ -327,7 +327,7 @@ private struct HomeShortcutsTab: View {
             HStack {
                 Text(showAll ? T("모든 단축어 · 오른쪽 클릭으로 홈에 고정", "All shortcuts · right-click to pin to Home")
                              : T("이름으로 찾은 홈 단축어", "Home shortcuts found by name"))
-                    .font(.system(size: 11)).foregroundStyle(LaunchUI.secondary)
+                    .font(.island(.footnote)).foregroundStyle(LaunchUI.secondary)
                 Spacer()
                 LaunchChip(title: showAll ? T("홈만", "Home only") : T("모두 보기", "Show all"), selected: showAll) { showAll.toggle() }
                 LaunchChip(title: "", symbol: "arrow.clockwise", help: T("새로 고침", "Refresh")) { store.refresh() }
@@ -364,7 +364,7 @@ private struct HomeShortcutsTab: View {
 
     @ViewBuilder private func section(_ title: String, _ names: [String], symbol: String) -> some View {
         if !names.isEmpty {
-            Text(title).font(.system(size: 11, weight: .semibold)).foregroundStyle(LaunchUI.secondary)
+            Text(title).font(.island(.footnote, .semibold)).foregroundStyle(LaunchUI.secondary)
             grid(store.items.filter { names.contains($0.name) }, symbol: symbol)
         }
     }

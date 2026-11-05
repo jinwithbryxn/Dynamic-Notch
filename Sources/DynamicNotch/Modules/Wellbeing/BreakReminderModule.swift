@@ -179,7 +179,7 @@ private struct BreakReminderTab: View {
             ForEach(BreakReminderModule.Kind.allCases) { k in row(k) }
             HStack(spacing: 8) {
                 if let p = module.pausedUntil {
-                    Text(T("\(TFFormat.time(p))까지 멈춤", "Paused until \(TFFormat.time(p))")).font(.system(size: 10.5)).foregroundStyle(.yellow)
+                    Text(T("\(TFFormat.time(p))까지 멈춤", "Paused until \(TFFormat.time(p))")).font(.island(.caption)).foregroundStyle(.yellow)
                     TFPillButton(title: T("다시 켜기", "Resume")) { module.unpause() }
                 } else {
                     TFPillButton(title: T("1시간 멈춤", "Pause 1 h"), symbol: "pause.fill") { module.pause(hours: 1) }
@@ -189,7 +189,7 @@ private struct BreakReminderTab: View {
                      ? T("입력하는 동안만 시간이 쌓여요" + (module.dropped > 0 ? " · 잠금·Focus·통화 중 \(module.dropped)개 버림" : ""),
                          "Counts only while you're active" + (module.dropped > 0 ? " · \(module.dropped) skipped (lock/Focus/call)" : ""))
                      : T("기능이 켜진 본 앱에서 동작해요", "Runs in the app when the feature is on"))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
             }
         }
         .foregroundStyle(.white)
@@ -200,14 +200,14 @@ private struct BreakReminderTab: View {
         let interval = Double(module.minutes(k) * 60)
         let e = module.elapsed[k] ?? 0
         return HStack(spacing: 10) {
-            Image(systemName: k.symbol).font(.system(size: 14)).foregroundStyle(on ? k.tint : .white.opacity(0.3)).frame(width: 22)
+            Image(systemName: k.symbol).font(.island(.callout)).foregroundStyle(on ? k.tint : .white.opacity(0.3)).frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
-                    Text(k.label).font(.system(size: 12.5, weight: .semibold))
-                    Text(T("\(module.minutes(k))분마다", "every \(module.minutes(k)) min")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                    Text(k.label).font(.island(.subhead, .semibold))
+                    Text(T("\(module.minutes(k))분마다", "every \(module.minutes(k)) min")).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                     Spacer()
                     Text(on ? T("약 \(Int(((interval - e) / 60).rounded(.up)))분 뒤", "in ~\(Int(((interval - e) / 60).rounded(.up))) min") : T("꺼짐", "Off"))
-                        .font(.system(size: 10.5)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
                 }
                 BarGauge(value: on ? e / interval : 0, tint: k.tint)
             }

@@ -237,7 +237,7 @@ private struct MiniPlayerView: View {
 
     private func smallButton(_ symbol: String, _ help: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol).font(.system(size: 8, weight: .bold)).frame(width: 16, height: 16)
+            Image(systemName: symbol).font(.island(.caption2, .bold)).frame(width: 16, height: 16)
                 .background(Circle().fill(Color.white.opacity(0.18)))
         }
         .buttonStyle(.plain).help(help).accessibilityLabel(help)
@@ -312,8 +312,8 @@ private struct MiniPlayerView: View {
             let dur = t?.duration ?? 0
             ScrubBar(fraction: dur > 0 ? pos / dur : 0, enabled: MBPlayer.canSeek(t), spacing: 6, thickness: 3,
                      onScrub: { f in if let t { MBPlayer.seek(t, to: f * t.duration) } }, onEnd: {},
-                     leading: { Text(MBStorage.duration(pos)).font(.system(size: 9, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
-                     trailing: { Text(MBStorage.duration(dur)).font(.system(size: 9, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
+                     leading: { Text(MBStorage.duration(pos)).font(.island(.caption2)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
+                     trailing: { Text(MBStorage.duration(dur)).font(.island(.caption2)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
         }
     }
 }
@@ -325,16 +325,16 @@ private struct MiniPlayerTab: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(T("플로팅 플레이어", "Floating Player")).font(.system(size: 13, weight: .semibold))
+                    Text(T("플로팅 플레이어", "Floating Player")).font(.island(.subhead, .semibold))
                     Text(T("모든 창 위에 뜨는 작은 플레이어. 끌어서 옮기면 위치를 기억합니다.", "A small player above all windows. Drag it anywhere; the position is remembered."))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 }
                 Spacer()
                 MBPillButton(title: controller.visible ? T("닫기", "Close") : T("띄우기", "Show"), symbol: "pip",
                              active: controller.visible, tint: .green) { controller.toggle() }
             }
             HStack(spacing: 6) {
-                Text(T("크기", "Size")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                Text(T("크기", "Size")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 ForEach(Array(MBMiniPlayerController.Size.allCases.enumerated()), id: \.offset) { i, s in
                     MBPillButton(title: "\(s.label) ⌘\(i + 1)", active: controller.size == s) { controller.setSize(s) }
                 }
@@ -342,7 +342,7 @@ private struct MiniPlayerTab: View {
                 MBPillButton(title: T("위치 초기화", "Reset position"), symbol: "arrow.down.right.square") { controller.resetPosition() }
             }
             Text(T("⌘1–⌘3과 ⌘W는 플레이어를 한 번 누른 뒤에 동작합니다.", "⌘1–⌘3 and ⌘W work after clicking the player once."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .foregroundStyle(.white)

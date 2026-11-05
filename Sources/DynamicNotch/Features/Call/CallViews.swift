@@ -85,7 +85,7 @@ struct CallIncomingCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     MarqueeText(text: activity.title ?? T("전화", "Phone"), font: .systemFont(ofSize: 14, weight: .semibold), color: .white)
                         .frame(height: 18)
-                    Text(activity.subtitle ?? "").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                    Text(activity.subtitle ?? "").font(.island(.subhead)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 CallCircleButton(symbol: "phone.down.fill", fill: .red, help: T("거절", "Decline")) { monitor.decline() }
@@ -111,11 +111,11 @@ struct CallPage: View {
                                 font: .systemFont(ofSize: 15, weight: .semibold), color: .white)
                         .frame(height: 19)
                     HStack(spacing: 6) {
-                        CallDurationText(since: since, font: .system(size: 12, weight: .medium))
+                        CallDurationText(since: since, font: .island(.subhead))
                             .opacity(0.65)
                         if muted {
                             Label(T("음소거", "Muted"), systemImage: "mic.slash.fill")
-                                .font(.system(size: 10.5, weight: .semibold))
+                                .font(.island(.caption, .semibold))
                                 .foregroundStyle(.orange)
                         }
                     }
@@ -131,8 +131,8 @@ struct CallPage: View {
             .frame(maxHeight: .infinity)
         } else {
             VStack(spacing: 6) {
-                Image(systemName: "phone").font(.system(size: 20)).foregroundStyle(.white.opacity(0.5))
-                Text(T("진행 중인 통화가 없습니다", "No active call")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "phone").font(.island(.title2)).foregroundStyle(.white.opacity(0.5))
+                Text(T("진행 중인 통화가 없습니다", "No active call")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
             }
         }
     }

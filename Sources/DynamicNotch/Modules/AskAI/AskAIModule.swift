@@ -249,12 +249,12 @@ private struct AskAITab: View {
 
     private var header: some View {
         HStack(spacing: 6) {
-            Image(systemName: "bubble.left.and.text.bubble.right").font(.system(size: 11, weight: .semibold))
-            Text(T("Claude에게 묻기", "Ask Claude")).font(.system(size: 12, weight: .semibold))
-            Text(model.modelID()).font(.system(size: 10, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
+            Image(systemName: "bubble.left.and.text.bubble.right").font(.island(.footnote, .semibold))
+            Text(T("Claude에게 묻기", "Ask Claude")).font(.island(.subhead, .semibold))
+            Text(model.modelID()).font(.island(.caption, .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
             Spacer()
             if model.conversationCost > 0 {
-                Text(T("이번 대화 약 \(AIDevFormat.usd(model.conversationCost))", "This chat ≈ \(AIDevFormat.usd(model.conversationCost))")).font(.system(size: 10.5).monospacedDigit()).foregroundStyle(.white.opacity(0.6))
+                Text(T("이번 대화 약 \(AIDevFormat.usd(model.conversationCost))", "This chat ≈ \(AIDevFormat.usd(model.conversationCost))")).font(.island(.caption).monospacedDigit()).foregroundStyle(.white.opacity(0.6))
             }
             if !model.turns.isEmpty {
                 AIDevPill(title: T("새 대화", "New Chat"), symbol: "square.and.pencil") { model.newConversation() }
@@ -269,13 +269,13 @@ private struct AskAITab: View {
                     if model.turns.isEmpty {
                         Text(T("질문을 보내면 입력한 글(과 확인한 화면 이미지)만 Anthropic API로 갑니다. 같은 대화의 이전 질문과 답도 함께 보냅니다.",
                                "Type a question and send. Only what you typed (and a screen image you confirm) goes to the Anthropic API, along with earlier turns of this chat."))
-                            .font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.45))
+                            .font(.island(.footnote)).foregroundStyle(.white.opacity(0.45))
                     }
                     ForEach(model.turns) { turn in
                         bubble(turn).id(turn.id)
                     }
                     if model.sending {
-                        Text(T("Claude가 생각하는 중…", "Claude is thinking…")).font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.5)).id("sending")
+                        Text(T("Claude가 생각하는 중…", "Claude is thinking…")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5)).id("sending")
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -293,21 +293,21 @@ private struct AskAITab: View {
         switch t.role {
         case .user:
             HStack(alignment: .top, spacing: 5) {
-                Image(systemName: t.hasImage ? "photo" : "person.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).padding(.top, 2)
-                Text(t.text).font(.system(size: 12, weight: .medium)).foregroundStyle(.white.opacity(0.85)).textSelection(.enabled)
+                Image(systemName: t.hasImage ? "photo" : "person.fill").font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).padding(.top, 2)
+                Text(t.text).font(.island(.subhead)).foregroundStyle(.white.opacity(0.85)).textSelection(.enabled)
             }
         case .assistant:
             VStack(alignment: .leading, spacing: 3) {
-                Text(t.text).font(.system(size: 12)).textSelection(.enabled)
+                Text(t.text).font(.island(.subhead)).textSelection(.enabled)
                 HStack(spacing: 6) {
-                    if let n = t.note { Text(n).font(.system(size: 10)).foregroundStyle(.orange) }
-                    Button { AIDevPasteboard.copy(t.text) } label: { Label(T("복사", "Copy"), systemImage: "doc.on.doc").font(.system(size: 10)) }
+                    if let n = t.note { Text(n).font(.island(.caption)).foregroundStyle(.orange) }
+                    Button { AIDevPasteboard.copy(t.text) } label: { Label(T("복사", "Copy"), systemImage: "doc.on.doc").font(.island(.caption)) }
                         .buttonStyle(.plain).foregroundStyle(.white.opacity(0.5))
                 }
             }
             .padding(.leading, 15)
         case .error:
-            Label(t.text, systemImage: "exclamationmark.triangle").font(.system(size: 11.5)).foregroundStyle(.orange)
+            Label(t.text, systemImage: "exclamationmark.triangle").font(.island(.footnote)).foregroundStyle(.orange)
         }
     }
 
@@ -316,7 +316,7 @@ private struct AskAITab: View {
             Image(nsImage: img.preview).resizable().aspectRatio(contentMode: .fit).frame(height: 30).clipShape(RoundedRectangle(cornerRadius: 4))
             Text(T("화면 이미지 \(Int(img.size.width))×\(Int(img.size.height)) · \(img.data.count / 1024) KB · 보내기 전까지 이 Mac에만 있음",
                    "Screen image \(Int(img.size.width))×\(Int(img.size.height)) · \(img.data.count / 1024) KB · stays on this Mac until you send"))
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.65)).lineLimit(1)
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.65)).lineLimit(1)
             Spacer()
             AIDevPill(title: T("빼기", "Remove"), symbol: "xmark") { model.removeImage() }
         }
@@ -324,10 +324,10 @@ private struct AskAITab: View {
 
     private var confirmRow: some View {
         HStack(spacing: 6) {
-            Image(systemName: "exclamationmark.shield").font(.system(size: 11)).foregroundStyle(.yellow)
+            Image(systemName: "exclamationmark.shield").font(.island(.footnote)).foregroundStyle(.yellow)
             Text(T("이 이미지와 질문을 api.anthropic.com으로 보냅니다 (유료). 민감한 내용이 없는지 확인하세요.",
                    "This image and question go to api.anthropic.com (billed). Check the image has nothing sensitive."))
-                .font(.system(size: 10.5)).lineLimit(2)
+                .font(.island(.caption)).lineLimit(2)
             Spacer()
             AIDevPill(title: T("보내기", "Send"), symbol: "paperplane.fill", role: .primary) { model.send() }
             AIDevPill(title: T("취소", "Cancel")) { model.cancelImageConfirm() }
@@ -340,7 +340,7 @@ private struct AskAITab: View {
         HStack(spacing: 6) {
             TextField(T("Claude에게 물어보기…", "Ask Claude…"), text: $model.draft)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.island(.subhead))
                 .padding(.horizontal, 9).padding(.vertical, 6)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.1)))
                 .onSubmit { model.send() }
@@ -374,7 +374,7 @@ private struct AskAITab: View {
             Text(T("API 사용료는 Claude 구독과 별도 청구", "API usage is billed separately from a Claude subscription"))
             Spacer(minLength: 0)
         }
-        .font(.system(size: 10).monospacedDigit())
+        .font(.island(.caption).monospacedDigit())
         .foregroundStyle(.white.opacity(0.45))
         .lineLimit(1)
     }

@@ -134,9 +134,9 @@ private struct TranslateTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 6) {
-                Image(systemName: "character.bubble").font(.system(size: 12)).foregroundStyle(LaunchUI.secondary).padding(.top, 2)
+                Image(systemName: "character.bubble").font(.island(.subhead)).foregroundStyle(LaunchUI.secondary).padding(.top, 2)
                 TextField(T("번역할 글", "Text to translate"), text: $input, axis: .vertical)
-                    .textFieldStyle(.plain).font(.system(size: 14)).lineLimit(1...3)
+                    .textFieldStyle(.plain).font(.island(.callout)).lineLimit(1...3)
                     .focused($focused)
                 if !input.isEmpty {
                     Button { input = ""; output = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(LaunchUI.secondary) }
@@ -148,8 +148,8 @@ private struct TranslateTab: View {
 
             HStack(spacing: 6) {
                 Text(source.map { TranslateModule.name($0) } ?? T("자동 감지", "Detect"))
-                    .font(.system(size: 11, weight: .medium)).foregroundStyle(LaunchUI.secondary)
-                Image(systemName: "arrow.right").font(.system(size: 9)).foregroundStyle(LaunchUI.secondary)
+                    .font(.island(.footnote)).foregroundStyle(LaunchUI.secondary)
+                Image(systemName: "arrow.right").font(.island(.caption2)).foregroundStyle(LaunchUI.secondary)
                 Menu {
                     ForEach(TranslateModule.common, id: \.self) { c in
                         Button(TranslateModule.name(c)) {
@@ -157,7 +157,7 @@ private struct TranslateTab: View {
                             schedule(immediate: true)
                         }
                     }
-                } label: { Text(TranslateModule.name(targetCode)).font(.system(size: 11, weight: .medium)) }
+                } label: { Text(TranslateModule.name(targetCode)).font(.island(.footnote)) }
                 .menuStyle(.borderlessButton).fixedSize()
                 .help(T("대상 언어", "Target language"))
                 Spacer()
@@ -172,13 +172,13 @@ private struct TranslateTab: View {
 
             ScrollView {
                 Text(output.isEmpty ? " " : output)
-                    .font(.system(size: 14))
+                    .font(.island(.callout))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
             .frame(maxHeight: .infinity)
             Text(status.isEmpty ? T("기기 안에서 번역 · 글을 밖으로 보내지 않음", "Translated on this Mac · text never leaves it") : status)
-                .font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
+                .font(.island(.caption)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
         }
         .foregroundStyle(.white)
         .translationTask(config) { session in

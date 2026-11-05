@@ -35,7 +35,7 @@ struct MemoPage: View {
                     } else {
                         let title = store.current?.title ?? ""
                         Text(title.isEmpty ? T("제목", "Title") : title)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.island(.callout, .semibold))
                             .foregroundStyle(.white.opacity(title.isEmpty ? 0.35 : 1))
                             .lineLimit(1)
                             .padding(.leading, 2)
@@ -66,7 +66,7 @@ struct MemoPage: View {
                             GeometryReader { box in
                                 ScrollView(.vertical) {
                                     Text(store.current?.body ?? "")
-                                        .font(.system(size: 12.5))
+                                        .font(.island(.subhead))
                                         .foregroundStyle(.white)
                                         .frame(maxWidth: .infinity, minHeight: box.size.height, alignment: .topLeading)
                                         .contentShape(Rectangle())
@@ -81,7 +81,7 @@ struct MemoPage: View {
                         .background(alignment: .topLeading) {
                             if (store.current?.body ?? "").isEmpty {
                                 Text(T("내용", "Note"))
-                                    .font(.system(size: 12.5))
+                                    .font(.island(.subhead))
                                     .foregroundStyle(.white.opacity(0.3))
                                     .padding(.leading, 2)
                                     .allowsHitTesting(false)
@@ -128,7 +128,7 @@ struct MemoPage: View {
     private func iconButton(_ symbol: String, help: String, active: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.island(.footnote, .semibold))
                 .foregroundStyle(.white.opacity(active ? 1 : 0.7))
                 .frame(width: 22, height: 20)
                 .background(Color.white.opacity(active ? 0.18 : 0), in: RoundedRectangle(cornerRadius: 5))
@@ -151,10 +151,10 @@ private struct MemoListView: View {
                     Button { store.open(m.id) } label: {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(m.title.isEmpty ? T("제목 없음", "Untitled") : m.title)
-                                .font(.system(size: 10.5, weight: .semibold))
+                                .font(.island(.caption, .semibold))
                                 .foregroundStyle(.white.opacity(m.title.isEmpty ? 0.5 : 0.95))
                             Text(m.preview.isEmpty ? Self.date(m.updated) : m.preview)
-                                .font(.system(size: 9))
+                                .font(.island(.caption2))
                                 .foregroundStyle(.white.opacity(0.45))
                         }
                         .lineLimit(1)
@@ -171,7 +171,7 @@ private struct MemoListView: View {
                 }
                 if store.summaries?.isEmpty ?? true {
                     Text(T("저장된 메모가 없습니다", "No saved memos"))
-                        .font(.system(size: 9.5))
+                        .font(.island(.caption2))
                         .foregroundStyle(.white.opacity(0.4))
                         .padding(.top, 8)
                 }

@@ -350,16 +350,16 @@ private struct AudioDevicesTab: View {
         VStack(alignment: .leading, spacing: 8) {
             // 출력: 기존 음량 줄 (누르면 음소거)
             HStack(spacing: 6) {
-                Image(systemName: route.symbol).font(.system(size: 11)).frame(width: 16)
-                Text(route.name).font(.system(size: 11.5, weight: .semibold)).lineLimit(1)
+                Image(systemName: route.symbol).font(.island(.footnote)).frame(width: 16)
+                Text(route.name).font(.island(.footnote, .semibold)).lineLimit(1)
                 Spacer()
-                Text(T("출력", "Output")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                Text(T("출력", "Output")).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             }
             VolumeRow(thickness: 5)
             Divider().overlay(Color.white.opacity(0.08))
             // 입력
             HStack(spacing: 8) {
-                Text(T("입력", "Input")).font(.system(size: 11.5, weight: .semibold))
+                Text(T("입력", "Input")).font(.island(.footnote, .semibold))
                 Spacer()
                 meterButton
                 MBPillButton(title: state.micMuted ? T("마이크 꺼짐", "Mic Off") : T("마이크 켜짐", "Mic On"),
@@ -377,11 +377,11 @@ private struct AudioDevicesTab: View {
                     ForEach(state.inputs) { d in
                         Button { state.selectInput(d.id) } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: d.symbol).font(.system(size: 11)).frame(width: 18)
-                                Text(d.name).font(.system(size: 11.5)).lineLimit(1)
+                                Image(systemName: d.symbol).font(.island(.footnote)).frame(width: 18)
+                                Text(d.name).font(.island(.footnote)).lineLimit(1)
                                 Spacer()
                                 if d.id == state.defaultInput {
-                                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
+                                    Image(systemName: "checkmark").font(.island(.caption, .bold))
                                 }
                             }
                             .padding(.horizontal, 8).padding(.vertical, 5)
@@ -393,7 +393,7 @@ private struct AudioDevicesTab: View {
                         .help(T("기본 입력으로 고르기", "Use as default input"))
                     }
                     if state.inputs.isEmpty {
-                        Text(T("입력 기기가 없습니다", "No input devices")).font(.system(size: 11)).foregroundStyle(.secondary)
+                        Text(T("입력 기기가 없습니다", "No input devices")).font(.island(.footnote)).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -428,12 +428,12 @@ private struct AudioDevicesTab: View {
             if let v = state.inputVolume, state.inputVolumeSettable {
                 ScrubBar(fraction: Double(state.micMuted ? 0 : v), enabled: true, spacing: 6, thickness: 4,
                          onScrub: { state.setInputVolume(Float($0)) }, onEnd: {},
-                         leading: { Image(systemName: "mic").font(.system(size: 9)).foregroundStyle(.white.opacity(0.6)) },
-                         trailing: { Text("\(Int((state.micMuted ? 0 : v) * 100))%").font(.system(size: 10, design: .rounded)).monospacedDigit()
+                         leading: { Image(systemName: "mic").font(.island(.caption2)).foregroundStyle(.white.opacity(0.6)) },
+                         trailing: { Text("\(Int((state.micMuted ? 0 : v) * 100))%").font(.island(.caption)).monospacedDigit()
                              .foregroundStyle(.white.opacity(0.6)).frame(width: 32, alignment: .trailing) })
                     .help(T("입력 음량", "Input volume"))
             } else {
-                Text(T("이 기기는 입력 음량을 조절할 수 없음", "Input volume not adjustable")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                Text(T("이 기기는 입력 음량을 조절할 수 없음", "Input volume not adjustable")).font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
                 Spacer()
             }
         }

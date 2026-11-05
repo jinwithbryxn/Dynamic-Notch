@@ -241,7 +241,7 @@ private struct FAPillBody: View {
 
     var body: some View {
         configuration.label
-            .font(.system(size: 11.5, weight: .medium))
+            .font(.island(.footnote))
             .lineLimit(1)
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
@@ -276,11 +276,11 @@ struct FAUnsupportedView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 22)).foregroundStyle(.white.opacity(0.7))
-            Text(title).font(.system(size: 13, weight: .semibold))
-            Text(reason).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).multilineTextAlignment(.center)
+            Image(systemName: symbol).font(.island(.title1)).foregroundStyle(.white.opacity(0.7))
+            Text(title).font(.island(.subhead, .semibold))
+            Text(reason).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).multilineTextAlignment(.center)
             if let alternative {
-                Text(alternative).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).multilineTextAlignment(.center)
+                Text(alternative).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).multilineTextAlignment(.center)
             }
             if let actionTitle, let action {
                 Button(actionTitle, action: action).buttonStyle(FAPillStyle()).padding(.top, 2)

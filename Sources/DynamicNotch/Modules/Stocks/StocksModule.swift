@@ -388,15 +388,15 @@ private struct StocksTab: View {
     private var listColumn: some View {
         VStack(spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "magnifyingglass").font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                 TextField(T("회사명·티커 (예: Apple, BTC-USD)", "Company or ticker (e.g. Apple, BTC-USD)"), text: $query)
-                    .textFieldStyle(.plain).font(.system(size: 12))
+                    .textFieldStyle(.plain).font(.island(.subhead))
                     .focused($focused)
                     .onSubmit { model.search(query) }
                     .simultaneousGesture(TapGesture().onEnded { model.context?.focusInput(); focused = true })
                 if model.searching { ProgressView().controlSize(.mini) }
                 if !query.isEmpty {
-                    Button { query = ""; model.results = [] } label: { Image(systemName: "xmark.circle.fill").font(.system(size: 11)) }
+                    Button { query = ""; model.results = [] } label: { Image(systemName: "xmark.circle.fill").font(.island(.footnote)) }
                         .buttonStyle(.plain).foregroundStyle(.white.opacity(0.5)).help(T("지우기", "Clear"))
                 }
             }
@@ -409,12 +409,12 @@ private struct StocksTab: View {
                             Button { model.add(r); query = "" } label: {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 1) {
-                                        Text(r.symbol).font(.system(size: 12, weight: .semibold))
-                                        Text(r.name).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                                        Text(r.symbol).font(.island(.subhead, .semibold))
+                                        Text(r.name).font(.island(.caption2)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                                     }
                                     Spacer()
-                                    Text("\(r.exchange) · \(r.type)").font(.system(size: 9)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
-                                    Image(systemName: "plus.circle").font(.system(size: 12))
+                                    Text("\(r.exchange) · \(r.type)").font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+                                    Image(systemName: "plus.circle").font(.island(.subhead))
                                 }
                                 .padding(6).contentShape(Rectangle())
                             }
@@ -423,14 +423,14 @@ private struct StocksTab: View {
                         }
                     } else if model.items.isEmpty {
                         Text(T("검색해서 관심 종목을 추가하세요. 해외 종목·지수·ETF·암호화폐를 지원합니다.", "Search to add stocks. Stocks, indices, ETFs and crypto are supported."))
-                            .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5)).padding(.top, 10)
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).padding(.top, 10)
                     } else {
                         ForEach(model.items) { item in row(item) }
                     }
                 }
             }
             if let s = model.status {
-                Text(s).font(.system(size: 9.5)).foregroundStyle(.orange.opacity(0.9)).lineLimit(2)
+                Text(s).font(.island(.caption2)).foregroundStyle(.orange.opacity(0.9)).lineLimit(2)
             }
         }
     }
@@ -443,18 +443,18 @@ private struct StocksTab: View {
                 StockLetterTile(symbol: item.symbol).frame(width: 22, height: 22)
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 3) {
-                        Text(item.symbol).font(.system(size: 11.5, weight: .semibold))
-                        if item.pinned { Image(systemName: "pin.fill").font(.system(size: 7)).foregroundStyle(.white.opacity(0.5)) }
-                        if !item.monitored { Image(systemName: "pause.fill").font(.system(size: 7)).foregroundStyle(.white.opacity(0.5)) }
+                        Text(item.symbol).font(.island(.footnote, .semibold))
+                        if item.pinned { Image(systemName: "pin.fill").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)) }
+                        if !item.monitored { Image(systemName: "pause.fill").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)) }
                     }
-                    Text(item.name).font(.system(size: 9)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    Text(item.name).font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                 }
                 Spacer(minLength: 2)
                 if let q {
                     StockSparkline(quote: q).frame(width: 34, height: 18)
                     VStack(alignment: .trailing, spacing: 1) {
-                        Text(q.priceText()).font(.system(size: 11, design: .rounded)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-                        Text(q.changeText).font(.system(size: 9.5, design: .rounded)).monospacedDigit()
+                        Text(q.priceText()).font(.island(.footnote)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+                        Text(q.changeText).font(.island(.caption2)).monospacedDigit()
                             .foregroundStyle(StockColors.tint(q))
                     }
                 } else {
@@ -476,10 +476,10 @@ private struct StocksTab: View {
         } else {
             SysCard {
                 VStack(spacing: 8) {
-                    Image(systemName: "chart.line.uptrend.xyaxis").font(.system(size: 26)).foregroundStyle(.white.opacity(0.3))
+                    Image(systemName: "chart.line.uptrend.xyaxis").font(.island(.title1)).foregroundStyle(.white.opacity(0.3))
                     Text(T("종목을 고르면 당일 차트를 보여 줍니다", "Pick a stock to see today's chart"))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
-                    Text(T("시세: Yahoo Finance", "Quotes: Yahoo Finance")).font(.system(size: 9)).foregroundStyle(.white.opacity(0.35))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
+                    Text(T("시세: Yahoo Finance", "Quotes: Yahoo Finance")).font(.island(.caption2)).foregroundStyle(.white.opacity(0.35))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -501,7 +501,7 @@ private struct StockLetterTile: View {
         let hue = Double(symbol.unicodeScalars.reduce(0) { ($0 * 31 + Int($1.value)) % 360 }) / 360   // 실행마다 같은 색
         RoundedRectangle(cornerRadius: 6)
             .fill(Color(hue: hue, saturation: 0.45, brightness: 0.55))
-            .overlay(Text(String(symbol.prefix(1))).font(.system(size: 11, weight: .bold)).foregroundStyle(.white))
+            .overlay(Text(String(symbol.prefix(1))).font(.island(.footnote, .bold)).foregroundStyle(.white))
             .accessibilityHidden(true)
     }
 }
@@ -550,28 +550,28 @@ private struct StockDetail: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(quote?.name ?? item.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                        Text(quote?.name ?? item.name).font(.island(.subhead, .semibold)).lineLimit(1)
                         Text([item.symbol, quote?.exchange ?? item.exchange, quote?.currency].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                            .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                            .font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                     }
                     Spacer()
                     if let q = quote {
                         VStack(alignment: .trailing, spacing: 1) {
-                            Text(q.priceText()).font(.system(size: 17, weight: .semibold, design: .rounded)).monospacedDigit()
+                            Text(q.priceText()).font(.island(.title3, .semibold)).monospacedDigit()
                             Text("\(q.isUp ? "▲" : "▼") \(q.priceText(abs(q.change))) (\(q.changeText))")
-                                .font(.system(size: 10, design: .rounded)).monospacedDigit().foregroundStyle(StockColors.tint(q))
+                                .font(.island(.caption)).monospacedDigit().foregroundStyle(StockColors.tint(q))
                         }
                     }
                 }
                 chart.frame(height: 116)
                 HStack(spacing: 6) {
                     if let q = quote {
-                        Text(q.session.label).font(.system(size: 9.5, weight: .medium))
+                        Text(q.session.label).font(.island(.caption2))
                             .padding(.horizontal, 6).padding(.vertical, 2)
                             .background(Capsule().fill(q.session == .regular ? Color.green.opacity(0.25) : Color.white.opacity(0.12)))
                     }
                     if let u = model.lastUpdate {
-                        Text(T("갱신 \(SysFmt.time(u))", "Updated \(SysFmt.time(u))")).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5))
+                        Text(T("갱신 \(SysFmt.time(u))", "Updated \(SysFmt.time(u))")).font(.island(.caption2)).foregroundStyle(.white.opacity(0.5))
                     }
                     Spacer()
                     SysPillButton(title: item.pinned ? T("노치 고정됨", "Pinned") : T("노치에 고정", "Pin to notch"),
@@ -615,7 +615,7 @@ private struct StockDetail: View {
                 }
                 .overlay(alignment: .topLeading) {
                     Text(T("┄ 전일 종가 \(q.priceText(q.previousClose))", "┄ Prev close \(q.priceText(q.previousClose))"))
-                        .font(.system(size: 8.5)).foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.caption2)).foregroundStyle(.white.opacity(0.55))
                         .padding(.horizontal, 4).padding(.vertical, 1)
                         .background(Capsule().fill(Color.black.opacity(0.55)))
                 }
@@ -623,7 +623,7 @@ private struct StockDetail: View {
             .accessibilityLabel(T("당일 가격 차트", "Intraday price chart"))
         } else {
             Text(quote == nil ? (model.status ?? T("시세 받는 중…", "Loading…")) : T("오늘 거래 데이터 없음", "No trades today"))
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -631,15 +631,15 @@ private struct StockDetail: View {
     private var alertsRow: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                Image(systemName: "bell").font(.system(size: 10))
-                Text(T("가격이", "Alert when price is")).font(.system(size: 10.5))
+                Image(systemName: "bell").font(.island(.caption))
+                Text(T("가격이", "Alert when price is")).font(.island(.caption))
                 Picker("", selection: $alertAbove) {
                     Text(T("이상", "above")).tag(true)
                     Text(T("이하", "below")).tag(false)
                 }
                 .labelsHidden().pickerStyle(.segmented).controlSize(.mini).frame(width: 90)
                 TextField(quote.map { $0.priceText() } ?? "0.00", text: $alertPrice)
-                    .textFieldStyle(.plain).font(.system(size: 11)).monospacedDigit()
+                    .textFieldStyle(.plain).font(.island(.footnote)).monospacedDigit()
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.1)))
                     .frame(width: 80)
@@ -654,9 +654,9 @@ private struct StockDetail: View {
                         ForEach(item.alerts) { a in
                             HStack(spacing: 3) {
                                 Text((a.above ? "≥ " : "≤ ") + (quote?.priceText(a.price) ?? String(format: "%.2f", a.price)))
-                                    .font(.system(size: 10, design: .rounded)).monospacedDigit()
+                                    .font(.island(.caption)).monospacedDigit()
                                 Button { model.update(item.symbol) { $0.alerts.removeAll { $0.id == a.id } } } label: {
-                                    Image(systemName: "xmark").font(.system(size: 7, weight: .bold))
+                                    Image(systemName: "xmark").font(.island(.caption2, .bold))
                                 }
                                 .buttonStyle(.plain).help(T("알림 지우기", "Delete alert"))
                             }

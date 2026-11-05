@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// 물리 노치처럼 위쪽 모서리는 바깥으로 휘고(오목) 아래쪽 모서리는 둥근 도형.
+/// 아래쪽 모서리는 다이내믹 아일랜드처럼 곡률이 끊기지 않는 연속 모서리(.continuous)로 그린다.
 /// 두 반경을 animatableData로 노출해 크기와 함께 모서리까지 연속으로 변형된다 (가이드라인 3.2).
 struct NotchShape: Shape {
     var topRadius: CGFloat
@@ -17,22 +18,28 @@ struct NotchShape: Shape {
     func path(in rect: CGRect) -> Path {
         let w = rect.width, h = rect.height
         let t = min(topRadius, w / 4)
-        let b = min(bottomRadius, (w - 2 * t) / 2, h - t)
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addQuadCurve(to: CGPoint(x: rect.minX + t, y: rect.minY + t),
-                       control: CGPoint(x: rect.minX + t, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.minX + t, y: rect.minY + h - b))
-        p.addQuadCurve(to: CGPoint(x: rect.minX + t + b, y: rect.minY + h),
-                       control: CGPoint(x: rect.minX + t, y: rect.minY + h))
-        p.addLine(to: CGPoint(x: rect.minX + w - t - b, y: rect.minY + h))
-        p.addQuadCurve(to: CGPoint(x: rect.minX + w - t, y: rect.minY + h - b),
-                       control: CGPoint(x: rect.minX + w - t, y: rect.minY + h))
-        p.addLine(to: CGPoint(x: rect.minX + w - t, y: rect.minY + t))
-        p.addQuadCurve(to: CGPoint(x: rect.minX + w, y: rect.minY),
-                       control: CGPoint(x: rect.minX + w - t, y: rect.minY))
-        p.closeSubpath()
-        return p
+        // 연속 모서리는 반경의 약 1.53배 앞에서 휘기 시작하므로, 위쪽 오목 모서리와 만나지 않게 그만큼 줄인다
+        let b = max(0, min(bottomRadius, (w - 2 * t) / 2, (h - t) / 1.53))
+        // 몸통: 위쪽 모서리가 화면 위로 숨도록 위로 b만큼 늘린 연속 모서리 사각형
+        let body = RoundedRectangle(cornerRadius: b, style: .continuous)
+            .path(in: CGRect(x: rect.minX + t, y: rect.minY - b, width: max(0, w - 2 * t), height: h + b))
+        guard t > 0 else { return body }
+        // 양옆 위의 오목 모서리 (몸통과 1pt 겹쳐 이음매가 보이지 않게)
+        var flares = Path()
+        flares.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        flares.addQuadCurve(to: CGPoint(x: rect.minX + t, y: rect.minY + t),
+                            control: CGPoint(x: rect.minX + t, y: rect.minY))
+        flares.addLine(to: CGPoint(x: rect.minX + t + 1, y: rect.minY + t))
+        flares.addLine(to: CGPoint(x: rect.minX + t + 1, y: rect.minY))
+        flares.closeSubpath()
+        flares.move(to: CGPoint(x: rect.minX + w, y: rect.minY))
+        flares.addLine(to: CGPoint(x: rect.minX + w - t - 1, y: rect.minY))
+        flares.addLine(to: CGPoint(x: rect.minX + w - t - 1, y: rect.minY + t))
+        flares.addLine(to: CGPoint(x: rect.minX + w - t, y: rect.minY + t))
+        flares.addQuadCurve(to: CGPoint(x: rect.minX + w, y: rect.minY),
+                            control: CGPoint(x: rect.minX + w - t, y: rect.minY))
+        flares.closeSubpath()
+        return Path(body.cgPath.union(flares.cgPath))
     }
 }
 

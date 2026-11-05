@@ -66,12 +66,12 @@ enum ActivityPresentation: Equatable {
 struct NotchActivity: Identifiable, Equatable {
     /// 모든 컴팩트(좌우로만 넓어지는) 표시의 날개 폭 · 블루투스 연결 기준으로 통일
     static let compactWing: CGFloat = 56
-    /// 컴팩트 글자 · 블루투스 배터리 수치와 같은 글꼴
-    static let compactFont = Font.system(size: 13.5, weight: .regular, design: .rounded)
+    /// 컴팩트 글자 · 블루투스 배터리 수치와 같은 글꼴 (아일랜드 작은 표시처럼 semibold)
+    static let compactFont = Font.island(.subhead, .semibold)
     /// 컴팩트 숫자(배터리·음량·타이머 등)는 조금 크게
-    static let compactNumberFont = Font.system(size: 15.5, weight: .regular, design: .rounded)
+    static let compactNumberFont = Font.island(.headline, .semibold)
     /// HUD(음량·밝기)·배터리 숫자는 그보다 아주 조금 작게
-    static let compactSmallNumberFont = Font.system(size: 14.5, weight: .regular, design: .rounded)
+    static let compactSmallNumberFont = Font.island(.callout, .semibold)
 
     static func compactNumberFont(for kind: ActivityKind) -> Font {
         kind == .hud || kind == .battery ? compactSmallNumberFont : compactNumberFont

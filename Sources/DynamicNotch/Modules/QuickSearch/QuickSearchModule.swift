@@ -149,7 +149,7 @@ private struct QuickSearchTab: View {
                     }
                 }
             }
-            Text(hint).font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary).lineLimit(1).truncationMode(.middle)
+            Text(hint).font(.island(.caption)).foregroundStyle(LaunchUI.secondary).lineLimit(1).truncationMode(.middle)
         }
         .foregroundStyle(.white)
         .onAppear {

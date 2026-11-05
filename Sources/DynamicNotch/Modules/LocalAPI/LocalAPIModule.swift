@@ -268,18 +268,18 @@ private struct LocalAPITab: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Circle().fill(model.state == .stopped ? Color.gray : (model.state.isListening ? Color.green : Color.orange)).frame(width: 7, height: 7)
-                Text(portText).font(.system(size: 12.5, weight: .semibold))
+                Text(portText).font(.island(.subhead, .semibold))
                 Spacer()
                 Text(model.requests > 0 ? T("요청 \(model.requests)건 · \(model.last)", "\(model.requests) requests · \(model.last)") : T("요청 없음", "No requests yet"))
-                    .font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
+                    .font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
             }
             AIDevBox {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(T("예시 (터미널)", "Example (Terminal)")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                    Text(T("예시 (터미널)", "Example (Terminal)")).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                     Text(verbatim: #"echo '{"command":"show","title":"Build done","token":"…"}' | nc 127.0.0.1 \#(port)"#)
-                        .font(.system(size: 10.5, design: .monospaced)).lineLimit(2).textSelection(.enabled)
+                        .font(.island(.caption, .medium, design: .monospaced)).lineLimit(2).textSelection(.enabled)
                     Text(T("명령: status · show · activity.set · activity.clear (줄바꿈 JSON, HTTP 아님)", "Commands: status · show · activity.set · activity.clear (newline JSON, not HTTP)"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 }
             }
             HStack(spacing: 6) {
@@ -288,7 +288,7 @@ private struct LocalAPITab: View {
                     copied = true
                 }
                 if confirming {
-                    Text(T("이전 토큰은 바로 무효가 됩니다", "The old token stops working at once")).font(.system(size: 11)).foregroundStyle(.orange)
+                    Text(T("이전 토큰은 바로 무효가 됩니다", "The old token stops working at once")).font(.island(.footnote)).foregroundStyle(.orange)
                     AIDevPill(title: T("다시 만들기", "Regenerate"), role: .destructive) { model.regenerate(); confirming = false; copied = false }
                     AIDevPill(title: T("취소", "Cancel")) { confirming = false }
                 } else {
@@ -298,7 +298,7 @@ private struct LocalAPITab: View {
             }
             Text(T("이 Mac 안(루프백)에서만 받고, 요청마다 토큰을 확인합니다. 파일·셸 명령은 실행하지 않습니다.",
                    "Accepts only on this Mac (loopback) and checks the token on every request. Never runs files or shell commands."))
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
         }
         .foregroundStyle(.white)
     }

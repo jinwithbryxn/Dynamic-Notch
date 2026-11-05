@@ -336,7 +336,7 @@ private struct CleaningScreenView: View {
                 .frame(width: 44, height: 44)
                 Text(T("화면 청소 중 · 아무 곳이나 1.5초 누르거나 Esc를 길게 눌러 끝내기",
                        "Cleaning · press and hold anywhere or hold Esc for 1.5 s to exit"))
-                    .font(.system(size: 13, weight: .medium)).foregroundStyle(.white.opacity(0.45))
+                    .font(.island(.subhead)).foregroundStyle(.white.opacity(0.45))
             }
             .opacity(showHint || pressing || model.holding ? 1 : 0.15)
         }
@@ -361,8 +361,8 @@ private struct CleaningTab: View {
                         let left = max(0, Int(until.timeIntervalSince(ctx.date).rounded()))
                         VStack(spacing: 4) {
                             Text(String(format: "%d:%02d", left / 60, left % 60))
-                                .font(.system(size: 30, weight: .semibold, design: .rounded)).monospacedDigit()
-                            Text(T("키보드 잠김 · ⌘Esc로 해제", "Keyboard locked · ⌘Esc to unlock")).font(.system(size: 10.5))
+                                .font(.island(.largeTitle, .semibold)).monospacedDigit()
+                            Text(T("키보드 잠김 · ⌘Esc로 해제", "Keyboard locked · ⌘Esc to unlock")).font(.island(.caption))
                                 .foregroundStyle(.white.opacity(0.6))
                             CPPill(symbol: "lock.open.fill", title: T("지금 풀기", "Unlock Now"), tint: .green) { module.unlockKeyboard() }
                         }
@@ -380,7 +380,7 @@ private struct CleaningTab: View {
                        help: T("모든 화면을 검게. 길게 눌러 끝내기", "Black on all screens. Press and hold to exit"), disabled: state.screenOn) { module.cleanScreen() }
             }
             HStack(spacing: 8) {
-                Text(T("잠금 시간", "Lock for")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                Text(T("잠금 시간", "Lock for")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 Picker("", selection: $state.seconds) {
                     Text(T("30초", "30 s")).tag(30)
                     Text(T("60초", "60 s")).tag(60)
@@ -392,9 +392,9 @@ private struct CleaningTab: View {
             CPPermissionLine(permission: .accessibility, granted: state.axGranted)
             Text(T("⌘Esc 또는 시간이 지나면 풀린다. 잠금은 별도 스레드에서 돌아 앱이 멈춰도 시간이 되면 풀리고, 앱이 끝나면 macOS가 잠금을 함께 없앤다. 비밀번호 칸에 입력 중일 때(보안 입력)는 macOS가 키를 막지 못하게 한다.",
                    "Unlocks with ⌘Esc or when time is up. The lock runs on its own thread, so it ends on time even if the app stalls, and macOS removes it if the app quits. While a password field has focus (secure input), macOS does not let keys be blocked."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
             if let m = state.message {
-                Text(m).font(.system(size: 10.5)).foregroundStyle(.orange)
+                Text(m).font(.island(.caption)).foregroundStyle(.orange)
             }
         }
         .foregroundStyle(.white)

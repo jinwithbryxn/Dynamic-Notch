@@ -136,20 +136,20 @@ private struct KeyHUDTab: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "light.max")
-                        Text(T("키보드 백라이트", "Keyboard backlight")).font(.system(size: 13, weight: .semibold))
+                        Text(T("키보드 백라이트", "Keyboard backlight")).font(.island(.subhead, .semibold))
                         Spacer()
                         if available {
-                            Text(SysFmt.percent(level)).font(.system(size: 13, design: .rounded)).monospacedDigit()
+                            Text(SysFmt.percent(level)).font(.island(.subhead)).monospacedDigit()
                         }
                     }
                     if available {
                         HStack(spacing: 8) {
-                            Image(systemName: "light.min").font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                            Image(systemName: "light.min").font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                             // 사용자가 끌 때만 값을 쓴다 (화면이 열릴 때는 읽기만)
                             Slider(value: Binding(get: { level }, set: { level = $0; module.setKeyboard(Float($0), showHUD: false) }), in: 0...1)
                             .controlSize(.small)
                             .accessibilityLabel(T("키보드 밝기", "Keyboard brightness"))
-                            Image(systemName: "light.max").font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                            Image(systemName: "light.max").font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                             SysPillButton(title: T("끄기", "Off"), symbol: "lightbulb.slash") { level = 0; module.setKeyboard(0, showHUD: false) }
                         }
                     } else {
@@ -163,14 +163,14 @@ private struct KeyHUDTab: View {
             .frame(height: 78)
             SysCard {
                 HStack(spacing: 10) {
-                    Image(systemName: caps ? "capslock.fill" : "capslock").font(.system(size: 18))
+                    Image(systemName: caps ? "capslock.fill" : "capslock").font(.island(.title2))
                         .foregroundStyle(caps ? .green : .white.opacity(0.7))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Caps Lock HUD").font(.system(size: 12, weight: .semibold))
+                        Text("Caps Lock HUD").font(.island(.subhead, .semibold))
                         Text(module.capsEnabled
                              ? T("켜고 끌 때 노치에 잠깐 표시 · 지금 \(caps ? "켬" : "끔")", "Shows briefly when toggled · now \(caps ? "on" : "off")")
                              : T("설정에서 꺼져 있음", "Turned off in settings"))
-                            .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                     }
                     Spacer()
                 }

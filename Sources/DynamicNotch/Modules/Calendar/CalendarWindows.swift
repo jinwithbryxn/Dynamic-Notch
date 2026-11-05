@@ -99,13 +99,13 @@ struct CalAlertView: View {
             VStack(spacing: 18) {
                 if preview {
                     Text(T("미리 보기 · 실제 일정 아님", "Preview · not a real event"))
-                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(.black)
+                        .font(.island(.subhead, .semibold)).foregroundStyle(.black)
                         .padding(.horizontal, 10).padding(.vertical, 4)
                         .background(Capsule().fill(Color.yellow))
                 }
                 HStack(spacing: 10) {
                     Circle().fill(item.color).frame(width: 12, height: 12)
-                    Text(item.calendarName).font(.system(size: 15, weight: .medium)).foregroundStyle(.white.opacity(0.7))
+                    Text(item.calendarName).font(.island(.headline)).foregroundStyle(.white.opacity(0.7))
                 }
                 Text(item.title)
                     .font(.system(size: main ? 54 : 40, weight: .bold, design: .rounded))
@@ -113,10 +113,10 @@ struct CalAlertView: View {
                     .padding(.horizontal, 60)
                 TimelineView(.periodic(from: .now, by: 1)) { ctx in
                     Text(Self.whenText(item, now: ctx.date))
-                        .font(.system(size: 26, weight: .medium, design: .rounded)).monospacedDigit()
+                        .font(.island(.title1)).monospacedDigit()
                         .foregroundStyle(item.color.opacity(0.95))
                 }
-                Text(item.timeText).font(.system(size: 17)).foregroundStyle(.white.opacity(0.6))
+                Text(item.timeText).font(.island(.title3)).foregroundStyle(.white.opacity(0.6))
                 if main {
                     HStack(spacing: 14) {
                         if let join {
@@ -158,7 +158,7 @@ private struct CalAlertButton: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 17, weight: .semibold))
+            .font(.island(.title3, .semibold))
             .foregroundStyle(prominent ? .white : .white.opacity(0.9))
             .padding(.horizontal, 22).padding(.vertical, 11)
             .background(Capsule().fill(prominent ? tint.opacity(configuration.isPressed ? 0.7 : 1) : Color.white.opacity(configuration.isPressed ? 0.25 : 0.14)))

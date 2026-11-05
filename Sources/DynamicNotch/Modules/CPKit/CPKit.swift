@@ -71,8 +71,8 @@ struct CPPill: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: symbol).font(.system(size: 11, weight: .semibold)).foregroundStyle(tint)
-                Text(title).font(.system(size: 11, weight: .semibold)).lineLimit(1)
+                Image(systemName: symbol).font(.island(.footnote, .semibold)).foregroundStyle(tint)
+                Text(title).font(.island(.footnote, .semibold)).lineLimit(1)
             }
             .padding(.horizontal, 9)
             .padding(.vertical, 5)
@@ -99,9 +99,9 @@ struct CPTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 5) {
-                Image(systemName: symbol).font(.system(size: 17, weight: .semibold)).foregroundStyle(tint)
+                Image(systemName: symbol).font(.island(.title3, .semibold)).foregroundStyle(tint)
                     .frame(height: 20)
-                Text(title).font(.system(size: 10.5, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                Text(title).font(.island(.caption, .semibold)).lineLimit(1).minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 9)
@@ -125,12 +125,12 @@ struct CPToggleRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: symbol).font(.system(size: 12, weight: .semibold)).frame(width: 18)
+            Image(systemName: symbol).font(.island(.subhead, .semibold)).frame(width: 18)
                 .foregroundStyle(isOn ? Color.green : .white.opacity(0.7))
             VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.system(size: 12, weight: .semibold))
+                Text(title).font(.island(.subhead, .semibold))
                 if let detail {
-                    Text(detail).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).lineLimit(2)
+                    Text(detail).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(2)
                 }
             }
             Spacer(minLength: 4)
@@ -151,12 +151,12 @@ struct CPUnsupported: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 11)).foregroundStyle(.yellow)
+            Image(systemName: "exclamationmark.triangle.fill").font(.island(.footnote)).foregroundStyle(.yellow)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 11, weight: .semibold))
-                Text(reason).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
+                Text(title).font(.island(.footnote, .semibold))
+                Text(reason).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
                 if let alternative {
-                    Text(T("대안: ", "Instead: ") + alternative).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                    Text(T("대안: ", "Instead: ") + alternative).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -175,16 +175,16 @@ struct CPPermissionLine: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: granted ? "checkmark.seal.fill" : "lock.fill").font(.system(size: 10))
+            Image(systemName: granted ? "checkmark.seal.fill" : "lock.fill").font(.island(.caption))
                 .foregroundStyle(granted ? .green : .orange)
             Text(permission.title + " · " + (granted ? T("허용됨", "Allowed") : T("필요", "Needed")))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.65))
             if !granted {
                 Button(T("허용하기", "Allow")) { permission.request() }
-                    .buttonStyle(.plain).font(.system(size: 10, weight: .semibold)).foregroundStyle(.blue)
+                    .buttonStyle(.plain).font(.island(.caption, .semibold)).foregroundStyle(.blue)
                     .help(T("시스템 설정에서 이 앱을 허용", "Allow this app in System Settings"))
                 if permission.needsRelaunch {
-                    Text(T("(허용 후 앱 다시 시작)", "(relaunch after allowing)")).font(.system(size: 9.5))
+                    Text(T("(허용 후 앱 다시 시작)", "(relaunch after allowing)")).font(.island(.caption2))
                         .foregroundStyle(.white.opacity(0.45))
                 }
             }

@@ -42,89 +42,112 @@ struct ActivityValueView: View {
         guard !s.contains(where: \.isNumber) else { return nil }
         let parts = s.split(separator: " ", maxSplits: 1).map(String.init)
         guard parts.count == 2 else { return nil }
-        let width = (s as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 13.5, weight: .medium)]).width
+        let width = (s as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: IslandText.subhead.rawValue, weight: .semibold)]).width
         return width > NotchActivity.compactWing - 12 ? (parts[0], parts[1]) : nil
     }
+
+    /// 크기: 노치 옆 날개(compact), 상세 카드에서 노치 옆 칸(band), 확장 화면(large)
+    enum Scale { case compact, band, large }
 
     var value: ActivityValue
     var tint: Color
     var large = false
+    /// 상세 카드의 노치 옆 칸에 맞춘 크기 (large보다 작고 compact보다 크다)
+    var band = false
     /// 숫자·글자 색 (nil이면 흰색)
     var textColor: Color? = nil
     /// 컴팩트 숫자 글꼴 (HUD·배터리는 조금 작게)
     var numberFont: Font = NotchActivity.compactNumberFont
+
+    private var scale: Scale { large ? .large : (band ? .band : .compact) }
+
+    /// 크기별 값 고르기
+    private func pick<T>(_ compact: T, _ band: T, _ large: T) -> T {
+        switch scale {
+        case .compact: return compact
+        case .band: return band
+        case .large: return large
+        }
+    }
 
     var body: some View {
         switch value {
         case .none:
             EmptyView()
         case .text(let s):
-            if !large, let (top, bottom) = Self.twoLines(s) {
+            if scale == .compact, let (top, bottom) = Self.twoLines(s) {
                 // 컴팩트: 두 단어 글자('전송 완료'·'녹화 시작')는 작게 위아래로 나눠 노치 안에 여백을 두고 넣는다
                 VStack(spacing: -1) {
                     Text(top)
                     Text(bottom)
                 }
-                .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                .font(.island(.caption, .semibold))
                 .lineLimit(1)
                 .foregroundStyle(textColor ?? .white)
                 .fixedSize()
             } else {
                 RollingText(text: s)
-                    .font(large ? .system(size: 15, weight: .semibold, design: .rounded)
-                          : (s.contains(where: \.isNumber) ? numberFont : NotchActivity.compactFont))
+                    .font(pick(s.contains(where: \.isNumber) ? numberFont : NotchActivity.compactFont,
+                               .island(.headline, .semibold), .island(.title3, .semibold)))
                     .monospacedDigit()
                     .lineLimit(1)
                     // 긴 한 단어(Connected 등)는 잘리지 않게 줄여서 날개 폭 안에 (양옆 여백 남김)
-                    .minimumScaleFactor(large ? 1 : 0.6)
-                    .frame(maxWidth: large ? nil : NotchActivity.compactWing - 12)
+                    .minimumScaleFactor(scale == .large ? 1 : 0.6)
+                    .frame(maxWidth: scale == .compact ? NotchActivity.compactWing - 12 : nil)
                     .foregroundStyle(textColor ?? .white)
             }
         case .percent(let v):
             RollingText(text: "\(Int((v * 100).rounded()))%")
-                .font(large ? .system(size: 20, weight: .semibold, design: .rounded) : numberFont)
+                .font(pick(numberFont, .island(.title3, .semibold), .island(.title1, .semibold)))
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
                 .foregroundStyle(textColor ?? .white)
         case .ring(let v):
-            RingGauge(value: v, tint: tint, lineWidth: large ? 4 : 2.6)
-                .frame(width: large ? 34 : 19, height: large ? 34 : 19)
+            let d: CGFloat = pick(19, 22, 34)
+            RingGauge(value: v, tint: tint, lineWidth: pick(2.6, 3, 4))
+                .frame(width: d, height: d)
         case .bar(let v):
             BarGauge(value: v, tint: tint)
-                .frame(width: large ? 120 : 44)
+                .frame(width: pick(44, 48, 120))
         case .ringPercent(let v):
-            HStack(spacing: 5) {
-                RingGauge(value: v, tint: tint, lineWidth: large ? 4 : 2.4)
-                    .frame(width: large ? 26 : 16, height: large ? 26 : 16)
+            let d: CGFloat = pick(16, 18, 26)
+            HStack(spacing: pick(5, 5, 6)) {
+                RingGauge(value: v, tint: tint, lineWidth: pick(2.4, 2.6, 4))
+                    .frame(width: d, height: d)
                 RollingText(text: "\(Int((v * 100).rounded()))%")
-                    .font(large ? .system(size: 18, weight: .semibold, design: .rounded) : numberFont)
+                    .font(pick(numberFont, .island(.headline, .semibold), .island(.title2, .semibold)))
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                     .foregroundStyle(textColor ?? .white)
             }
         case .recordingDot:
             RecordingDot()
         case .waveform(let playing):
             WaveformView(playing: playing, tint: tint)
-                .frame(width: large ? 28 : 18, height: large ? 18 : 12)
+                .frame(width: pick(18, 26, 28), height: pick(12, 16, 18))
         case .spinner:
+            let d: CGFloat = pick(15, 20, 26)
             SpinnerRing(tint: tint)
-                .frame(width: large ? 26 : 15, height: large ? 26 : 15)
+                .frame(width: d, height: d)
         case .bigNumber(let v):
             RollingText(text: "\(Int((v * 100).rounded()))")
-                .font(large ? .system(size: 24, weight: .regular, design: .rounded) : numberFont)
+                .font(pick(numberFont, .island(.title3, .semibold), .island(.title1, .semibold)))
                 .monospacedDigit()
                 .foregroundStyle(textColor ?? .white)
         case .elapsed(let since):
-            CallDurationText(since: since, font: large ? .system(size: 18, weight: .semibold, design: .rounded) : numberFont)
+            CallDurationText(since: since, font: pick(numberFont, .island(.headline, .semibold), .island(.title2, .semibold)))
                 .fixedSize()
         case .usage(let label, let percent, let ring):
-            UsageGlyph(label: label, percent: percent, ring: ring, tint: tint, large: large)
+            UsageGlyph(label: label, percent: percent, ring: ring, tint: tint, large: scale != .compact)
         case .labeledText(let label, let text):
             VStack(spacing: 1) {
                 Text(label)
-                    .font(.system(size: large ? 10 : 8, weight: large ? .semibold : .medium, design: .rounded))
+                    .font(.island(pick(.caption2, .caption2, .caption), .semibold))
                     .foregroundStyle(.white.opacity(0.55))
                 Text(text)
-                    .font(.system(size: large ? 16 : 12.5, weight: large ? .semibold : .regular, design: .rounded))
+                    .font(.island(pick(.footnote, .subhead, .headline), .semibold))
                     .monospacedDigit()
                     .foregroundStyle(textColor ?? .white)
             }
@@ -132,7 +155,7 @@ struct ActivityValueView: View {
             .fixedSize()
         case .check:
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: large ? 22 : 14, weight: .semibold))
+                .font(.system(size: pick(14, 20, 22), weight: .semibold))
                 .foregroundStyle(tint)
                 .transition(.scale.combined(with: .opacity))
         }
@@ -225,18 +248,23 @@ struct ActivityLeading: View {
 }
 
 /// 컴팩트: 노치 좌측 아이콘, 우측 값 (노치 높이 그대로).
+/// 아일랜드처럼 시간을 세는 값(타이머·통화·녹화 시간)은 그 활동의 색으로 쓴다.
 struct CompactActivityView: View {
     var activity: NotchActivity
     var notchSize: CGSize
 
+    /// 값 글자를 활동 색으로 쓰는 종류
+    static let tintedValueKinds: Set<ActivityKind> = [.timer, .stopwatch, .pomodoro, .call, .recording]
+
     var body: some View {
         // 좌·우 요소를 각각 도형의 왼쪽·오른쪽 가장자리에 붙인다.
         // 도형이 좁아지며 사라질 때 양쪽이 함께 노치 쪽(가운데)으로 들어간다.
-        // 좌우 끝의 휘어진 모서리에 붙지 않게 4pt씩 안쪽으로 (노치 폭은 그대로)
+        // 좌우 끝의 둥근 모서리에 붙지 않게 4pt씩 안쪽으로 (노치 폭은 그대로)
         let icon = ActivityLeading(activity: activity, size: min(22, notchSize.height - 8))
             .frame(width: NotchActivity.wing(for: activity), alignment: .center)
             .padding(.leading, 4)
-        let value = ActivityValueView(value: activity.value, tint: activity.tint, textColor: activity.valueTint,
+        let valueColor = activity.valueTint ?? (Self.tintedValueKinds.contains(activity.kind) ? activity.tint : nil)
+        let value = ActivityValueView(value: activity.value, tint: activity.tint, textColor: valueColor,
                                       numberFont: NotchActivity.compactNumberFont(for: activity.kind))
             .frame(width: NotchActivity.wing(for: activity), alignment: .center)
             .padding(.trailing, 4)
@@ -253,63 +281,83 @@ struct CompactActivityView: View {
     }
 }
 
-/// 상세: 노치 아래로 커진 카드에 아이콘, 제목, 부제, 값을 표시한다.
+/// 상세: 아일랜드의 펼친 모양. 노치 왼쪽·오른쪽 칸(아이폰의 카메라 옆)에 아이콘과 핵심 값,
+/// 노치 아래에 제목·부제, 맨 아래에 버튼을 둔다. 옆과 아래 여백은 같다 (Island.cardMargin).
 struct DetailActivityView: View {
     var activity: NotchActivity
     var notchSize: CGSize
 
+    /// 노치 왼쪽 칸의 앨범아트·썸네일 크기 (노치 높이 안)
+    static let artSize: CGFloat = 26
+
     var body: some View {
-        VStack(spacing: 0) {
-            Color.clear.frame(height: notchSize.height)
-            HStack(spacing: 12) {
-                if activity.kind == .media, activity.artwork != nil {
-                    Color.clear.frame(width: 36, height: 36)   // 공용 앨범아트 레이어 자리
-                } else if activity.artwork != nil {
-                    ActivityLeading(activity: activity, size: 36)
-                } else if let battery = activity.battery {
-                    ZStack {
-                        Circle().fill(activity.tint.opacity(0.2))
-                        BatteryGlyph(info: battery, tint: activity.tint, width: 24)
+        GeometryReader { geo in
+            let inset = NotchViewModel.detailTopRadius + Island.cardMargin
+            // 노치 옆 칸 폭: 도형 폭에서 노치를 빼고 반으로 나눈 뒤, 바깥 여백과 노치 쪽 틈(6pt)을 뺀다
+            let side = max(0, (geo.size.width - notchSize.width) / 2 - inset - 6)
+            let hasText = activity.title != nil || activity.subtitle != nil
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 0) {
+                    leading
+                        .frame(width: side, height: notchSize.height, alignment: .leading)
+                    Spacer(minLength: 0)
+                    if hasText {
+                        trailing
+                            .frame(width: side, height: notchSize.height, alignment: .trailing)
                     }
-                    .frame(width: 36, height: 36)
+                }
+                .frame(height: notchSize.height)
+                if hasText {
+                    VStack(alignment: .leading, spacing: 1) {
+                        if let title = activity.title {
+                            Text(title)
+                                .font(.island(.headline, .semibold))
+                                .foregroundStyle(.white)
+                        }
+                        if let subtitle = activity.subtitle {
+                            Text(subtitle)
+                                .font(.island(.subhead))
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                    }
+                    .lineLimit(1)
+                    .padding(.top, 6)
                 } else {
-                    ZStack {
-                        Circle().fill(activity.tint.opacity(0.2))
-                        Image(systemName: activity.symbol)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(activity.tint)
-                    }
-                    .frame(width: 36, height: 36)
+                    // 제목이 없으면 값을 가운데에 크게
+                    trailing
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    if let title = activity.title {
-                        Text(title)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                    }
-                    if let subtitle = activity.subtitle {
-                        Text(subtitle)
-                            .font(.system(size: 12))
-                            .foregroundStyle(.white.opacity(0.6))
-                            .lineLimit(1)
-                    }
+                Spacer(minLength: 0)
+                if !activity.actions.isEmpty {
+                    ActivityActionRow(actions: activity.actions)
+                        .frame(height: 28)
                 }
-                Spacer(minLength: 8)
-                ActivityValueView(value: activity.detailValue ?? activity.value, tint: activity.tint, large: true,
-                                  textColor: activity.valueTint)
             }
-            // 상세 카드도 음악 팝업처럼 가장자리에서 안쪽으로(위쪽 오목 모서리 + 22pt), 남은 높이 가운데에
-            .padding(.horizontal, 35)
-            .frame(maxHeight: .infinity)
-            .padding(.bottom, activity.actions.isEmpty ? 10 : 0)
-            if !activity.actions.isEmpty {
-                ActivityActionRow(actions: activity.actions)
-                    .padding(.horizontal, 35)
-                    .frame(height: NotchViewModel.actionRowHeight - 6)
-                    .padding(.bottom, 14)
-            }
+            .padding(.horizontal, inset)
+            .padding(.bottom, Island.cardMargin)
         }
+    }
+
+    /// 노치 왼쪽: 아이콘(테두리 없이 활동 색) · 앨범아트 · 배터리
+    @ViewBuilder private var leading: some View {
+        if activity.kind == .media, activity.artwork != nil {
+            Color.clear.frame(width: Self.artSize, height: Self.artSize)   // 공용 앨범아트 레이어 자리
+        } else if activity.artwork != nil {
+            ActivityLeading(activity: activity, size: Self.artSize)
+        } else if let battery = activity.battery {
+            BatteryGlyph(info: battery, tint: activity.tint, width: 30)
+        } else {
+            Image(systemName: activity.symbol)
+                .font(.island(.title2, .semibold))
+                .foregroundStyle(activity.tint)
+                .frame(height: Self.artSize)
+        }
+    }
+
+    /// 노치 오른쪽: 핵심 값
+    private var trailing: some View {
+        ActivityValueView(value: activity.detailValue ?? activity.value, tint: activity.tint, band: true,
+                          textColor: activity.valueTint ?? (CompactActivityView.tintedValueKinds.contains(activity.kind) ? activity.tint : nil))
     }
 }
 
@@ -322,7 +370,7 @@ struct ActivityActionRow: View {
             ForEach(actions) { action in
                 Button(action: action.run) {
                     Text(action.title)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.island(.subhead, .semibold))
                         .lineLimit(1)
                         .frame(maxWidth: .infinity)
                         .frame(height: 28)

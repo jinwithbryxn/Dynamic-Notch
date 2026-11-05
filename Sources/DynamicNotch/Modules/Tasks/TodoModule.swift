@@ -194,19 +194,19 @@ private struct TodoTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: "plus.circle.fill").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "plus.circle.fill").font(.island(.subhead)).foregroundStyle(.white.opacity(0.6))
                 TextField(T("할 일 입력 후 Return", "Type a to-do and press Return"), text: $model.draft)
-                    .textFieldStyle(.plain).font(.system(size: 12))
+                    .textFieldStyle(.plain).font(.island(.subhead))
                     .focused($focused)
                     .onSubmit {
                         if let err = model.add(model.draft) { model.flash(err) } else { model.draft = "" }
                     }
                     .accessibilityLabel(T("새 할 일", "New to-do"))
-                Text("\(model.items.count)/\(TodoModel.limit)").font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.35)).monospacedDigit()
+                Text("\(model.items.count)/\(TodoModel.limit)").font(.island(.caption2)).foregroundStyle(.white.opacity(0.35)).monospacedDigit()
                 Menu {
                     Button(T("메모의 체크 안 된 줄 가져오기", "Import unchecked lines from Memos")) { model.importFromMemos() }
                 } label: {
-                    Image(systemName: "ellipsis.circle").font(.system(size: 12))
+                    Image(systemName: "ellipsis.circle").font(.island(.subhead))
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 .help(T("더 보기", "More"))
@@ -216,12 +216,12 @@ private struct TodoTab: View {
 
             if let r = model.removed {
                 HStack {
-                    Text(T("'\(r.text)' 지움", "Deleted '\(r.text)'")).font(.system(size: 10.5)).lineLimit(1)
+                    Text(T("'\(r.text)' 지움", "Deleted '\(r.text)'")).font(.island(.caption)).lineLimit(1)
                     Spacer()
                     Button(T("되돌리기", "Undo")) { model.undoDelete() }.buttonStyle(PIMPillStyle())
                 }
             } else if let m = model.message {
-                Text(m).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7))
+                Text(m).font(.island(.caption)).foregroundStyle(.white.opacity(0.7))
             }
 
             if model.items.isEmpty {
@@ -235,7 +235,7 @@ private struct TodoTab: View {
                                 Button { model.toggle(item.id) } label: { PIMCheckCircle(checked: item.doneAt != nil) }
                                     .buttonStyle(.plain)
                                     .accessibilityLabel(item.doneAt == nil ? T("\(item.text) 완료", "Complete \(item.text)") : T("\(item.text) 완료 취소", "Uncheck \(item.text)"))
-                                Text(item.text).font(.system(size: 12)).lineLimit(2)
+                                Text(item.text).font(.island(.subhead)).lineLimit(2)
                                     .strikethrough(item.doneAt != nil)
                                     .foregroundStyle(item.doneAt != nil ? Color.white.opacity(0.4) : .white)
                                 Spacer(minLength: 0)

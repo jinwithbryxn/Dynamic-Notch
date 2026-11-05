@@ -266,30 +266,30 @@ private struct ShellActivityTab: View {
             VStack(alignment: .leading, spacing: 6) {
                 let list = module.running.values.sorted { $0.start > $1.start }
                 if list.isEmpty {
-                    Text(T("실행 중인 명령이 없습니다", "No commands running")).font(.system(size: 13, weight: .semibold))
+                    Text(T("실행 중인 명령이 없습니다", "No commands running")).font(.island(.subhead, .semibold))
                     Text(installed
                          ? T("터미널(zsh)에서 10초 넘게 걸리는 명령은 여기와 노치에 경과 시간이 보이고, 끝나면 ✓·✗로 알립니다.",
                              "Commands in zsh that take over 10 s show their elapsed time here and in the notch, then ✓ or ✗ when done.")
                          : T("아직 ~/.zshrc에 연결하지 않았습니다. 설정 → 오래 걸리는 명령에서 미리보기를 확인하고 연결하세요.",
                              "Not connected to ~/.zshrc yet. Review the preview and connect in Settings → Long-Running Commands."))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 } else {
                     ForEach(list, id: \.id) { r in
                         HStack {
                             Image(systemName: "terminal")
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(r.command).font(.system(size: 12, design: .monospaced)).lineLimit(1)
-                                Text(URL(fileURLWithPath: r.cwd).lastPathComponent).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                                Text(r.command).font(.island(.subhead, .medium, design: .monospaced)).lineLimit(1)
+                                Text(URL(fileURLWithPath: r.cwd).lastPathComponent).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                             }
                             Spacer()
-                            Text(AIDevFormat.elapsed(ctx.date.timeIntervalSince(r.start))).font(.system(size: 14, design: .rounded)).monospacedDigit()
+                            Text(AIDevFormat.elapsed(ctx.date.timeIntervalSince(r.start))).font(.island(.callout)).monospacedDigit()
                         }
                         .padding(6).background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06)))
                     }
                 }
                 Spacer(minLength: 0)
                 Text(T("zsh 전용 · 개발 서버·편집기·watch는 제외 · 앱이 꺼져 있으면 셸에 영향 없음", "zsh only · dev servers, editors and watch are skipped · no effect on the shell when the app is off"))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
             }
         }
         .foregroundStyle(.white)

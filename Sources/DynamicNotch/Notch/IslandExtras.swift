@@ -90,11 +90,11 @@ struct MediaPeekView: View {
                 Color.clear.frame(width: 36, height: 36)   // 공용 앨범아트 레이어 자리
                 VStack(alignment: .leading, spacing: 2) {
                     Text(media.nowPlaying?.title ?? "")
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.island(.callout, .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     Text(media.nowPlaying?.artist ?? "")
-                        .font(.system(size: 11.5))
+                        .font(.island(.footnote))
                         .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(1)
                 }

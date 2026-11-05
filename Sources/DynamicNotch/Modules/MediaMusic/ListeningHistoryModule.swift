@@ -215,7 +215,7 @@ private struct HistoryTab: View {
                 Spacer()
                 Text(showBookmarks ? T("북마크한 곡이 없습니다", "No bookmarks yet")
                                    : T("Music·Spotify에서 재생한 곡이 여기에 쌓입니다", "Songs played in Music or Spotify appear here"))
-                    .font(.system(size: 11.5)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                    .font(.island(.footnote)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                 Spacer()
             } else {
                 ScrollView {
@@ -231,18 +231,18 @@ private struct HistoryTab: View {
     private func row(_ e: MBHistoryEntry) -> some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(e.title).font(.system(size: 11.5, weight: .medium)).lineLimit(1)
+                Text(e.title).font(.island(.footnote)).lineLimit(1)
                 Text([e.artist, e.app, Self.relative(e.date)].filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
             }
             Spacer()
             Button { MBHistoryStore.openSearch(e) } label: {
-                Image(systemName: e.app == "Spotify" ? "magnifyingglass" : "doc.on.doc").font(.system(size: 10)).frame(width: 18, height: 18)
+                Image(systemName: e.app == "Spotify" ? "magnifyingglass" : "doc.on.doc").font(.island(.caption)).frame(width: 18, height: 18)
             }
             .buttonStyle(.plain).foregroundStyle(.white.opacity(0.6))
             .help(e.app == "Spotify" ? T("Spotify에서 찾기", "Search in Spotify") : T("제목 – 아티스트 복사", "Copy title – artist"))
             Button { store.toggleBookmark(e) } label: {
-                Image(systemName: store.isBookmarked(e) ? "bookmark.fill" : "bookmark").font(.system(size: 10)).frame(width: 18, height: 18)
+                Image(systemName: store.isBookmarked(e) ? "bookmark.fill" : "bookmark").font(.island(.caption)).frame(width: 18, height: 18)
             }
             .buttonStyle(.plain).foregroundStyle(store.isBookmarked(e) ? .yellow : .white.opacity(0.6))
             .help(T("북마크", "Bookmark")).accessibilityLabel(T("북마크", "Bookmark"))

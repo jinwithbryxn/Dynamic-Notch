@@ -260,10 +260,10 @@ private struct ScreenTimeTab: View {
                 SummaryView()
             } else if store.days.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(T("아직 기록이 없어요", "No usage recorded yet")).font(.system(size: 15, weight: .semibold))
+                    Text(T("아직 기록이 없어요", "No usage recorded yet")).font(.island(.headline, .semibold))
                     Text(T("기능을 켜 두면 앞에 있는 앱의 사용 시간을 이 Mac에만 기록해요. 5분 넘게 입력이 없거나 잠금·화면 보호기 중에는 세지 않아요.",
                            "While on, the time of the app in front is recorded on this Mac only. Idle (5+ min), lock and screen saver time isn't counted."))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
             } else {
@@ -295,14 +295,14 @@ private struct ScreenTimeTab: View {
         let maxSec = apps.first?.seconds ?? 1
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text(TFFormat.duration(total)).font(.system(size: 22, weight: .semibold, design: .rounded)).monospacedDigit()
+                Text(TFFormat.duration(total)).font(.island(.title1, .semibold)).monospacedDigit()
                 if range != .today {
                     Text(T("하루 평균 \(TFFormat.duration(store.dailyAverage(k)))", "\(TFFormat.duration(store.dailyAverage(k))) daily avg"))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 }
             }
             if apps.isEmpty {
-                Text(T("이 기간에는 기록이 없어요", "Nothing recorded in this range")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                Text(T("이 기간에는 기록이 없어요", "Nothing recorded in this range")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
             }
             ForEach(apps, id: \.id) { a in
                 HStack(spacing: 7) {
@@ -310,9 +310,9 @@ private struct ScreenTimeTab: View {
                     else { Image(systemName: "app").frame(width: 18, height: 18) }
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
-                            Text(store.name(a.id)).font(.system(size: 11.5)).lineLimit(1)
+                            Text(store.name(a.id)).font(.island(.footnote)).lineLimit(1)
                             Spacer()
-                            Text(TFFormat.duration(a.seconds)).font(.system(size: 11, weight: .medium)).monospacedDigit().foregroundStyle(.white.opacity(0.8))
+                            Text(TFFormat.duration(a.seconds)).font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.8))
                         }
                         GeometryReader { g in
                             Capsule().fill(Color.white.opacity(0.55)).frame(width: max(2, g.size.width * CGFloat(a.seconds / maxSec)), height: 3)
@@ -337,7 +337,7 @@ private struct WeekBars: View {
         let totals = days.map { store.total([$0]) }
         let maxSec = max(totals.max() ?? 0, 3600)
         VStack(alignment: .leading, spacing: 6) {
-            Text(T("최근 7일", "Last 7 days")).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.7))
+            Text(T("최근 7일", "Last 7 days")).font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.7))
             HStack(alignment: .bottom, spacing: 9) {
                 ForEach(days.indices, id: \.self) { i in
                     let k = days[i]
@@ -353,7 +353,7 @@ private struct WeekBars: View {
                         }
                         .frame(width: 20)
                         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                        Text(TFDay.weekdayShort(k)).font(.system(size: 9.5)).foregroundStyle(k == TFDay.key() ? .white : .white.opacity(0.55))
+                        Text(TFDay.weekdayShort(k)).font(.island(.caption2)).foregroundStyle(k == TFDay.key() ? .white : .white.opacity(0.55))
                     }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("\(k) \(TFFormat.duration(totals[i]))")
@@ -364,12 +364,12 @@ private struct WeekBars: View {
                 ForEach(top.indices, id: \.self) { j in
                     HStack(spacing: 5) {
                         RoundedRectangle(cornerRadius: 2).fill(Self.colors[j]).frame(width: 8, height: 8)
-                        Text(store.name(top[j])).font(.system(size: 10)).lineLimit(1)
+                        Text(store.name(top[j])).font(.island(.caption)).lineLimit(1)
                     }
                 }
                 HStack(spacing: 5) {
                     RoundedRectangle(cornerRadius: 2).fill(Color.white.opacity(0.3)).frame(width: 8, height: 8)
-                    Text(T("기타", "Other")).font(.system(size: 10))
+                    Text(T("기타", "Other")).font(.island(.caption))
                 }
             }
             .foregroundStyle(.white.opacity(0.7))
@@ -389,7 +389,7 @@ private struct SummaryView: View {
                 let c = cards[i]
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(c.title).font(.system(size: 12.5, weight: .semibold))
+                        Text(c.title).font(.island(.subhead, .semibold))
                         Spacer()
                         TFPillButton(title: copied == c.title ? T("복사됨", "Copied") : T("복사", "Copy"), symbol: "doc.on.doc",
                                      help: T("요약을 텍스트로 복사 (게시하지 않음)", "Copy the summary as text (nothing is posted)")) {
@@ -406,12 +406,12 @@ private struct SummaryView: View {
                                 Spacer()
                                 Text(c.lines[j].1).monospacedDigit()
                             }
-                            .font(.system(size: 10.5, design: .monospaced))
+                            .font(.island(.caption, .medium, design: .monospaced))
                         }
                     } else {
                         Text(T("이 기간의 기록이 아직 없어요. 포모도로·Screen Time·활동 링 기록이 쌓이면 보여요.",
                                "No records for this period yet. It fills in from Pomodoro, Screen Time and Activity data."))
-                            .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)
                 }

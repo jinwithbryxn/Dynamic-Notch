@@ -226,7 +226,7 @@ private struct ANotesTab: View {
                     Divider()
                     Button(T("폴더 목록 새로 읽기", "Reload folder list")) { model.refreshFolders() }
                 } label: {
-                    Text(model.folderName).font(.system(size: 11, weight: .semibold)).lineLimit(1)
+                    Text(model.folderName).font(.island(.footnote, .semibold)).lineLimit(1)
                 }
                 .menuStyle(.borderlessButton).fixedSize()
                 .help(T("저장할 폴더", "Destination folder"))
@@ -243,20 +243,20 @@ private struct ANotesTab: View {
             }
             ZStack(alignment: .topLeading) {
                 TextEditor(text: $model.draft)
-                    .font(.system(size: 12.5))
+                    .font(.island(.subhead))
                     .scrollContentBackground(.hidden)
                     .focused($focused)
                     .accessibilityLabel(T("메모 내용", "Note text"))
                 if model.draft.isEmpty {
                     Text(T("적은 내용은 Apple 메모에 바로 저장됩니다. 첫 줄이 제목이 됩니다.", "Write here and save straight to Apple Notes. The first line becomes the title."))
-                        .font(.system(size: 12.5)).foregroundStyle(.white.opacity(0.35))
+                        .font(.island(.subhead)).foregroundStyle(.white.opacity(0.35))
                         .padding(.leading, 5).allowsHitTesting(false)
                 }
             }
             .padding(6)
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.white.opacity(0.07)))
             if let s = model.status {
-                Text(s).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                Text(s).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
         }
         .foregroundStyle(.white)

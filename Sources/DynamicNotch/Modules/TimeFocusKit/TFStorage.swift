@@ -172,8 +172,8 @@ struct TFPillButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                if let symbol { Image(systemName: symbol).font(.system(size: 10, weight: .bold)) }
-                if !title.isEmpty { Text(title).font(.system(size: 11.5, weight: .semibold)) }
+                if let symbol { Image(systemName: symbol).font(.island(.caption, .bold)) }
+                if !title.isEmpty { Text(title).font(.island(.footnote, .semibold)) }
             }
             .lineLimit(1)
             .foregroundStyle(prominent ? Color.black : Color.white)
@@ -222,7 +222,7 @@ struct TFSegment<Value: Hashable>: View {
                 let item = items[i]
                 Button { selection = item.0 } label: {
                     Text(item.1)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.island(.footnote, .semibold))
                         .foregroundStyle(selection == item.0 ? Color.black : Color.white.opacity(0.75))
                         .padding(.horizontal, 9)
                         .padding(.vertical, 3.5)
@@ -250,13 +250,13 @@ struct TFUnsupportedBox: View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.yellow)
-                .font(.system(size: 12))
+                .font(.island(.subhead))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 11.5, weight: .semibold))
-                Text(reason).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.65))
+                Text(title).font(.island(.footnote, .semibold))
+                Text(reason).font(.island(.caption)).foregroundStyle(.white.opacity(0.65))
                     .fixedSize(horizontal: false, vertical: true)
                 if let alternative {
-                    Text(alternative).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                    Text(alternative).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }

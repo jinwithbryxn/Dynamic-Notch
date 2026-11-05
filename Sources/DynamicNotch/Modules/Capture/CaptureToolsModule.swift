@@ -315,7 +315,7 @@ private struct CaptureTab: View {
                     if let c = state.color {
                         Circle().fill(Color(nsColor: c)).frame(width: 10, height: 10)
                     }
-                    Text(status).font(.system(size: 11)).foregroundStyle(.white.opacity(0.75)).lineLimit(2)
+                    Text(status).font(.island(.footnote)).foregroundStyle(.white.opacity(0.75)).lineLimit(2)
                     Spacer(minLength: 0)
                     if let url = state.resultURL {
                         CPPill(symbol: "safari", title: T("링크 열기", "Open Link")) { NSWorkspace.shared.open(url) }
@@ -324,7 +324,7 @@ private struct CaptureTab: View {
             }
             if let text = state.resultText {
                 ScrollView {
-                    Text(text).font(.system(size: 10.5, design: .monospaced)).foregroundStyle(.white.opacity(0.7))
+                    Text(text).font(.island(.caption, .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.7))
                         .textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .frame(maxHeight: 36)

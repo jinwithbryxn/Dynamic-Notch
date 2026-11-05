@@ -220,11 +220,11 @@ private struct EmojiTab: View {
                     ForEach(tones.indices, id: \.self) { i in
                         Button(tones[i]) { tone = i; module.setTone(i) }
                     }
-                } label: { Text(tones[tone]).font(.system(size: 16)) }
+                } label: { Text(tones[tone]).font(.island(.title3)) }
                 .menuStyle(.borderlessButton).fixedSize()
                 .help(T("피부톤", "Skin tone")).accessibilityLabel(T("피부톤", "Skin tone"))
             }
-            Text(caption).font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
+            Text(caption).font(.island(.caption)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 4) {
                     if query.isEmpty {
@@ -258,7 +258,7 @@ private struct EmojiTab: View {
 
     private func cell(_ e: String, name: String) -> some View {
         Button { module.insert(e) } label: {
-            Text(EmojiCatalog.applyTone(e, tone: tone)).font(.system(size: 22))
+            Text(EmojiCatalog.applyTone(e, tone: tone)).font(.island(.title1))
                 .frame(width: 34, height: 32)
                 .background(RoundedRectangle(cornerRadius: 7).fill(hovered == name ? LaunchUI.fill : .clear))
         }

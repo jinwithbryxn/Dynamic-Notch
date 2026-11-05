@@ -154,12 +154,12 @@ private struct SysMonTab: View {
                 ZStack {
                     SysRing(value: value ?? 0, tint: color(value ?? 0), lineWidth: 4)
                     Text(value.map { "\(Int(($0 * 100).rounded()))" } ?? "–")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit()
+                        .font(.island(.subhead, .semibold)).monospacedDigit()
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.system(size: 12, weight: .semibold))
-                    Text(detail).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                    Text(title).font(.island(.subhead, .semibold))
+                    Text(detail).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -180,14 +180,14 @@ private struct SysMonTab: View {
                 ZStack {
                     SysRing(value: m?.fraction ?? 0, tint: tint, lineWidth: 4)
                     Text(m.map { "\(Int(($0.fraction * 100).rounded()))" } ?? "–")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit()
+                        .font(.island(.subhead, .semibold)).monospacedDigit()
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(T("메모리", "Memory")).font(.system(size: 12, weight: .semibold))
+                    Text(T("메모리", "Memory")).font(.island(.subhead, .semibold))
                     Text(m.map { String(format: "%.0f/%.0f GB", Double($0.used) / 1_073_741_824, Double($0.total) / 1_073_741_824) } ?? "–")
-                        .font(.system(size: 10)).monospacedDigit().foregroundStyle(.white.opacity(0.55)).lineLimit(1)
-                    Text(label).font(.system(size: 9.5)).foregroundStyle(tint.opacity(0.9)).lineLimit(1)
+                        .font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                    Text(label).font(.island(.caption2)).foregroundStyle(tint.opacity(0.9)).lineLimit(1)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -199,16 +199,16 @@ private struct SysMonTab: View {
         SysCard {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 4) {
-                    Image(systemName: "thermometer.medium").font(.system(size: 11))
-                    Text(T("CPU 온도", "CPU Temp")).font(.system(size: 11, weight: .semibold))
+                    Image(systemName: "thermometer.medium").font(.island(.footnote))
+                    Text(T("CPU 온도", "CPU Temp")).font(.island(.footnote, .semibold))
                 }
                 if let t {
                     Text(SysFmt.temperature(t, fahrenheit: module.fahrenheit))
-                        .font(.system(size: 20, weight: .medium, design: .rounded)).monospacedDigit()
+                        .font(.island(.title2)).monospacedDigit()
                         .foregroundStyle(t > 90 ? .red : t > 75 ? .orange : .white)
                 } else {
-                    Text(T("지원 안 됨", "Unsupported")).font(.system(size: 11, weight: .medium))
-                    Text(SysTemperature.shared.unsupportedReason ?? "").font(.system(size: 9)).foregroundStyle(.white.opacity(0.5))
+                    Text(T("지원 안 됨", "Unsupported")).font(.island(.footnote))
+                    Text(SysTemperature.shared.unsupportedReason ?? "").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5))
                         .lineLimit(2)
                 }
             }
@@ -219,14 +219,14 @@ private struct SysMonTab: View {
     private func netCard(_ s: SysMonSampler.Snapshot) -> some View {
         SysCard {
             VStack(alignment: .leading, spacing: 4) {
-                Text(T("네트워크", "Network")).font(.system(size: 11, weight: .semibold))
+                Text(T("네트워크", "Network")).font(.island(.footnote, .semibold))
                 HStack(spacing: 4) {
-                    Image(systemName: "arrow.down").font(.system(size: 9, weight: .bold)).foregroundStyle(.cyan)
-                    Text(s.netIn.map(SysFmt.rate) ?? "–").font(.system(size: 11, design: .rounded)).monospacedDigit()
+                    Image(systemName: "arrow.down").font(.island(.caption2, .bold)).foregroundStyle(.cyan)
+                    Text(s.netIn.map(SysFmt.rate) ?? "–").font(.island(.footnote)).monospacedDigit()
                 }
                 HStack(spacing: 4) {
-                    Image(systemName: "arrow.up").font(.system(size: 9, weight: .bold)).foregroundStyle(.pink)
-                    Text(s.netOut.map(SysFmt.rate) ?? "–").font(.system(size: 11, design: .rounded)).monospacedDigit()
+                    Image(systemName: "arrow.up").font(.island(.caption2, .bold)).foregroundStyle(.pink)
+                    Text(s.netOut.map(SysFmt.rate) ?? "–").font(.island(.footnote)).monospacedDigit()
                 }
             }
             .lineLimit(1)
@@ -253,18 +253,18 @@ private struct SysMonTab: View {
                     .help(T("에너지: CPU 시간과 깨우기를 반영한 전력 추정(커널 에너지 값)", "Energy: kernel power estimate (CPU time and wakeups)"))
                 }
                 if s.processes.isEmpty {
-                    Text(T("측정 중…", "Measuring…")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                    Text(T("측정 중…", "Measuring…")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                 }
                 ForEach(s.processes) { p in
                     HStack(spacing: 6) {
-                        Text(p.name).font(.system(size: 11.5)).lineLimit(1).truncationMode(.middle)
+                        Text(p.name).font(.island(.footnote)).lineLimit(1).truncationMode(.middle)
                         Spacer(minLength: 4)
                         if rankByEnergy, let w = p.watts {
                             Text(w >= 1 ? String(format: "%.1f W", w) : String(format: "%.0f mW", w * 1000))
-                                .font(.system(size: 11, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.75))
+                                .font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.75))
                         }
                         Text(String(format: "%.0f%%", p.cpu))
-                            .font(.system(size: 11, design: .rounded)).monospacedDigit()
+                            .font(.island(.footnote)).monospacedDigit()
                             .foregroundStyle(p.cpu > 80 ? .orange : .white.opacity(0.75))
                             .frame(width: 40, alignment: .trailing)
                     }
@@ -274,7 +274,7 @@ private struct SysMonTab: View {
                 if s.unreadableProcesses > 0 {
                     Text(T("다른 사용자·시스템(root) 프로세스 \(s.unreadableProcesses)개는 권한이 없어 빠짐",
                            "\(s.unreadableProcesses) root/other-user processes not readable without privileges"))
-                        .font(.system(size: 9)).foregroundStyle(.white.opacity(0.4)).lineLimit(1)
+                        .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).lineLimit(1)
                 }
             }
         }
@@ -285,20 +285,20 @@ private struct SysMonTab: View {
             VStack(alignment: .leading, spacing: 6) {
                 SysHeader(text: T("디스크", "Drives"))
                 if sampler.volumes.isEmpty {
-                    Text(T("읽는 중…", "Reading…")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                    Text(T("읽는 중…", "Reading…")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                 }
                 ForEach(sampler.volumes.prefix(4)) { v in
                     VStack(alignment: .leading, spacing: 3) {
                         HStack {
-                            Image(systemName: v.isBoot ? "internaldrive" : "externaldrive").font(.system(size: 10))
-                            Text(v.name).font(.system(size: 11.5)).lineLimit(1)
+                            Image(systemName: v.isBoot ? "internaldrive" : "externaldrive").font(.island(.caption))
+                            Text(v.name).font(.island(.footnote)).lineLimit(1)
                             Spacer()
                             Text(T("\(SysFmt.bytes(v.available)) 남음", "\(SysFmt.bytes(v.available)) free"))
-                                .font(.system(size: 10)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
+                                .font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
                         }
                         SysBar(value: v.usedFraction, tint: v.usedFraction > 0.9 ? .red : .blue)
                         Text(T("전체 \(SysFmt.bytes(v.total))", "of \(SysFmt.bytes(v.total))"))
-                            .font(.system(size: 9)).foregroundStyle(.white.opacity(0.4))
+                            .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))
                     }
                     .accessibilityElement(children: .combine)
                 }

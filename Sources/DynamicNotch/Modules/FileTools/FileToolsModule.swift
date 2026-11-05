@@ -401,7 +401,7 @@ private struct FTTab: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     Text(store.items.isEmpty ? T("파일", "Files") : T("파일 \(store.items.count)개", "\(store.items.count) files"))
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.island(.subhead, .semibold))
                     Spacer()
                     Button { pick() } label: { Image(systemName: "plus") }
                         .buttonStyle(FAPillStyle())
@@ -431,10 +431,10 @@ private struct FTTab: View {
 
     private var dropHint: some View {
         VStack(spacing: 6) {
-            Image(systemName: "arrow.down.doc").font(.system(size: 24, weight: .light))
-            Text(T("여기에 파일을 끌어다 놓기", "Drop files here")).font(.system(size: 12, weight: .medium))
+            Image(systemName: "arrow.down.doc").font(.island(.title1))
+            Text(T("여기에 파일을 끌어다 놓기", "Drop files here")).font(.island(.subhead))
             Text(T("이미지·PDF·동영상·ZIP·폴더", "Images, PDFs, videos, ZIPs, folders"))
-                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.white.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
@@ -446,9 +446,9 @@ private struct FTTab: View {
         HStack(spacing: 6) {
             FAFileIcon(url: item.url, size: 18)
             VStack(alignment: .leading, spacing: 0) {
-                Text(item.url.lastPathComponent).font(.system(size: 11.5)).lineLimit(1).truncationMode(.middle)
+                Text(item.url.lastPathComponent).font(.island(.footnote)).lineLimit(1).truncationMode(.middle)
                 Text(item.isFolder ? T("폴더", "Folder") : FAKit.bytes(item.size))
-                    .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5)).monospacedDigit()
+                    .font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).monospacedDigit()
             }
             Spacer(minLength: 2)
             iconButton("chevron.up", T("위로", "Move up")) { store.move(item, by: -1) }
@@ -465,7 +465,7 @@ private struct FTTab: View {
 
     private func iconButton(_ symbol: String, _ help: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol).font(.system(size: 10, weight: .semibold)).frame(width: 16, height: 16)
+            Image(systemName: symbol).font(.island(.caption, .semibold)).frame(width: 16, height: 16)
         }
         .buttonStyle(.plain)
         .foregroundStyle(.white.opacity(0.7))
@@ -533,7 +533,7 @@ private struct FTTab: View {
 
     private func actionRow<Content: View>(_ label: String, @ViewBuilder _ content: () -> Content) -> some View {
         HStack(spacing: 5) {
-            Text(label).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.white.opacity(0.55))
+            Text(label).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 .frame(width: 54, alignment: .leading)
             content()
             Spacer(minLength: 0)
@@ -543,7 +543,7 @@ private struct FTTab: View {
     private func pill(_ title: String, _ symbol: String, enabled: Bool, help: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 3) {
-                Image(systemName: symbol).font(.system(size: 10))
+                Image(systemName: symbol).font(.island(.caption))
                 Text(title)
             }
         }
@@ -561,14 +561,14 @@ private struct FTTab: View {
                 HStack(spacing: 6) {
                     if let busy = store.busy {
                         ProgressView().controlSize(.small).scaleEffect(0.7).frame(width: 14, height: 14)
-                        Text(busy).font(.system(size: 11)).lineLimit(1)
+                        Text(busy).font(.island(.footnote)).lineLimit(1)
                     } else if let msg = store.message {
                         Image(systemName: store.messageIsError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                            .font(.system(size: 10)).foregroundStyle(store.messageIsError ? .orange : .green)
-                        Text(msg).font(.system(size: 11)).lineLimit(2).foregroundStyle(.white.opacity(0.8))
+                            .font(.island(.caption)).foregroundStyle(store.messageIsError ? .orange : .green)
+                        Text(msg).font(.island(.footnote)).lineLimit(2).foregroundStyle(.white.opacity(0.8))
                     } else {
                         Text(T("결과는 새 파일로 만들고 원본은 건드리지 않음", "Results are new files; originals stay untouched"))
-                            .font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                            .font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                     }
                     Spacer(minLength: 0)
                     if !store.outputs.isEmpty || !store.codes.isEmpty, store.busy == nil {
@@ -589,9 +589,9 @@ private struct FTTab: View {
     private func outputRow(_ url: URL) -> some View {
         HStack(spacing: 6) {
             FAFileIcon(url: url, size: 16)
-            Text(url.lastPathComponent).font(.system(size: 11)).lineLimit(1).truncationMode(.middle)
+            Text(url.lastPathComponent).font(.island(.footnote)).lineLimit(1).truncationMode(.middle)
             Spacer(minLength: 2)
-            Text(FAKit.bytes(FAKit.fileSize(url))).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5)).monospacedDigit()
+            Text(FAKit.bytes(FAKit.fileSize(url))).font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).monospacedDigit()
             iconButton("plus.rectangle.on.rectangle", T("목록에 올리기", "Add to the list")) { store.addToList(url) }
             iconButton("magnifyingglass", T("Finder에서 보기", "Show in Finder")) { FAKit.reveal([url]) }
         }
@@ -604,10 +604,10 @@ private struct FTTab: View {
 
     private func codeRow(_ code: FTCode) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: code.symbology.lowercased().contains("qr") ? "qrcode" : "barcode").font(.system(size: 12))
+            Image(systemName: code.symbology.lowercased().contains("qr") ? "qrcode" : "barcode").font(.island(.subhead))
             VStack(alignment: .leading, spacing: 0) {
-                Text(code.payload).font(.system(size: 11)).lineLimit(2).textSelection(.enabled)
-                Text(code.symbology).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5))
+                Text(code.payload).font(.island(.footnote)).lineLimit(2).textSelection(.enabled)
+                Text(code.symbology).font(.island(.caption2)).foregroundStyle(.white.opacity(0.5))
             }
             Spacer(minLength: 2)
             Button(T("복사", "Copy")) { store.copy(code) }.buttonStyle(FAPillStyle())

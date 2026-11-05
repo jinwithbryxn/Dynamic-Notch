@@ -219,13 +219,13 @@ private struct PrivacyTab: View {
                         isOn: $state.guardOn)
             if let g = state.lastGuard {
                 HStack(spacing: 6) {
-                    Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 11)).foregroundStyle(.yellow)
+                    Image(systemName: "exclamationmark.triangle.fill").font(.island(.footnote)).foregroundStyle(.yellow)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(g.appName.map { T("\(Self.time(g.date)) 카메라 켜짐 · \($0) (추정)", "\(Self.time(g.date)) camera on · \($0) (likely)") }
                              ?? T("\(Self.time(g.date)) 카메라 켜짐 · 앱을 알 수 없음", "\(Self.time(g.date)) camera on · app unknown"))
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.island(.footnote, .semibold))
                         Text(g.reason + (g.others.isEmpty ? "" : T(" · 다른 후보: ", " · other candidates: ") + g.others.joined(separator: ", ")))
-                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                     }
                     Spacer(minLength: 4)
                     if let app = g.app, !app.isTerminated {
@@ -239,16 +239,16 @@ private struct PrivacyTab: View {
             } else {
                 Text(T("접근 자체를 막으려면 시스템 설정 › 개인정보 보호 및 보안 › 카메라에서 앱 권한을 끈다.",
                        "To block access itself, turn the app off in System Settings › Privacy & Security › Camera."))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             }
             HStack {
                 Toggle(T("쓰는 동안 노치에 표시", "Show in the notch while in use"), isOn: $state.showInNotch).toggleStyle(.checkbox)
                 Spacer()
                 if let m = state.message {
-                    Text(m).font(.system(size: 10.5)).foregroundStyle(.orange).lineLimit(2)
+                    Text(m).font(.island(.caption)).foregroundStyle(.orange).lineLimit(2)
                 }
             }
-            .font(.system(size: 11))
+            .font(.island(.footnote))
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -258,13 +258,13 @@ private struct PrivacyTab: View {
         HStack(spacing: 8) {
             ZStack {
                 Circle().fill(on ? tint.opacity(0.25) : Color.white.opacity(0.08))
-                Image(systemName: symbol).font(.system(size: 13, weight: .semibold)).foregroundStyle(on ? tint : .white.opacity(0.5))
+                Image(systemName: symbol).font(.island(.subhead, .semibold)).foregroundStyle(on ? tint : .white.opacity(0.5))
             }
             .frame(width: 30, height: 30)
             VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.system(size: 12, weight: .semibold))
+                Text(title).font(.island(.subhead, .semibold))
                 Text(on ? names.joined(separator: ", ") : T("쓰지 않음", "Not in use"))
-                    .font(.system(size: 10)).foregroundStyle(on ? tint : .white.opacity(0.5)).lineLimit(1)
+                    .font(.island(.caption)).foregroundStyle(on ? tint : .white.opacity(0.5)).lineLimit(1)
             }
             Spacer(minLength: 0)
         }
@@ -277,8 +277,8 @@ private struct PrivacyTab: View {
     /// 누르면 잠금, 0.8초 누르고 있으면 디스플레이 끄기
     private var lockButton: some View {
         VStack(spacing: 3) {
-            Image(systemName: pressing ? "display" : "lock.fill").font(.system(size: 15, weight: .semibold))
-            Text(pressing ? T("디스플레이 끄기", "Display off") : T("화면 잠금", "Lock")).font(.system(size: 10, weight: .semibold))
+            Image(systemName: pressing ? "display" : "lock.fill").font(.island(.headline, .semibold))
+            Text(pressing ? T("디스플레이 끄기", "Display off") : T("화면 잠금", "Lock")).font(.island(.caption, .semibold))
         }
         .frame(width: 92, height: 46)
         .background(Color.white.opacity(pressing ? 0.18 : 0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))

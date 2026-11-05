@@ -278,7 +278,7 @@ private struct WatchFloatingView: View {
                 Image(decorative: img, scale: 1).resizable().aspectRatio(contentMode: .fit).padding(6)
             }
             Button { model.hideFloating() } label: {
-                Image(systemName: "xmark.circle.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8)).padding(6)
+                Image(systemName: "xmark.circle.fill").font(.island(.callout)).foregroundStyle(.white.opacity(0.8)).padding(6)
             }
             .buttonStyle(.plain)
             .help(T("썸네일 닫기", "Close thumbnail"))
@@ -309,14 +309,14 @@ private struct WatchTab: View {
                     }
                 } label: {
                     Text(model.selected.map { "\($0.app) — \($0.title)" } ?? T("창 고르기", "Choose a window"))
-                        .font(.system(size: 11)).lineLimit(1)
+                        .font(.island(.footnote)).lineLimit(1)
                 }
                 .menuStyle(.borderlessButton)
                 .disabled(model.items.isEmpty)
                 .frame(maxWidth: 270, alignment: .leading)
                 HStack(spacing: 6) {
                     Text(model.crop == nil ? T("부분: 창 전체", "Region: whole window") : T("부분: 고른 영역", "Region: selection"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                     if model.crop != nil {
                         CPPill(symbol: "arrow.up.left.and.arrow.down.right", title: T("전체로", "Whole")) { model.clearCrop() }
                     }
@@ -325,12 +325,12 @@ private struct WatchTab: View {
                 Toggle(T("떠 있는 썸네일 (캡처에서 숨기기 시도)", "Floating thumbnail (tries to hide from capture)"), isOn: $model.floating)
                 CPPermissionLine(permission: .screenRecording, granted: model.granted)
                 if let s = model.status {
-                    Text(s).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7)).lineLimit(2)
+                    Text(s).font(.island(.caption)).foregroundStyle(.white.opacity(0.7)).lineLimit(2)
                 }
                 Spacer(minLength: 0)
             }
             .toggleStyle(.checkbox)
-            .font(.system(size: 11))
+            .font(.island(.footnote))
             .frame(width: 290)
             preview
         }
@@ -366,10 +366,10 @@ private struct WatchTab: View {
                         .help(T("끌어서 지켜볼 부분을 고른다", "Drag to choose the region to watch"))
                 } else {
                     VStack(spacing: 6) {
-                        Image(systemName: "macwindow").font(.system(size: 22)).foregroundStyle(.white.opacity(0.4))
+                        Image(systemName: "macwindow").font(.island(.title1)).foregroundStyle(.white.opacity(0.4))
                         Text(T("창을 고르고 '지켜보기'를 누르면\n여기에 실시간 썸네일이 나온다. 끌어서 부분 지정.",
                                "Pick a window and press Watch\nto see a live thumbnail. Drag to pick a region."))
-                            .font(.system(size: 10.5)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.5))
+                            .font(.island(.caption)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.5))
                     }
                 }
             }

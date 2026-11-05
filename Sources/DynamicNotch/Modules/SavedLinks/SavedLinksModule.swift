@@ -161,12 +161,12 @@ private struct SavedLinksTab: View {
             }
             if let u = undo {
                 HStack {
-                    Text(T("뺌: ", "Removed: ") + u.0.title).font(.system(size: 11)).lineLimit(1)
+                    Text(T("뺌: ", "Removed: ") + u.0.title).font(.island(.footnote)).lineLimit(1)
                     Spacer()
                     LaunchChip(title: T("되돌리기", "Undo")) { module.restore(u.0, at: u.1); links = module.links; undo = nil }
                 }
             } else if !status.isEmpty {
-                Text(status).font(.system(size: 11)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
+                Text(status).font(.island(.footnote)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
             }
             if links.isEmpty {
                 LaunchUnsupportedView(title: T("저장한 링크 없음", "No saved links"),
@@ -188,10 +188,10 @@ private struct SavedLinksTab: View {
         HStack(spacing: 8) {
             Button { module.open(l) } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "globe").font(.system(size: 12)).foregroundStyle(LaunchUI.secondary)
+                    Image(systemName: "globe").font(.island(.subhead)).foregroundStyle(LaunchUI.secondary)
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(l.title).font(.system(size: 12.5, weight: .medium)).lineLimit(1)
-                        Text(URL(string: l.url)?.host ?? l.url).font(.system(size: 10.5)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
+                        Text(l.title).font(.island(.subhead)).lineLimit(1)
+                        Text(URL(string: l.url)?.host ?? l.url).font(.island(.caption)).foregroundStyle(LaunchUI.secondary).lineLimit(1)
                     }
                     Spacer()
                 }
@@ -202,14 +202,14 @@ private struct SavedLinksTab: View {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(l.url, forType: .string)
                 status = T("주소 복사함", "Address copied")
-            } label: { Image(systemName: "doc.on.doc").font(.system(size: 11)) }
+            } label: { Image(systemName: "doc.on.doc").font(.island(.footnote)) }
                 .buttonStyle(.plain).help(T("주소 복사", "Copy address")).accessibilityLabel(T("주소 복사", "Copy address"))
             Button {
                 let i = links.firstIndex(of: l) ?? 0
                 module.remove(l)
                 links = module.links
                 undo = (l, i)
-            } label: { Image(systemName: "minus.circle").font(.system(size: 11)) }
+            } label: { Image(systemName: "minus.circle").font(.island(.footnote)) }
                 .buttonStyle(.plain).help(T("목록에서 빼기", "Remove")).accessibilityLabel(T("빼기", "Remove"))
         }
         .padding(.horizontal, 8).padding(.vertical, 4)

@@ -33,8 +33,8 @@ struct MediaPage: View {
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
             VStack(spacing: 6) {
-                Image(systemName: "music.note").font(.system(size: 20)).foregroundStyle(.white.opacity(0.5))
-                Text(T("재생 중인 미디어가 없습니다", "Nothing is playing")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "music.note").font(.island(.title2)).foregroundStyle(.white.opacity(0.5))
+                Text(T("재생 중인 미디어가 없습니다", "Nothing is playing")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
             }
         }
     }
@@ -64,7 +64,7 @@ struct MediaPage: View {
                 MarqueeText(text: np.title, font: .systemFont(ofSize: 15, weight: .semibold), color: .white)
                     .frame(height: 19)
                 Text(np.artist)
-                    .font(.system(size: 13))
+                    .font(.island(.subhead))
                     .foregroundStyle(.white.opacity(0.55))
                     .lineLimit(1)
             }
@@ -98,7 +98,7 @@ struct MediaPage: View {
         }, trailing: {
             Text(Self.time(np.duration))
         })
-        .font(.system(size: 10.5, weight: .medium).monospacedDigit())
+        .font(.island(.caption).monospacedDigit())
         .foregroundStyle(.white.opacity(0.6))
     }
 
@@ -154,7 +154,7 @@ struct VolumeRow: View {
         }, leading: {
             Button { route.toggleMute() } label: {
                 Image(systemName: route.muted || level == 0 ? "speaker.slash.fill" : "speaker.fill")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.island(.footnote, .semibold))
                     .frame(width: 18, height: 18)
                     .contentShape(Rectangle())
             }
@@ -162,7 +162,7 @@ struct VolumeRow: View {
             .disabled(!enabled)
         }, trailing: {
             Image(systemName: "speaker.wave.3.fill")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.island(.footnote, .semibold))
                 .frame(width: 18, height: 18)
         })
         .foregroundStyle(.white.opacity(enabled ? 0.6 : 0.25))

@@ -69,8 +69,8 @@ struct SysPillButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                if let symbol { Image(systemName: symbol).font(.system(size: 10, weight: .semibold)) }
-                Text(title).font(.system(size: 11, weight: .medium))
+                if let symbol { Image(systemName: symbol).font(.island(.caption, .semibold)) }
+                Text(title).font(.island(.footnote))
             }
             .lineLimit(1)
             .padding(.horizontal, 9)
@@ -127,13 +127,13 @@ struct SysUnsupported: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            Image(systemName: symbol).font(.system(size: 13)).foregroundStyle(.yellow.opacity(0.9))
+            Image(systemName: symbol).font(.island(.subhead)).foregroundStyle(.yellow.opacity(0.9))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 12, weight: .semibold))
-                Text(reason).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                Text(title).font(.island(.subhead, .semibold))
+                Text(reason).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)
                 if let alternative {
-                    Text(alternative).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                    Text(alternative).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -147,7 +147,7 @@ struct SysHeader: View {
     let text: String
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 9.5, weight: .semibold))
+            .font(.island(.caption2, .semibold))
             .foregroundStyle(.white.opacity(0.45))
     }
 }

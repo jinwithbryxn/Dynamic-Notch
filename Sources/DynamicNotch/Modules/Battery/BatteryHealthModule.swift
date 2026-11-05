@@ -340,7 +340,7 @@ private struct BatteryHealthTab: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(T("배터리", "Battery")).font(.system(size: 14, weight: .semibold))
+                Text(T("배터리", "Battery")).font(.island(.callout, .semibold))
                 Spacer()
                 Picker("", selection: $page) {
                     Text(T("상태", "Status")).tag(0)
@@ -378,18 +378,18 @@ private struct BatteryHealthTab: View {
                     ZStack {
                         SysRing(value: Double(r.percent) / 100, tint: BatteryHealthModule.levelColor(r.percent), lineWidth: 7)
                         VStack(spacing: 0) {
-                            Text("\(r.percent)%").font(.system(size: 22, weight: .semibold, design: .rounded)).monospacedDigit()
-                            if r.isCharging { Image(systemName: "bolt.fill").font(.system(size: 11)).foregroundStyle(.green) }
+                            Text("\(r.percent)%").font(.island(.title1, .semibold)).monospacedDigit()
+                            if r.isCharging { Image(systemName: "bolt.fill").font(.island(.footnote)).foregroundStyle(.green) }
                         }
                     }
                     .frame(width: 92, height: 92)
-                    Text(stateText).font(.system(size: 10.5)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.75))
+                    Text(stateText).font(.island(.caption)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.75))
                         .fixedSize(horizontal: false, vertical: true)
                     if r.onAC, let adapter = r.adapterName ?? r.adapterWatts.map({ "\($0)W" }) {
-                        Text(adapter).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+                        Text(adapter).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
                     }
                     if r.lowPowerMode {
-                        Label(T("저전력 모드", "Low Power Mode"), systemImage: "leaf.fill").font(.system(size: 10)).foregroundStyle(.yellow)
+                        Label(T("저전력 모드", "Low Power Mode"), systemImage: "leaf.fill").font(.island(.caption)).foregroundStyle(.yellow)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -417,10 +417,10 @@ private struct BatteryHealthTab: View {
 
     private func row(_ title: String, _ value: String, hint: String? = nil) -> some View {
         HStack(spacing: 6) {
-            Text(title).font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
+            Text(title).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
             Spacer()
-            if let hint { Text(hint).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4)) }
-            Text(value).font(.system(size: 11.5, weight: .medium, design: .rounded)).monospacedDigit()
+            if let hint { Text(hint).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)) }
+            Text(value).font(.island(.footnote)).monospacedDigit()
         }
         .lineLimit(1)
         .accessibilityElement(children: .combine)
@@ -432,14 +432,14 @@ private struct BatteryHealthTab: View {
                 SysHeader(text: T("팬 (읽기 전용 · 펌웨어 자동 제어)", "Fans (read-only · firmware automatic)"))
                 if model.hardware.fans.isEmpty {
                     Text(model.hardware.smcAvailable ? T("팬 없음 또는 보고 안 함", "No fans reported") : T("읽는 중…", "Reading…"))
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
                 }
                 HStack(spacing: 14) {
                     ForEach(model.hardware.fans) { f in
                         HStack(spacing: 5) {
-                            Image(systemName: "fan").font(.system(size: 11))
-                            Text(f.rpm < 1 ? T("멈춤", "Off") : "\(Int(f.rpm)) rpm").font(.system(size: 11.5, design: .rounded)).monospacedDigit()
-                            Text(verbatim: "\(Int(f.min))–\(Int(f.max))").font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4)).monospacedDigit()
+                            Image(systemName: "fan").font(.island(.footnote))
+                            Text(f.rpm < 1 ? T("멈춤", "Off") : "\(Int(f.rpm)) rpm").font(.island(.footnote)).monospacedDigit()
+                            Text(verbatim: "\(Int(f.min))–\(Int(f.max))").font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).monospacedDigit()
                         }
                         .accessibilityElement(children: .combine)
                     }
@@ -457,10 +457,10 @@ private struct BatteryHealthTab: View {
                     Image(systemName: model.reading.lowPowerMode ? "leaf.fill" : "leaf").foregroundStyle(.yellow)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(T("저전력 모드: ", "Low Power Mode: ") + (model.reading.lowPowerMode ? T("켜짐", "On") : T("꺼짐", "Off")))
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.island(.subhead, .semibold))
                         Text(T("전환은 pmset 관리자 권한이 필요해 보류. 시스템 설정에서 바꾸세요.",
                                "Toggling needs admin rights (pmset), so it is deferred. Change it in System Settings."))
-                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                            .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                     }
                     Spacer()
                     SysPillButton(title: T("배터리 설정", "Battery Settings"), symbol: "gearshape") { BatteryHealthModel.openBatterySettings() }

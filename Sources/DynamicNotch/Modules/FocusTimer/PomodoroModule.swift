@@ -196,10 +196,10 @@ private struct CountdownRing: View {
             RingGauge(value: engine.state == nil ? 1 : engine.progressRemaining, tint: tint, lineWidth: 7)
             VStack(spacing: 0) {
                 Text(TFFormat.clock(engine.state == nil ? engine.length(of: .focus) : engine.remaining))
-                    .font(.system(size: 30, weight: .medium, design: .rounded))
+                    .font(.island(.largeTitle))
                     .monospacedDigit()
                 Text(engine.state.map { $0.waiting ? T("준비", "Ready") : (engine.isPaused ? T("일시정지", "Paused") : $0.phase.title) } ?? T("대기", "Idle"))
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.island(.footnote))
                     .foregroundStyle(.white.opacity(0.6))
             }
         }
@@ -238,12 +238,12 @@ private struct MascotView: View {
     private var figure: some View {
         ZStack(alignment: .topTrailing) {
             Image(systemName: symbol)
-                .font(.system(size: 22))
+                .font(.island(.title1))
                 .foregroundStyle(tint)
                 .frame(width: 34, height: 34)
                 .background(Circle().fill(Color.black))
             if resting {
-                Text("z").font(.system(size: 10, weight: .bold, design: .rounded)).foregroundStyle(.white.opacity(0.7))
+                Text("z").font(.island(.caption, .bold)).foregroundStyle(.white.opacity(0.7))
                     .offset(x: 4, y: -4)
             }
         }
@@ -264,10 +264,10 @@ private struct PomodoroPageView: View {
             VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.map { $0.waiting ? T("\($0.phase.title) 준비됨", "\($0.phase.title) ready") : $0.phase.title } ?? T("집중을 시작해 볼까요", "Ready to focus"))
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .font(.island(.title3, .semibold))
                     Text(s.map { engine.subtitle($0) } ?? T("집중 \(engine.focusMinutes)분 · 휴식 \(engine.shortBreakMinutes)분 · \(engine.cyclesBeforeLong)세션마다 긴 휴식 \(engine.longBreakMinutes)분",
                                                          "\(engine.focusMinutes)m focus · \(engine.shortBreakMinutes)m break · long \(engine.longBreakMinutes)m every \(engine.cyclesBeforeLong)"))
-                        .font(.system(size: 11.5))
+                        .font(.island(.footnote))
                         .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(2)
                 }
@@ -278,7 +278,7 @@ private struct PomodoroPageView: View {
                 }
                 if engine.state?.mode == .repeating {
                     Text(T("반복 타이머가 도는 중이에요", "The repeat timer is running"))
-                        .font(.system(size: 10.5)).foregroundStyle(.cyan)
+                        .font(.island(.caption)).foregroundStyle(.cyan)
                 }
             }
             Spacer(minLength: 0)
@@ -310,10 +310,10 @@ private struct PomodoroPageView: View {
 
     private func stat(_ label: String, _ value: String, _ extra: String?) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(label).font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+            Text(label).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value).font(.system(size: 13, weight: .semibold, design: .rounded)).monospacedDigit()
-                if let extra { Text(extra).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55)) }
+                Text(value).font(.island(.subhead, .semibold)).monospacedDigit()
+                if let extra { Text(extra).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)) }
             }
         }
         .accessibilityElement(children: .combine)
@@ -332,9 +332,9 @@ private struct RepeatPageView: View {
                 RingGauge(value: s == nil ? 1 : engine.progressRemaining, tint: .cyan, lineWidth: 7)
                 VStack(spacing: 0) {
                     Text(TFFormat.clock(s == nil ? Double(minutes * 60) : engine.remaining))
-                        .font(.system(size: 30, weight: .medium, design: .rounded)).monospacedDigit()
+                        .font(.island(.largeTitle)).monospacedDigit()
                     Text(s.map { T("\($0.repeatCount + 1)회째", "Round \($0.repeatCount + 1)") } ?? T("반복", "Repeat"))
-                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.6))
+                        .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 }
             }
             .frame(width: 132, height: 132)
@@ -342,7 +342,7 @@ private struct RepeatPageView: View {
 
             VStack(alignment: .leading, spacing: 9) {
                 Text(T("끝나면 같은 길이로 다시 시작", "Restarts with the same length when it ends"))
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.island(.headline, .semibold))
                 HStack(spacing: 5) {
                     ForEach(presets, id: \.self) { m in
                         TFPillButton(title: m >= 60 ? T("\(m / 60)시간", "\(m / 60)h") : T("\(m)분", "\(m)m"),
@@ -368,7 +368,7 @@ private struct RepeatPageView: View {
                     }
                 }
                 Text(stopRule)
-                    .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
             }
             Spacer(minLength: 0)
         }
@@ -403,11 +403,11 @@ struct FocusStatsView: View {
                     ForEach(days, id: \.key) { d in
                         VStack(spacing: 3) {
                             Text(d.seconds > 0 ? TFFormat.short(d.seconds) : "")
-                                .font(.system(size: 8.5, weight: .medium)).foregroundStyle(.white.opacity(0.6))
+                                .font(.island(.caption2)).foregroundStyle(.white.opacity(0.6))
                             RoundedRectangle(cornerRadius: 3, style: .continuous)
                                 .fill(d.key == TFDay.key() ? PomodoroEngine.Phase.focus.tint : Color.white.opacity(0.35))
                                 .frame(width: 22, height: max(3, 62 * CGFloat(d.seconds / maxSec)))
-                            Text(TFDay.weekdayShort(d.key)).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.55))
+                            Text(TFDay.weekdayShort(d.key)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.55))
                         }
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel("\(d.key) \(TFFormat.duration(d.seconds))")
@@ -416,19 +416,19 @@ struct FocusStatsView: View {
                 .frame(height: 92, alignment: .bottom)
             }
             VStack(alignment: .leading, spacing: 5) {
-                Text(T("최근 세션", "Recent sessions")).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.7))
+                Text(T("최근 세션", "Recent sessions")).font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.7))
                 if log.sessions.isEmpty {
                     Text(T("아직 기록이 없어요. 포모도로를 마치면 여기에 쌓여요.", "No sessions yet. Finished pomodoros show up here."))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ForEach(log.recent.prefix(6)) { s in
                         HStack(spacing: 6) {
                             Image(systemName: s.completed ? "checkmark.circle.fill" : "circle.dashed")
-                                .font(.system(size: 10)).foregroundStyle(s.completed ? .green : .white.opacity(0.4))
-                            Text(sessionDate(s.start)).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.65))
+                                .font(.island(.caption)).foregroundStyle(s.completed ? .green : .white.opacity(0.4))
+                            Text(sessionDate(s.start)).font(.island(.caption)).foregroundStyle(.white.opacity(0.65))
                             Spacer(minLength: 4)
-                            Text(TFFormat.duration(s.seconds)).font(.system(size: 10.5, weight: .medium)).monospacedDigit()
+                            Text(TFFormat.duration(s.seconds)).font(.island(.caption)).monospacedDigit()
                         }
                     }
                 }
@@ -447,9 +447,9 @@ struct FocusStatsView: View {
 
     private func tile(_ label: String, _ value: String, _ extra: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
-            Text(value).font(.system(size: 15, weight: .semibold, design: .rounded)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-            Text(extra).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+            Text(label).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
+            Text(value).font(.island(.headline, .semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+            Text(extra).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)

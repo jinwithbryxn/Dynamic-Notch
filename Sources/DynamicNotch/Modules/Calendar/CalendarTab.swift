@@ -52,19 +52,19 @@ struct CalendarTab: View {
                 if model.manageEvents && model.access == .granted { quickAdd }
                 if let undo = model.undo {
                     HStack(spacing: 6) {
-                        Image(systemName: "trash").font(.system(size: 10))
-                        Text(T("'\(undo.title)' 지움", "Deleted '\(undo.title)'")).font(.system(size: 11)).lineLimit(1)
+                        Image(systemName: "trash").font(.island(.caption))
+                        Text(T("'\(undo.title)' 지움", "Deleted '\(undo.title)'")).font(.island(.footnote)).lineLimit(1)
                         Spacer(minLength: 0)
                         Button(T("되돌리기", "Undo")) { model.undoDelete() }.buttonStyle(PIMPillStyle())
                     }
                     .padding(6)
                     .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.08)))
                 } else if let msg = model.message {
-                    Text(msg).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
+                    Text(msg).font(.island(.caption)).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
                 }
                 if model.access != .granted {
                     Text(T("캘린더 권한이 없어 구독 일정만 보임", "No calendar access — showing subscriptions only"))
-                        .font(.system(size: 10)).foregroundStyle(.orange.opacity(0.9))
+                        .font(.island(.caption)).foregroundStyle(.orange.opacity(0.9))
                 }
                 ScrollView(.vertical, showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 4) {
@@ -87,20 +87,20 @@ struct CalendarTab: View {
         let events = model.items(on: day)
         let tasks = model.tasks(on: day)
         Text(PIMFormat.dayTitle(day) == PIMFormat.shortDay(day) ? PIMFormat.shortDay(day) : "\(PIMFormat.dayTitle(day)) · \(PIMFormat.shortDay(day))")
-            .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.white.opacity(0.55))
+            .font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.55))
             .padding(.top, day == model.selectedDay ? 0 : 4)
         if events.isEmpty && tasks.isEmpty {
-            Text(T("일정 없음", "No events")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.4)).padding(.leading, 2)
+            Text(T("일정 없음", "No events")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.4)).padding(.leading, 2)
         }
         ForEach(events) { e in
             CalEventRow(item: e, day: day) { selected = e }
         }
         ForEach(tasks) { t in
             HStack(spacing: 7) {
-                Image(systemName: "circle").font(.system(size: 10)).foregroundStyle(t.color)
-                Text(t.title).font(.system(size: 11.5)).lineLimit(1)
+                Image(systemName: "circle").font(.island(.caption)).foregroundStyle(t.color)
+                Text(t.title).font(.island(.footnote)).lineLimit(1)
                 Spacer(minLength: 4)
-                Text(t.hasTime ? PIMFormat.time(t.due) : t.list).font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                Text(t.hasTime ? PIMFormat.time(t.due) : t.list).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             }
             .padding(.vertical, 2)
             .foregroundStyle(t.due < Date() ? Color.red.opacity(0.95) : .white)
@@ -112,9 +112,9 @@ struct CalendarTab: View {
     private var quickAdd: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 6) {
-                Image(systemName: "plus.circle.fill").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "plus.circle.fill").font(.island(.subhead)).foregroundStyle(.white.opacity(0.6))
                 TextField(T("새 일정: 내일 오후 3시 회의", "New event: lunch tomorrow at 1pm"), text: $draft)
-                    .textFieldStyle(.plain).font(.system(size: 12))
+                    .textFieldStyle(.plain).font(.island(.subhead))
                     .focused($inputFocused)
                     .onSubmit(add)
                     .accessibilityLabel(T("새 일정 입력", "New event"))
@@ -126,7 +126,7 @@ struct CalendarTab: View {
             .padding(.horizontal, 8).padding(.vertical, 5)
             .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.08)))
             if !draft.trimmingCharacters(in: .whitespaces).isEmpty {
-                Text(previewText).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                Text(previewText).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
         }
     }
@@ -180,11 +180,11 @@ private struct CalEventRow: View {
         HStack(spacing: 7) {
             Capsule().fill(item.color).frame(width: 3, height: 26)
             VStack(alignment: .leading, spacing: 0) {
-                Text(item.title).font(.system(size: 11.5, weight: .semibold)).lineLimit(1)
+                Text(item.title).font(.island(.footnote, .semibold)).lineLimit(1)
                 HStack(spacing: 4) {
-                    if live { Text(T("진행 중", "Now")).font(.system(size: 9, weight: .bold)).foregroundStyle(item.color) }
-                    Text(item.timeText).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).monospacedDigit()
-                    Text("· \(item.calendarName)").font(.system(size: 10)).foregroundStyle(.white.opacity(0.35)).lineLimit(1)
+                    if live { Text(T("진행 중", "Now")).font(.island(.caption2, .bold)).foregroundStyle(item.color) }
+                    Text(item.timeText).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).monospacedDigit()
+                    Text("· \(item.calendarName)").font(.island(.caption)).foregroundStyle(.white.opacity(0.35)).lineLimit(1)
                 }
             }
             Spacer(minLength: 4)
@@ -219,7 +219,7 @@ private struct CalMonthGrid: View {
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
-                Text(monthTitle).font(.system(size: 14, weight: .semibold, design: .rounded))
+                Text(monthTitle).font(.island(.callout, .semibold))
                 Spacer()
                 Button { model.moveMonth(-1) } label: { Image(systemName: "chevron.left") }
                     .buttonStyle(PIMPillStyle()).help(T("이전 달", "Previous month")).accessibilityLabel(T("이전 달", "Previous month"))
@@ -229,7 +229,7 @@ private struct CalMonthGrid: View {
             }
             HStack(spacing: 0) {
                 ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, s in
-                    Text(s).font(.system(size: 9.5, weight: .medium)).foregroundStyle(.white.opacity(0.45)).frame(maxWidth: .infinity)
+                    Text(s).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).frame(maxWidth: .infinity)
                 }
             }
             VStack(spacing: 1) {
@@ -323,7 +323,7 @@ private struct CalEventDetail: View {
                 }
             }
             if editing { editor } else { details }
-            if let error { Text(error).font(.system(size: 10.5)).foregroundStyle(.orange) }
+            if let error { Text(error).font(.island(.caption)).foregroundStyle(.orange) }
             Spacer(minLength: 0)
         }
         .onAppear(perform: resetFields)
@@ -334,20 +334,20 @@ private struct CalEventDetail: View {
             HStack(alignment: .top, spacing: 7) {
                 Capsule().fill(item.color).frame(width: 4, height: 34)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.title).font(.system(size: 14, weight: .semibold)).lineLimit(2)
-                    Text("\(PIMFormat.dayTitle(item.start)) · \(item.timeText)").font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
+                    Text(item.title).font(.island(.callout, .semibold)).lineLimit(2)
+                    Text("\(PIMFormat.dayTitle(item.start)) · \(item.timeText)").font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
                 }
             }
-            Label(item.calendarName, systemImage: "calendar").font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+            Label(item.calendarName, systemImage: "calendar").font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
             if let loc = item.location, !loc.isEmpty {
-                Label(loc, systemImage: "mappin.and.ellipse").font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)).lineLimit(2)
+                Label(loc, systemImage: "mappin.and.ellipse").font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).lineLimit(2)
             }
             if !item.editable {
-                Text(reason).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45)).fixedSize(horizontal: false, vertical: true)
+                Text(reason).font(.island(.caption)).foregroundStyle(.white.opacity(0.45)).fixedSize(horizontal: false, vertical: true)
             }
             if confirmDelete {
                 HStack(spacing: 6) {
-                    Text(T("이 일정을 지울까요?", "Delete this event?")).font(.system(size: 11, weight: .semibold))
+                    Text(T("이 일정을 지울까요?", "Delete this event?")).font(.island(.footnote, .semibold))
                     Spacer()
                     Button(T("취소", "Cancel")) { confirmDelete = false }.buttonStyle(PIMPillStyle())
                     Button(T("삭제", "Delete")) {
@@ -382,17 +382,17 @@ private struct CalEventDetail: View {
     private var editor: some View {
         VStack(alignment: .leading, spacing: 6) {
             TextField(T("제목", "Title"), text: $title)
-                .textFieldStyle(.plain).font(.system(size: 13, weight: .semibold))
+                .textFieldStyle(.plain).font(.island(.subhead, .semibold))
                 .padding(.horizontal, 8).padding(.vertical, 5)
                 .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.08)))
-            Toggle(T("하루 종일", "All day"), isOn: $allDay).toggleStyle(.switch).controlSize(.mini).font(.system(size: 11))
+            Toggle(T("하루 종일", "All day"), isOn: $allDay).toggleStyle(.switch).controlSize(.mini).font(.island(.footnote))
             HStack {
-                Text(T("시작", "Start")).font(.system(size: 11)).frame(width: 34, alignment: .leading)
+                Text(T("시작", "Start")).font(.island(.footnote)).frame(width: 34, alignment: .leading)
                 DatePicker("", selection: $start, displayedComponents: allDay ? [.date] : [.date, .hourAndMinute])
                     .labelsHidden().datePickerStyle(.field).controlSize(.small)
             }
             HStack {
-                Text(T("끝", "End")).font(.system(size: 11)).frame(width: 34, alignment: .leading)
+                Text(T("끝", "End")).font(.island(.footnote)).frame(width: 34, alignment: .leading)
                 DatePicker("", selection: $end, in: start..., displayedComponents: allDay ? [.date] : [.date, .hourAndMinute])
                     .labelsHidden().datePickerStyle(.field).controlSize(.small)
             }

@@ -14,8 +14,8 @@ struct AIDevPill: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                if let symbol { Image(systemName: symbol).font(.system(size: 10, weight: .semibold)) }
-                Text(title).font(.system(size: 11.5, weight: .medium)).lineLimit(1)
+                if let symbol { Image(systemName: symbol).font(.island(.caption, .semibold)) }
+                Text(title).font(.island(.footnote)).lineLimit(1)
             }
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
@@ -55,10 +55,10 @@ struct AIDevUnsupported: View {
     var body: some View {
         AIDevBox {
             VStack(alignment: .leading, spacing: 3) {
-                Label(title, systemImage: "exclamationmark.triangle").font(.system(size: 12, weight: .semibold))
-                Text(reason).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
+                Label(title, systemImage: "exclamationmark.triangle").font(.island(.subhead, .semibold))
+                Text(reason).font(.island(.footnote)).foregroundStyle(.white.opacity(0.7))
                 if let alternative {
-                    Text(alternative).font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
+                    Text(alternative).font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
                 }
             }
         }

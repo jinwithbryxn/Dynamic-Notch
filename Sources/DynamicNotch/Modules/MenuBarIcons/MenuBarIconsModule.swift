@@ -262,7 +262,7 @@ private struct MenuBarTab: View {
                        title: state.collapsed ? T("펼치기", "Expand") : T("접기", "Collapse")) { module.toggle() }
                 CPPill(symbol: "eye", title: T("모두 보이기", "Show All"), tint: .green) { module.expand() }
                 Spacer()
-                Text(T("자동으로 다시 접기", "Re-hide after")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                Text(T("자동으로 다시 접기", "Re-hide after")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Picker("", selection: $state.autoRehide) {
                     Text(T("끔", "Off")).tag(0)
                     Text(T("5초", "5 s")).tag(5)
@@ -273,9 +273,9 @@ private struct MenuBarTab: View {
             }
             Text(T("⌘를 누른 채 아이콘을 구분자 '|' 왼쪽으로 끌면 접을 때 숨겨진다. 끄면 언제나 모두 다시 보인다.",
                    "⌘-drag icons to the left of the '|' separator to hide them when collapsed. Turning this off always shows everything."))
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
             HStack {
-                Text(T("모든 메뉴 막대 항목 (노치에 가린 것 포함)", "All menu bar items (including behind the notch)")).font(.system(size: 11, weight: .semibold))
+                Text(T("모든 메뉴 막대 항목 (노치에 가린 것 포함)", "All menu bar items (including behind the notch)")).font(.island(.footnote, .semibold))
                 Spacer()
                 CPPill(symbol: "arrow.clockwise", title: T("새로고침", "Refresh"), disabled: !state.axGranted) { module.scan() }
             }
@@ -285,8 +285,8 @@ private struct MenuBarTab: View {
                         ForEach(state.extras) { e in
                             Button { module.open(e) } label: {
                                 HStack(spacing: 6) {
-                                    Text(e.app).font(.system(size: 11, weight: .semibold)).lineLimit(1)
-                                    Text(e.title).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                                    Text(e.app).font(.island(.footnote, .semibold)).lineLimit(1)
+                                    Text(e.title).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
                                     Spacer()
                                     badge(e.place)
                                 }
@@ -299,7 +299,7 @@ private struct MenuBarTab: View {
                         }
                         if state.extras.isEmpty {
                             Text(state.scanning ? T("읽는 중…", "Reading…") : T("항목 없음", "No items"))
-                                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5))
+                                .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                         }
                     }
                 }
@@ -307,10 +307,10 @@ private struct MenuBarTab: View {
                 CPPermissionLine(permission: .accessibility, granted: false)
                 Text(T("노치 뒤 아이콘 목록은 손쉬운 사용 권한으로 각 앱의 메뉴 막대 항목을 읽는다.",
                        "The list reads each app's menu bar items through Accessibility."))
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             }
             if let m = state.message {
-                Text(m).font(.system(size: 10.5)).foregroundStyle(.orange).lineLimit(2)
+                Text(m).font(.island(.caption)).foregroundStyle(.orange).lineLimit(2)
             }
         }
         .foregroundStyle(.white)
@@ -321,9 +321,9 @@ private struct MenuBarTab: View {
 
     @ViewBuilder private func badge(_ p: MenuBarIconsModule.Extra.Place) -> some View {
         switch p {
-        case .behindNotch: Text(T("노치에 가림", "Behind notch")).font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.yellow)
-        case .hidden: Text(T("숨김", "Hidden")).font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.orange)
-        case .visible: Text(T("보임", "Visible")).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4))
+        case .behindNotch: Text(T("노치에 가림", "Behind notch")).font(.island(.caption2, .semibold)).foregroundStyle(.yellow)
+        case .hidden: Text(T("숨김", "Hidden")).font(.island(.caption2, .semibold)).foregroundStyle(.orange)
+        case .visible: Text(T("보임", "Visible")).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))
         }
     }
 }

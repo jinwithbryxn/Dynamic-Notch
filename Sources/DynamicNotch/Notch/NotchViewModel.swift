@@ -261,7 +261,8 @@ final class NotchViewModel: ObservableObject {
             if let a = center.displayed, !a.actions.isEmpty {
                 return CGSize(width: max(n.width + 190, 390), height: n.height + 58 + Self.actionRowHeight)
             }
-            return CGSize(width: max(n.width + 150, 330), height: n.height + 58)
+            // 아일랜드 펼친 모양 폭(371~408pt × 0.873)에 맞춰 노치 옆에 아이콘·값 칸이 생기게
+            return CGSize(width: max(n.width + 170, 356), height: n.height + 58)
         case .expanded:
             switch expandedPage {
             case .home:
@@ -278,11 +279,11 @@ final class NotchViewModel: ObservableObject {
         }
     }
 
-    /// 확장 기능 탭 크기: 내용 + 공통 여백 (좌우 위쪽 모서리 + 22, 위 6, 아래 22). 노치보다 좁아지지 않는다.
+    /// 확장 기능 탭 크기: 내용 + 공통 여백 (좌우 위쪽 모서리 + Island.panelMargin, 위 6, 아래 Island.panelMargin). 노치보다 좁아지지 않는다.
     func moduleSize(_ content: CGSize) -> CGSize {
-        let side = 2 * (topRadius + 22)
+        let side = 2 * (topRadius + Island.panelMargin)
         let width = max(content.width + side, notchSize.width + 2 * topRadius + 60)
-        return CGSize(width: width.rounded(), height: (notchSize.height + 6 + content.height + 22).rounded())
+        return CGSize(width: width.rounded(), height: (notchSize.height + 6 + content.height + Island.panelMargin).rounded())
     }
 
     /// 상시 표시 항목을 길게 눌렀을 때 뜨는 독립 팝업 크기.
@@ -316,7 +317,7 @@ final class NotchViewModel: ObservableObject {
     var cameraSize: CGSize {
         let contentHeight: CGFloat = 200
         let contentWidth = (contentHeight * 16 / 9).rounded()
-        return CGSize(width: contentWidth + 2 * (topRadius + 22), height: notchSize.height + 6 + contentHeight + 22)
+        return CGSize(width: contentWidth + 2 * (topRadius + Island.panelMargin), height: notchSize.height + 6 + contentHeight + Island.panelMargin)
     }
 
     /// 대시보드: 카드 2열 (음악 · 타이머 · 일정 · 확장 기능 카드)
@@ -329,7 +330,7 @@ final class NotchViewModel: ObservableObject {
 
     /// AI 사용량: 서비스 세 줄(이름 · 5시간 · 주간)이 들어가도록 좌우·아래로 조금 더 넓게
     var usageSize: CGSize {
-        CGSize(width: 300 + 2 * (topRadius + 22), height: notchSize.height + 6 + 124 + 22)
+        CGSize(width: 300 + 2 * (topRadius + Island.panelMargin), height: notchSize.height + 6 + 124 + Island.panelMargin)
     }
 
     var expandedBaseSize: CGSize {
@@ -399,17 +400,21 @@ final class NotchViewModel: ObservableObject {
     var topRadius: CGFloat {
         switch state {
         case .idle, .compact: return 8
-        case .detail: return 13
+        case .detail: return Self.detailTopRadius
         case .expanded: return 16
         }
     }
 
+    /// 상세 카드의 위쪽 오목 모서리 (DetailActivityView가 노치 옆 칸 폭을 잴 때도 쓴다)
+    static let detailTopRadius: CGFloat = 13
+
+    /// 아래쪽 모서리: 쉬는 노치는 물리 노치와 같게, 작은 표시는 아일랜드처럼 양끝 반원,
+    /// 펼친 카드·확장 화면은 아일랜드의 펼친 모양과 같은 반경 (Island)
     var bottomRadius: CGFloat {
         switch state {
         case .idle: return 10
-        case .compact: return 12
-        case .detail: return 30
-        case .expanded: return 40
+        case .compact: return Island.compactRadius(notchHeight: notchSize.height)
+        case .detail, .expanded: return Island.expandedRadius
         }
     }
 
@@ -466,12 +471,13 @@ final class NotchViewModel: ObservableObject {
         case .expanded:
             // 상시 항목 팝업에서 다른 항목을 보는 동안에도 음악이 그 묶음에 있으면 남겨 두고 옆으로 비켜 둔다 (mediaArtPageShift)
             guard expandedPage == .activity(.media) || (showsPersistentDots && persistentPages.contains(.media)) else { return nil }
-            // MediaPage: 좌우 여백(위쪽 모서리 + 22), 위 여백 6 + 4
-            return CGRect(x: topRadius + 22, y: n.height + 10, width: 50, height: 50)
+            // MediaPage: 좌우 여백(위쪽 모서리 + Island.panelMargin), 위 여백 6 + 4
+            return CGRect(x: topRadius + Island.panelMargin, y: n.height + 10, width: 50, height: 50)
         case .detail:
             guard let a = center.displayed, a.kind == .media, a.artwork != nil else { return nil }
-            // DetailActivityView: 좌 35, 노치 아래 남은 높이(58 - 10)의 가운데
-            return CGRect(x: 35, y: n.height + 6, width: 36, height: 36)
+            // DetailActivityView: 노치 왼쪽 칸(위쪽 오목 모서리 + 카드 여백), 노치 높이 가운데
+            let s = DetailActivityView.artSize
+            return CGRect(x: Self.detailTopRadius + Island.cardMargin, y: (n.height - s) / 2, width: s, height: s)
         case .compact:
             guard let a = center.displayed, a.kind == .media, a.artwork != nil else { return nil }
             let s = min(19, n.height - 11)

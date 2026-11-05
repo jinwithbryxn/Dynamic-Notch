@@ -397,7 +397,7 @@ private struct DesktopLyricsView: View {
                 .overlay(alignment: .topTrailing) {
                     if controller.moveMode {
                         Button { controller.setMoveMode(false) } label: {
-                            Text(T("완료", "Done")).font(.system(size: 11, weight: .semibold)).padding(.horizontal, 8).padding(.vertical, 3)
+                            Text(T("완료", "Done")).font(.island(.footnote, .semibold)).padding(.horizontal, 8).padding(.vertical, 3)
                                 .background(Capsule().fill(Color.white.opacity(0.25)))
                         }
                         .buttonStyle(.plain).padding(8)
@@ -421,9 +421,9 @@ private struct LyricsTab: View {
             }
             HStack(spacing: 6) {
                 Text(feed.track.map { "\($0.title) · \($0.appName)" } ?? T("재생 중인 곡 없음", "Nothing playing"))
-                    .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                    .font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                 Spacer()
-                Text(sourceText).font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                Text(sourceText).font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
             }
             HStack(spacing: 6) {
                 MBPillButton(title: T("데스크톱 가사", "Desktop lyrics"), symbol: "macwindow", active: controller.windowOn, tint: .green) {
@@ -439,7 +439,7 @@ private struct LyricsTab: View {
                 .disabled(!controller.windowOn)
                 Spacer()
                 if let r = controller.hiddenReason, controller.windowOn {
-                    Text(T("숨김: \(r)", "Hidden: \(r)")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+                    Text(T("숨김: \(r)", "Hidden: \(r)")).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
                 }
             }
             HStack(spacing: 6) {
@@ -458,16 +458,16 @@ private struct LyricsTab: View {
                 .disabled(!controller.option(.netease))
                 .help(T("NetEase가 번역을 주면 원문 아래에 함께 보여 줍니다", "Shows NetEase translations under the original line"))
                 Spacer()
-                Text(T("싱크", "Sync")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Text(T("싱크", "Sync")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 MBPillButton(title: "−", symbol: nil) { controller.setOffset(controller.offset - 0.5) }
                     .help(T("가사를 0.5초 늦게", "Lyrics 0.5 s later"))
-                Text(String(format: "%+.1fs", controller.offset)).font(.system(size: 10.5, design: .rounded)).monospacedDigit().frame(width: 40)
+                Text(String(format: "%+.1fs", controller.offset)).font(.island(.caption)).monospacedDigit().frame(width: 40)
                 MBPillButton(title: "+", symbol: nil) { controller.setOffset(controller.offset + 0.5) }
                     .help(T("가사를 0.5초 빨리", "Lyrics 0.5 s earlier"))
             }
             Text(T("온라인 출처를 모두 끄면 Music 앱의 정적 가사만 씁니다. 길이가 3초 넘게 다른 동기 가사는 자동 스크롤하지 않습니다. 닫힌 노치 한 줄 가사·잠금 화면 가사는 본 앱 연결이 필요합니다.",
                    "With online sources off, only Music's static lyrics are used. Synced lyrics whose length differs by more than 3 s don't auto-scroll. The one-line pill and lock-screen lyrics need core app integration."))
-                .font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.4)).fixedSize(horizontal: false, vertical: true)
+                .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .foregroundStyle(.white)

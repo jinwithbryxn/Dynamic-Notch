@@ -332,27 +332,27 @@ struct RecordingPage: View {
                 .buttonStyle(.plain)
                 .help(T("녹화 중지·저장", "Stop and save recording"))
                 Text(T("화면 녹화 중 · 아이콘을 누르면 저장", "Recording · click to stop and save"))
-                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.75))
-                CallDurationText(since: since, font: .system(size: 22, weight: .semibold, design: .rounded))
+                    .font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.75))
+                CallDurationText(since: since, font: .island(.title1, .semibold))
             }
         } else if let done = monitor.finished {
             VStack(spacing: 10) {
                 HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill").font(.system(size: 18, weight: .semibold)).foregroundStyle(.green)
-                    Text(T("녹화 완료", "Recording Saved")).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                    Image(systemName: "checkmark.circle.fill").font(.island(.title2, .semibold)).foregroundStyle(.green)
+                    Text(T("녹화 완료", "Recording Saved")).font(.island(.callout, .semibold)).foregroundStyle(.white)
                 }
                 if let url = done.url {
-                    Text(url.lastPathComponent).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    Text(url.lastPathComponent).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                         .lineLimit(1).truncationMode(.middle)
                 } else {
-                    Text(T("저장 중…", "Saving…")).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    Text(T("저장 중…", "Saving…")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 }
                 Button { monitor.revealFinished() } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "folder.fill").font(.system(size: 14, weight: .semibold)).foregroundStyle(.blue)
-                        Text(T("Finder에서 보기", "Show in Finder")).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                        Image(systemName: "folder.fill").font(.island(.callout, .semibold)).foregroundStyle(.blue)
+                        Text(T("Finder에서 보기", "Show in Finder")).font(.island(.subhead, .semibold)).foregroundStyle(.white)
                         Spacer(minLength: 0)
-                        Text(done.folder.lastPathComponent).font(.system(size: 11)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                        Text(done.folder.lastPathComponent).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 7)

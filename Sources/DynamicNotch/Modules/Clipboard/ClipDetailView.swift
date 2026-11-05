@@ -35,14 +35,14 @@ struct ClipDetailView: View {
             ClipIconButton(symbol: "chevron.left", help: T("목록으로 (Esc)", "Back (Esc)"), action: back)
             ClipThumb(store: store, item: item, size: 24)
             TextField(T("제목 붙이기", "Add a title"), text: $titleDraft)
-                .textFieldStyle(.plain).font(.system(size: 13, weight: .semibold))
+                .textFieldStyle(.plain).font(.island(.subhead, .semibold))
                 .focused($titleFocused)
                 .onSubmit(saveTitle)
                 .onChange(of: titleFocused) { _, focused in if !focused { saveTitle() } }
                 .onExitCommand { saveTitle(); back() }
                 .accessibilityLabel(T("항목 제목", "Item title"))
             Spacer(minLength: 4)
-            Text(meta).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+            Text(meta).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
             ClipIconButton(symbol: item.isPinned ? "pin.fill" : "pin", help: item.isPinned ? T("고정 해제", "Unpin") : T("고정", "Pin"),
                            active: item.isPinned) { store.update(item.id) { $0.pinned = !item.isPinned } }
             ClipIconButton(symbol: "trash", help: T("삭제", "Delete")) { store.remove(item.id); back() }
@@ -96,7 +96,7 @@ struct ClipDetailView: View {
                 if let preview {
                     Image(nsImage: preview).resizable().aspectRatio(contentMode: .fit)
                 } else {
-                    Image(systemName: "photo").font(.system(size: 28)).foregroundStyle(.secondary)
+                    Image(systemName: "photo").font(.island(.largeTitle)).foregroundStyle(.secondary)
                 }
             }
             .frame(width: 220)
@@ -104,15 +104,15 @@ struct ClipDetailView: View {
             .padding(8)
             VStack(alignment: .leading, spacing: 6) {
                 Text(T("이미지 속 글자 (기기 안에서 인식)", "Text in image (recognized on this Mac)"))
-                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                    .font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.6))
                 if ui.ocrRunning.contains(item.id) {
-                    HStack(spacing: 6) { ProgressView().controlSize(.small); Text(T("인식 중…", "Recognizing…")).font(.system(size: 12)) }
+                    HStack(spacing: 6) { ProgressView().controlSize(.small); Text(T("인식 중…", "Recognizing…")).font(.island(.subhead)) }
                 } else if let ocr = item.ocrText {
                     if ocr.isEmpty {
-                        Text(T("글자를 찾지 못함", "No text found")).font(.system(size: 12)).foregroundStyle(.secondary)
+                        Text(T("글자를 찾지 못함", "No text found")).font(.island(.subhead)).foregroundStyle(.secondary)
                     } else {
                         ScrollView {
-                            Text(ocr).font(.system(size: 12)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                            Text(ocr).font(.island(.subhead)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                 } else {
@@ -136,9 +136,9 @@ struct ClipDetailView: View {
                             Image(systemName: "doc.questionmark").frame(width: 22, height: 22).foregroundStyle(.secondary)
                         }
                         VStack(alignment: .leading, spacing: 0) {
-                            Text((path as NSString).lastPathComponent).font(.system(size: 12)).lineLimit(1)
+                            Text((path as NSString).lastPathComponent).font(.island(.subhead)).lineLimit(1)
                             Text(exists ? path : T("파일이 옮겨졌거나 없음 · \(path)", "Moved or missing · \(path)"))
-                                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45)).lineLimit(1).truncationMode(.middle)
+                                .font(.island(.caption)).foregroundStyle(.white.opacity(0.45)).lineLimit(1).truncationMode(.middle)
                         }
                         Spacer()
                         if exists {
@@ -158,9 +158,9 @@ struct ClipDetailView: View {
             VStack(alignment: .leading, spacing: 3) {
                 ForEach(Array((item.parts ?? []).enumerated()), id: \.offset) { i, part in
                     HStack(spacing: 8) {
-                        Text("\(i + 1)").font(.system(size: 10, design: .rounded)).monospacedDigit()
+                        Text("\(i + 1)").font(.island(.caption)).monospacedDigit()
                             .foregroundStyle(.white.opacity(0.4)).frame(width: 14)
-                        Text(ClipItem.firstLine(part)).font(.system(size: 12)).lineLimit(1).textSelection(.enabled)
+                        Text(ClipItem.firstLine(part)).font(.island(.subhead)).lineLimit(1).textSelection(.enabled)
                         Spacer()
                         ClipIconButton(symbol: "doc.on.doc", help: T("이 조각 복사", "Copy this part"), small: true) {
                             module.copyText(part, flash: item.id)
@@ -183,8 +183,8 @@ struct ClipDetailView: View {
                     ForEach(ClipColorFormat.allCases) { f in
                         let s = ClipColors.format(c, f)
                         HStack(spacing: 8) {
-                            Text(f.label).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.white.opacity(0.5)).frame(width: 52, alignment: .leading)
-                            Text(s).font(.system(size: 12, design: .monospaced)).textSelection(.enabled).lineLimit(1)
+                            Text(f.label).font(.island(.caption, .semibold)).foregroundStyle(.white.opacity(0.5)).frame(width: 52, alignment: .leading)
+                            Text(s).font(.island(.subhead, .medium, design: .monospaced)).textSelection(.enabled).lineLimit(1)
                             Spacer()
                             ClipIconButton(symbol: "doc.on.doc", help: T("\(f.label) 복사", "Copy \(f.label)"), small: true) { module.copyText(s, flash: item.id) }
                         }
@@ -213,7 +213,7 @@ struct ClipDetailView: View {
                 }
             }
             if ui.flashID == item.id {
-                Text(T("복사함", "Copied")).font(.system(size: 10.5, weight: .medium))
+                Text(T("복사함", "Copied")).font(.island(.caption))
                     .padding(.horizontal, 7).frame(height: 18).background(Color.green.opacity(0.35), in: Capsule())
             }
         }

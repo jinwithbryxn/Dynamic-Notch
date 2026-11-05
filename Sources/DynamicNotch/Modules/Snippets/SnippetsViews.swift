@@ -77,9 +77,9 @@ struct SnippetsTab: View {
     private var header: some View {
         HStack(spacing: 6) {
             HStack(spacing: 5) {
-                Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").font(.island(.footnote)).foregroundStyle(.secondary)
                 TextField(T("스니펫 검색", "Search snippets"), text: $query)
-                    .textFieldStyle(.plain).font(.system(size: 13))
+                    .textFieldStyle(.plain).font(.island(.subhead))
                     .focused($searchFocused)
                     .onChange(of: query) { _, _ in selection = 0 }
                     .accessibilityLabel(T("스니펫 검색", "Search snippets"))
@@ -96,10 +96,10 @@ struct SnippetsTab: View {
         let items = results
         if items.isEmpty {
             VStack(spacing: 6) {
-                Image(systemName: query.isEmpty ? "text.badge.plus" : "magnifyingglass").font(.system(size: 22)).foregroundStyle(.secondary)
+                Image(systemName: query.isEmpty ? "text.badge.plus" : "magnifyingglass").font(.island(.title1)).foregroundStyle(.secondary)
                 Text(query.isEmpty ? T("저장한 스니펫이 없음\n+로 추가하거나 클립보드 내용을 저장", "No snippets yet\nAdd one with + or save the clipboard")
                                    : T("'\(query)' 검색 결과 없음", "No results for '\(query)'"))
-                    .font(.system(size: 12)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    .font(.island(.subhead)).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -117,11 +117,11 @@ struct SnippetsTab: View {
     private func row(_ s: ClipSnippet, selected: Bool) -> some View {
         let hovered = hoverID == s.id
         return HStack(spacing: 8) {
-            Image(systemName: "text.quote").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6)).frame(width: 26, height: 26)
+            Image(systemName: "text.quote").font(.island(.subhead)).foregroundStyle(.white.opacity(0.6)).frame(width: 26, height: 26)
                 .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             VStack(alignment: .leading, spacing: 1) {
-                Text(s.name).font(.system(size: 13, weight: .medium)).lineLimit(1)
-                Text(ClipItem.firstLine(s.text)).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                Text(s.name).font(.island(.subhead)).lineLimit(1)
+                Text(ClipItem.firstLine(s.text)).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
             }
             Spacer(minLength: 6)
             if hovered || selected {
@@ -170,13 +170,13 @@ struct SnippetEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             TextField(T("이름 (팔레트에서 이 이름으로 찾음)", "Name (find it by this name in the palette)"), text: $draft.name)
-                .textFieldStyle(.plain).font(.system(size: 13, weight: .semibold))
+                .textFieldStyle(.plain).font(.island(.subhead, .semibold))
                 .focused($nameFocused)
                 .padding(.horizontal, 8).frame(height: 26)
                 .background(fieldBackground, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .accessibilityLabel(T("스니펫 이름", "Snippet name"))
             TextEditor(text: $draft.text)
-                .font(.system(size: 12))
+                .font(.island(.subhead))
                 .scrollContentBackground(.hidden)
                 .padding(4)
                 .background(fieldBackground, in: RoundedRectangle(cornerRadius: 8, style: .continuous))

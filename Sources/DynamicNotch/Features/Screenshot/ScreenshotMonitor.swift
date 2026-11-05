@@ -399,7 +399,7 @@ struct ScreenshotCard: View {
                 Spacer(minLength: 0)
                 if let status = monitor.status {
                     Label(status, systemImage: "checkmark.circle.fill")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.island(.subhead, .semibold))
                         .foregroundStyle(.green)
                         .transition(.scale.combined(with: .opacity))
                 } else {
@@ -421,10 +421,10 @@ struct ScreenshotCard: View {
         Button(action: run) {
             VStack(spacing: 4) {
                 Image(systemName: symbol)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.island(.callout, .semibold))
                     .frame(width: 36, height: 36)
                     .background(Color.white.opacity(0.12), in: Circle())
-                Text(title).font(.system(size: 10))
+                Text(title).font(.island(.caption))
             }
             .foregroundStyle(tint)
         }

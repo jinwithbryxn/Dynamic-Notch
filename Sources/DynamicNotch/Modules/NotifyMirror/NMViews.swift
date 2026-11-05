@@ -56,7 +56,7 @@ struct NMTab: View {
                 Image(systemName: state.trusted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                 Text(state.trusted ? T("손쉬운 사용 켜짐", "Accessibility on") : T("손쉬운 사용 필요", "Accessibility needed"))
             }
-            .font(.system(size: 11, weight: .medium))
+            .font(.island(.footnote))
             .foregroundStyle(state.trusted ? Color.green.opacity(0.9) : Color.orange)
             .accessibilityElement(children: .combine)
         }
@@ -65,7 +65,7 @@ struct NMTab: View {
     private func pill(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.island(.subhead, .semibold))
                 .padding(.horizontal, 10).padding(.vertical, 4)
                 .background(Capsule().fill(Color.white.opacity(selected ? 0.18 : 0.06)))
         }
@@ -92,14 +92,14 @@ struct NMTab: View {
         VStack(spacing: 8) {
             Spacer(minLength: 0)
             Image(systemName: state.trusted ? "bell" : "bell.slash")
-                .font(.system(size: 26)).foregroundStyle(.white.opacity(0.6))
+                .font(.island(.title1)).foregroundStyle(.white.opacity(0.6))
             Text(T("아직 미러링한 알림이 없음", "No mirrored notifications yet"))
-                .font(.system(size: 14, weight: .semibold))
+                .font(.island(.callout, .semibold))
             Text(state.trusted
                  ? T("다른 앱의 알림 배너가 뜨면 여기에 모인다.", "Banners from other apps will collect here.")
                  : T("배너를 읽으려면 시스템 설정 › 개인정보 보호 및 보안 › 손쉬운 사용에서 이 앱을 켜야 한다.",
                      "To read banners, turn this app on in System Settings › Privacy & Security › Accessibility."))
-                .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 .multilineTextAlignment(.center).frame(maxWidth: 380)
             if !state.trusted {
                 smallButton(T("손쉬운 사용 설정 열기", "Open Accessibility Settings"), symbol: "gearshape") {
@@ -108,7 +108,7 @@ struct NMTab: View {
             }
             Spacer(minLength: 0)
             Text(NMSystemSettings.versionNote)
-                .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
+                .font(.island(.caption)).foregroundStyle(.white.opacity(0.45))
         }
         .frame(maxWidth: .infinity)
     }
@@ -120,17 +120,17 @@ struct NMTab: View {
             appIcon(item.app)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(lines.0).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                    Text(lines.0).font(.island(.subhead, .semibold)).lineLimit(1)
                     Spacer(minLength: 4)
                     Text(NMSystemSettings.time(item.date))
-                        .font(.system(size: 11, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
                 }
                 if let second = lines.1 {
-                    Text(second).font(.system(size: 12)).foregroundStyle(.white.opacity(0.65)).lineLimit(2)
+                    Text(second).font(.island(.subhead)).foregroundStyle(.white.opacity(0.65)).lineLimit(2)
                 }
                 if module.canReply(item.id) { replyControls(item) }
                 if let status = state.replyStatus[item.id] {
-                    Text(status).font(.system(size: 11)).foregroundStyle(status.hasPrefix(T("보냄", "Sent")) ? .green : .orange)
+                    Text(status).font(.island(.footnote)).foregroundStyle(status.hasPrefix(T("보냄", "Sent")) ? .green : .orange)
                 }
             }
             if isUnread {
@@ -151,7 +151,7 @@ struct NMTab: View {
             HStack(spacing: 6) {
                 TextField(T("답장 입력", "Type a reply"), text: $draft)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.island(.subhead))
                     .padding(.horizontal, 8).padding(.vertical, 5)
                     .background(Capsule().fill(Color.white.opacity(0.1)))
                     .focused($focused)
@@ -193,7 +193,7 @@ struct NMTab: View {
     private func smallButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: symbol)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.island(.footnote, .semibold))
                 .padding(.horizontal, 9).padding(.vertical, 4)
                 .background(Capsule().fill(Color.white.opacity(0.12)))
         }
@@ -207,7 +207,7 @@ struct NMTab: View {
     @ViewBuilder private var centerHistory: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                Text(dbStatusText).font(.system(size: 11)).foregroundStyle(.white.opacity(0.65)).lineLimit(2)
+                Text(dbStatusText).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65)).lineLimit(2)
                 Spacer()
                 if state.dbStatus == .noFullDiskAccess {
                     smallButton(T("설정 열기", "Open Settings"), symbol: "gearshape") { NMSystemSettings.open(NMSystemSettings.fullDisk) }
@@ -226,7 +226,7 @@ struct NMTab: View {
                                 Text("\(badge.1)").monospacedDigit().padding(.horizontal, 5)
                                     .background(Capsule().fill(Color.red.opacity(0.85)))
                             }
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.island(.footnote))
                             .padding(.horizontal, 8).padding(.vertical, 3)
                             .background(Capsule().fill(Color.white.opacity(0.08)))
                         }
@@ -234,7 +234,7 @@ struct NMTab: View {
                 }
             }
             if let message = state.dbMessage {
-                Text(message).font(.system(size: 12)).foregroundStyle(.orange)
+                Text(message).font(.island(.subhead)).foregroundStyle(.orange)
             }
             ScrollView {
                 LazyVStack(spacing: 6) {
@@ -247,14 +247,14 @@ struct NMTab: View {
                             appIcon(name)
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack {
-                                    Text(lines.0).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                                    Text(lines.0).font(.island(.subhead, .semibold)).lineLimit(1)
                                     Spacer()
                                     if let d = rec.date {
-                                        Text(NMSystemSettings.time(d)).font(.system(size: 11)).monospacedDigit()
+                                        Text(NMSystemSettings.time(d)).font(.island(.footnote)).monospacedDigit()
                                             .foregroundStyle(.white.opacity(0.55))
                                     }
                                 }
-                                if let s = lines.1 { Text(s).font(.system(size: 12)).foregroundStyle(.white.opacity(0.65)).lineLimit(2) }
+                                if let s = lines.1 { Text(s).font(.island(.subhead)).foregroundStyle(.white.opacity(0.65)).lineLimit(2) }
                             }
                         }
                         .padding(8)
@@ -267,7 +267,7 @@ struct NMTab: View {
                 Spacer(minLength: 0)
                 Text(T("알림 센터에 남아 있는 기록과 앱 배지 수를 이 Mac의 알림 DB에서 읽는다. 누를 때만 읽고, 임시 사본은 바로 지운다.",
                        "Reads remaining Notification Center records and app badge counts from this Mac's notification database, only when you press Load. The temporary copy is deleted right away."))
-                    .font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
+                    .font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
                     .frame(maxWidth: .infinity, alignment: .center).multilineTextAlignment(.center)
                 Spacer(minLength: 0)
             }

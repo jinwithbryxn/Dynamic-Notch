@@ -316,7 +316,7 @@ private struct PrompterOverlay: View {
 
     private func button(_ symbol: String, _ title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol).font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+            Image(systemName: symbol).font(.island(.caption, .bold)).foregroundStyle(.white)
                 .frame(width: 22, height: 22).background(Color.white.opacity(0.15), in: Circle())
         }
         .buttonStyle(.plain)
@@ -341,12 +341,12 @@ private struct PrompterTab: View {
                     CPPill(symbol: "play.fill", title: T("노치 아래에 띄우고 시작", "Show Below Notch & Start"), tint: .green) { module.show(play: true) }
                 }
                 Spacer()
-                Text(T("속도", "Speed")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                Text(T("속도", "Speed")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Slider(value: $model.speed, in: 10...200).frame(width: 90).controlSize(.mini)
                     .help(T("초당 \(Int(model.speed))pt", "\(Int(model.speed)) pt per second"))
-                Text(T("글자", "Font")).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6))
+                Text(T("글자", "Font")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Stepper("\(Int(model.fontSize))", value: $model.fontSize, in: 14...56, step: 2)
-                    .font(.system(size: 10.5).monospacedDigit()).controlSize(.mini).fixedSize()
+                    .font(.island(.caption).monospacedDigit()).controlSize(.mini).fixedSize()
             }
             HStack(spacing: 10) {
                 Toggle(T("좌우 반전", "Mirror"), isOn: $model.mirror)
@@ -355,15 +355,15 @@ private struct PrompterTab: View {
                     .help(T("일부 화면 공유·녹화에서 빠지도록 창 공유 설정을 끈다. macOS 15부터 일부 캡처 방식은 이 설정을 무시하고, 휴대폰 촬영은 막을 수 없다.",
                             "Turns off window sharing so some screen shares and recordings skip the strip. Some capture paths on macOS 15+ ignore it, and phone cameras cannot be stopped."))
                 Spacer()
-                Text(T("폭", "W")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Text(T("폭", "W")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Slider(value: $model.width, in: 300...900).frame(width: 60).controlSize(.mini)
-                Text(T("높이", "H")).font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Text(T("높이", "H")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Slider(value: $model.height, in: 80...320).frame(width: 60).controlSize(.mini)
             }
             .toggleStyle(.checkbox)
-            .font(.system(size: 10.5))
+            .font(.island(.caption))
             TextEditor(text: $model.script)
-                .font(.system(size: 12))
+                .font(.island(.subhead))
                 .scrollContentBackground(.hidden)
                 .padding(6)
                 .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 10, style: .continuous))

@@ -288,8 +288,8 @@ struct MBPillButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                if let symbol { Image(systemName: symbol).font(.system(size: 10, weight: .semibold)) }
-                if !title.isEmpty { Text(title).font(.system(size: 11, weight: .medium)).lineLimit(1) }
+                if let symbol { Image(systemName: symbol).font(.island(.caption, .semibold)) }
+                if !title.isEmpty { Text(title).font(.island(.footnote)).lineLimit(1) }
             }
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
@@ -311,11 +311,11 @@ struct MBUnsupportedBox: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Label(title, systemImage: "exclamationmark.triangle.fill")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.island(.footnote, .semibold))
                 .foregroundStyle(.yellow)
-            Text(reason).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
+            Text(reason).font(.island(.caption)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
             if let alternative {
-                Text(alternative).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
+                Text(alternative).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(8)

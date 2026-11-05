@@ -284,7 +284,7 @@ private struct DRVTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Text(T("외장 드라이브·디스크 이미지", "Drives & disk images")).font(.system(size: 12, weight: .semibold))
+                Text(T("외장 드라이브·디스크 이미지", "Drives & disk images")).font(.island(.subhead, .semibold))
                 Spacer()
                 Button { store.refresh() } label: { Image(systemName: "arrow.clockwise") }
                     .buttonStyle(FAPillStyle()).help(T("새로 고침", "Refresh")).accessibilityLabel(T("새로 고침", "Refresh"))
@@ -294,10 +294,10 @@ private struct DRVTab: View {
             }
             if store.listed.isEmpty {
                 VStack(spacing: 5) {
-                    Image(systemName: "externaldrive").font(.system(size: 24, weight: .light))
-                    Text(T("연결된 외장 드라이브가 없음", "No external drives connected")).font(.system(size: 12, weight: .medium))
+                    Image(systemName: "externaldrive").font(.island(.title1))
+                    Text(T("연결된 외장 드라이브가 없음", "No external drives connected")).font(.island(.subhead))
                     Text(T("USB·SD 카드·디스크 이미지를 연결하면 여기에 보임", "USB drives, SD cards and disk images show up here"))
-                        .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -306,7 +306,7 @@ private struct DRVTab: View {
                 }
             }
             if let m = store.message {
-                Text(m).font(.system(size: 10.5)).foregroundStyle(.orange).lineLimit(2)
+                Text(m).font(.island(.caption)).foregroundStyle(.orange).lineLimit(2)
             }
         }
         .foregroundStyle(.white)
@@ -318,8 +318,8 @@ private struct DRVTab: View {
             FAFileIcon(url: v.url, size: 30)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
-                    Text(v.name).font(.system(size: 12.5, weight: .medium)).lineLimit(1)
-                    Text(v.kind.label).font(.system(size: 9.5)).foregroundStyle(.white.opacity(0.5))
+                    Text(v.name).font(.island(.subhead)).lineLimit(1)
+                    Text(v.kind.label).font(.island(.caption2)).foregroundStyle(.white.opacity(0.5))
                 }
                 if let total = v.total, total > 0, let free = v.free {
                     GeometryReader { g in
@@ -331,7 +331,7 @@ private struct DRVTab: View {
                     }
                     .frame(height: 4)
                 }
-                Text(store.capacityText(v)).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55)).monospacedDigit()
+                Text(store.capacityText(v)).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).monospacedDigit()
             }
             Spacer(minLength: 4)
             if let app = v.apps.first {

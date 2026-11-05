@@ -301,7 +301,7 @@ private struct TypingSoundsTab: View {
                 HStack {
                     Image(systemName: module.paused ? "speaker.slash.fill" : "speaker.wave.2.fill").foregroundStyle(module.paused ? .yellow : .green)
                     Text(module.paused ? T("잠시 멈춤", "Paused") : (module.subscribed ? T("키를 누르면 소리가 나요", "Sounds play as you type") : T("준비 중", "Starting")))
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.island(.subhead, .semibold))
                     Spacer()
                     TFPillButton(title: module.paused ? T("다시 켜기", "Resume") : T("멈춤", "Pause")) { module.paused.toggle() }
                 }
@@ -315,7 +315,7 @@ private struct TypingSoundsTab: View {
                 }
             }
             HStack(spacing: 10) {
-                Image(systemName: "speaker.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "speaker.fill").font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 Slider(value: prefs.double("volume", 0.5), in: 0...1).controlSize(.small).accessibilityLabel(T("음량", "Volume"))
                 TFPillButton(title: T("미리 듣기", "Preview"), symbol: "play.fill") {
                     let s = TypingSoundSynth.Style(rawValue: prefs.string("style", "mechanical").wrappedValue) ?? .mechanical

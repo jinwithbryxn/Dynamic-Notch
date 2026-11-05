@@ -70,9 +70,9 @@ struct ClipboardTab: View {
                 } cancel: { newList = nil }
             } else if confirmClear {
                 let n = store.items.filter { !$0.isSaved }.count
-                Image(systemName: "trash").font(.system(size: 12)).foregroundStyle(.secondary)
+                Image(systemName: "trash").font(.island(.subhead)).foregroundStyle(.secondary)
                 Text(T("고정·목록 항목을 빼고 \(n)개를 지울까?", "Clear \(n) items? Pinned and saved items stay."))
-                    .font(.system(size: 12)).lineLimit(1)
+                    .font(.island(.subhead)).lineLimit(1)
                 Spacer()
                 ClipCapsuleButton(title: T("지우기", "Clear"), symbol: nil, tint: .red) { store.clearHistory(); confirmClear = false }
                 ClipCapsuleButton(title: T("취소", "Cancel"), symbol: nil) { confirmClear = false }
@@ -89,15 +89,15 @@ struct ClipboardTab: View {
 
     private var searchField: some View {
         HStack(spacing: 5) {
-            Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundStyle(.secondary)
+            Image(systemName: "magnifyingglass").font(.island(.footnote)).foregroundStyle(.secondary)
             TextField(T("기록 검색 (글자·파일 이름·이미지 속 글자)", "Search history (text, file names, text in images)"), text: $query)
                 .textFieldStyle(.plain)
-                .font(.system(size: 13))
+                .font(.island(.subhead))
                 .focused($searchFocused)
                 .onChange(of: query) { _, _ in selection = 0 }
                 .accessibilityLabel(T("클립보드 기록 검색", "Search clipboard history"))
             if !query.isEmpty {
-                Button { query = "" } label: { Image(systemName: "xmark.circle.fill").font(.system(size: 11)) }
+                Button { query = "" } label: { Image(systemName: "xmark.circle.fill").font(.island(.footnote)) }
                     .buttonStyle(.plain).foregroundStyle(.secondary)
                     .help(T("검색어 지우기", "Clear search")).accessibilityLabel(T("검색어 지우기", "Clear search"))
             }
@@ -117,7 +117,7 @@ struct ClipboardTab: View {
             Button(T("기록 지우기…", "Clear History…")) { confirmClear = true }
                 .disabled(!store.items.contains { !$0.isSaved })
         } label: {
-            Image(systemName: "ellipsis").font(.system(size: 12, weight: .semibold))
+            Image(systemName: "ellipsis").font(.island(.subhead, .semibold))
                 .frame(width: 26, height: 26)
                 .background(Color.white.opacity(0.08), in: Circle())
         }
@@ -138,7 +138,7 @@ struct ClipboardTab: View {
             ForEach([ClipKind.text, .link, .image, .file, .color], id: \.self) { k in chip(k.label, .kind(k)) }
             listMenu
             Spacer(minLength: 4)
-            Text(countText).font(.system(size: 11)).foregroundStyle(.secondary).monospacedDigit()
+            Text(countText).font(.island(.footnote)).foregroundStyle(.secondary).monospacedDigit()
         }
         .frame(height: 20)
     }
@@ -170,7 +170,7 @@ struct ClipboardTab: View {
         } label: {
             HStack(spacing: 2) {
                 Text(current?.name ?? T("목록", "Lists")).lineLimit(1)
-                Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold))
+                Image(systemName: "chevron.down").font(.island(.caption2, .bold))
             }
             .font(.system(size: 11, weight: current != nil ? .semibold : .regular))
             .padding(.horizontal, 8).frame(height: 20)
@@ -232,8 +232,8 @@ struct ClipboardTab: View {
     private var emptyState: some View {
         VStack(spacing: 6) {
             Image(systemName: ui.prefs.paused ? "pause.circle" : (query.isEmpty ? "doc.on.clipboard" : "magnifyingglass"))
-                .font(.system(size: 22)).foregroundStyle(.secondary)
-            Text(emptyText).font(.system(size: 12)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                .font(.island(.title1)).foregroundStyle(.secondary)
+            Text(emptyText).font(.island(.subhead)).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -316,16 +316,16 @@ struct ClipRow: View {
         let actions = module.smartActions(for: item)
         HStack(spacing: 8) {
             Text(number.map(String.init) ?? "")
-                .font(.system(size: 10, weight: .medium, design: .rounded)).monospacedDigit()
+                .font(.island(.caption)).monospacedDigit()
                 .foregroundStyle(.white.opacity(0.4)).frame(width: 9)
             ClipThumb(store: store, item: item, size: 30)
             VStack(alignment: .leading, spacing: 1) {
-                Text(item.displayTitle).font(.system(size: 13)).lineLimit(1).truncationMode(.tail)
-                Text(meta).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                Text(item.displayTitle).font(.island(.subhead)).lineLimit(1).truncationMode(.tail)
+                Text(meta).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
             }
             Spacer(minLength: 6)
             if ui.flashID == item.id {
-                Text(T("복사함", "Copied")).font(.system(size: 10.5, weight: .medium))
+                Text(T("복사함", "Copied")).font(.island(.caption))
                     .padding(.horizontal, 7).frame(height: 18).background(Color.green.opacity(0.35), in: Capsule())
             }
             if selected || hovered {
@@ -336,7 +336,7 @@ struct ClipRow: View {
                                small: true, active: item.isPinned) { store.update(item.id) { $0.pinned = !item.isPinned } }
                 rowMenu(actions)
             } else if item.isPinned {
-                Image(systemName: "pin.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "pin.fill").font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                     .accessibilityLabel(T("고정됨", "Pinned"))
             }
         }
@@ -373,7 +373,7 @@ struct ClipRow: View {
 
     private func rowMenu(_ actions: [ClipAction]) -> some View {
         Menu { menuItems(actions) } label: {
-            Image(systemName: "ellipsis").font(.system(size: 11, weight: .semibold))
+            Image(systemName: "ellipsis").font(.island(.footnote, .semibold))
                 .frame(width: 22, height: 22)
                 .background(Color.white.opacity(0.1), in: Circle())
         }
@@ -448,7 +448,7 @@ struct ClipThumb: View {
         case .burst:
             VStack(spacing: 0) {
                 Image(systemName: item.kind.symbol).font(.system(size: size * 0.34))
-                Text("\(item.parts?.count ?? 0)").font(.system(size: 9, weight: .semibold, design: .rounded))
+                Text("\(item.parts?.count ?? 0)").font(.island(.caption2, .semibold))
             }
             .foregroundStyle(.white.opacity(0.75))
         default:
@@ -487,8 +487,8 @@ struct ClipCapsuleButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                if let symbol { Image(systemName: symbol).font(.system(size: 10.5, weight: .semibold)) }
-                Text(title).font(.system(size: 11.5, weight: .medium)).lineLimit(1)
+                if let symbol { Image(systemName: symbol).font(.island(.caption, .semibold)) }
+                Text(title).font(.island(.footnote)).lineLimit(1)
             }
             .padding(.horizontal, 10).frame(height: 24)
             .background(tint == .white ? Color.white.opacity(0.12) : tint.opacity(0.45), in: Capsule())
@@ -507,10 +507,10 @@ struct ClipBanner: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 11)).foregroundStyle(.yellow.opacity(0.85))
-            Text(text).font(.system(size: 11)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
+            Image(systemName: symbol).font(.island(.footnote)).foregroundStyle(.yellow.opacity(0.85))
+            Text(text).font(.island(.footnote)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
             Spacer(minLength: 4)
-            Button(button, action: action).buttonStyle(.plain).font(.system(size: 11, weight: .semibold))
+            Button(button, action: action).buttonStyle(.plain).font(.island(.footnote, .semibold))
                 .padding(.horizontal, 8).frame(height: 18).background(Color.white.opacity(0.14), in: Capsule())
                 .help(button)
         }
@@ -539,7 +539,7 @@ struct ClipInlineField: View {
     var body: some View {
         HStack(spacing: 6) {
             TextField(placeholder, text: $text)
-                .textFieldStyle(.plain).font(.system(size: 13))
+                .textFieldStyle(.plain).font(.island(.subhead))
                 .focused($focused)
                 .onSubmit(onConfirm)
                 .onExitCommand(perform: cancel)

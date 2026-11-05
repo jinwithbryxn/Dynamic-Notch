@@ -62,8 +62,8 @@ struct DashboardPage: View {
                 .frame(width: 42, height: 42)
                 .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(now.title).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
-                    Text(now.artist).font(.system(size: 11)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                    Text(now.title).font(.island(.subhead, .semibold)).lineLimit(1)
+                    Text(now.artist).font(.island(.footnote)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                 }
                 Spacer(minLength: 2)
                 iconButton(now.playing ? "pause.fill" : "play.fill", now.playing ? T("일시정지", "Pause") : T("재생", "Play")) {
@@ -88,11 +88,11 @@ struct DashboardPage: View {
                     Circle().trim(from: 0, to: timer.progress)
                         .stroke(Color.orange, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         .rotationEffect(.degrees(-90))
-                    Image(systemName: "timer").font(.system(size: 13, weight: .semibold)).foregroundStyle(.orange)
+                    Image(systemName: "timer").font(.island(.subhead, .semibold)).foregroundStyle(.orange)
                 }
                 .frame(width: 38, height: 38)
                 Text(TimerController.format(timer.remaining))
-                    .font(.system(size: 22, weight: .medium, design: .rounded))
+                    .font(.island(.title1))
                     .monospacedDigit()
                 Spacer(minLength: 2)
                 iconButton(timer.isPaused ? "play.fill" : "pause.fill", timer.isPaused ? T("계속", "Resume") : T("일시정지", "Pause")) {
@@ -104,12 +104,12 @@ struct DashboardPage: View {
         } else {
             VStack(alignment: .leading, spacing: 6) {
                 Label(T("타이머", "Timer"), systemImage: "timer")
-                    .font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                    .font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.6))
                 HStack(spacing: 6) {
                     ForEach([5, 10, 25], id: \.self) { m in
                         Button { timer.start(seconds: m * 60) } label: {
                             Text(T("\(m)분", "\(m)m"))
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.island(.subhead, .semibold))
                                 .frame(maxWidth: .infinity).frame(height: 24)
                                 .background(Capsule().fill(Color.white.opacity(0.12)))
                         }
@@ -133,8 +133,8 @@ struct DashboardPage: View {
                 HStack(spacing: 10) {
                     RoundedRectangle(cornerRadius: 2).fill(next.color).frame(width: 4, height: 38)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(next.title).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
-                        Text(Self.when(next, now: ctx.date)).font(.system(size: 11)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
+                        Text(next.title).font(.island(.subhead, .semibold)).lineLimit(1)
+                        Text(Self.when(next, now: ctx.date)).font(.island(.footnote)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
                     }
                     Spacer(minLength: 0)
                 }
@@ -163,15 +163,15 @@ struct DashboardPage: View {
 
     private func emptyCard(symbol: String, title: String, note: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Label(title, systemImage: symbol).font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
-            Text(note).font(.system(size: 12)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+            Label(title, systemImage: symbol).font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.6))
+            Text(note).font(.island(.subhead)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
         }
     }
 
     private func iconButton(_ symbol: String, _ label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.island(.subhead, .semibold))
                 .frame(width: 28, height: 28)
                 .background(Circle().fill(Color.white.opacity(0.12)))
                 .contentShape(Circle())
