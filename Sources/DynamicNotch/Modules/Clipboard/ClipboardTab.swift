@@ -232,7 +232,7 @@ struct ClipboardTab: View {
     private var emptyState: some View {
         VStack(spacing: 6) {
             Image(systemName: ui.prefs.paused ? "pause.circle" : (query.isEmpty ? "doc.on.clipboard" : "magnifyingglass"))
-                .font(.island(.title1)).foregroundStyle(.secondary)
+                .font(.island(.title1, .regular)).foregroundStyle(.secondary)
             Text(emptyText).font(.island(.subhead)).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -316,7 +316,7 @@ struct ClipRow: View {
         let actions = module.smartActions(for: item)
         HStack(spacing: 8) {
             Text(number.map(String.init) ?? "")
-                .font(.island(.caption)).monospacedDigit()
+                .font(.island(.caption, design: .rounded)).monospacedDigit()
                 .foregroundStyle(.white.opacity(0.4)).frame(width: 9)
             ClipThumb(store: store, item: item, size: 30)
             VStack(alignment: .leading, spacing: 1) {
@@ -448,7 +448,7 @@ struct ClipThumb: View {
         case .burst:
             VStack(spacing: 0) {
                 Image(systemName: item.kind.symbol).font(.system(size: size * 0.34))
-                Text("\(item.parts?.count ?? 0)").font(.island(.caption2, .semibold))
+                Text("\(item.parts?.count ?? 0)").font(.island(.caption2, .semibold, design: .rounded))
             }
             .foregroundStyle(.white.opacity(0.75))
         default:

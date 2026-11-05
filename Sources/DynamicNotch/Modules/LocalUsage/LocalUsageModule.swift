@@ -375,7 +375,7 @@ private struct LocalUsageTab: View {
         HStack {
             Text(label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
             Spacer()
-            Text(value).font(.island(.footnote)).monospacedDigit()
+            Text(value).font(.island(.footnote, design: .rounded)).monospacedDigit()
         }
     }
 
@@ -384,7 +384,7 @@ private struct LocalUsageTab: View {
             HStack {
                 Text(label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 Spacer()
-                Text(value).font(.island(.subhead, .semibold)).monospacedDigit()
+                Text(value).font(.island(.subhead, .semibold, design: .rounded)).monospacedDigit()
             }
             if let p = percent {
                 GeometryReader { g in

@@ -131,7 +131,7 @@ struct CallPage: View {
             .frame(maxHeight: .infinity)
         } else {
             VStack(spacing: 6) {
-                Image(systemName: "phone").font(.island(.title2)).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "phone").font(.island(.title2, .regular)).foregroundStyle(.white.opacity(0.5))
                 Text(T("진행 중인 통화가 없습니다", "No active call")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
             }
         }

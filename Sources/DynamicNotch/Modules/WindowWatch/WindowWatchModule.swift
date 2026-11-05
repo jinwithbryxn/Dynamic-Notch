@@ -366,7 +366,7 @@ private struct WatchTab: View {
                         .help(T("끌어서 지켜볼 부분을 고른다", "Drag to choose the region to watch"))
                 } else {
                     VStack(spacing: 6) {
-                        Image(systemName: "macwindow").font(.island(.title1)).foregroundStyle(.white.opacity(0.4))
+                        Image(systemName: "macwindow").font(.island(.title1, .regular)).foregroundStyle(.white.opacity(0.4))
                         Text(T("창을 고르고 '지켜보기'를 누르면\n여기에 실시간 썸네일이 나온다. 끌어서 부분 지정.",
                                "Pick a window and press Watch\nto see a live thumbnail. Drag to pick a region."))
                             .font(.island(.caption)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.5))

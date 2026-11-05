@@ -312,8 +312,8 @@ private struct MiniPlayerView: View {
             let dur = t?.duration ?? 0
             ScrubBar(fraction: dur > 0 ? pos / dur : 0, enabled: MBPlayer.canSeek(t), spacing: 6, thickness: 3,
                      onScrub: { f in if let t { MBPlayer.seek(t, to: f * t.duration) } }, onEnd: {},
-                     leading: { Text(MBStorage.duration(pos)).font(.island(.caption2)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
-                     trailing: { Text(MBStorage.duration(dur)).font(.island(.caption2)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
+                     leading: { Text(MBStorage.duration(pos)).font(.island(.caption2, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
+                     trailing: { Text(MBStorage.duration(dur)).font(.island(.caption2, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
         }
     }
 }

@@ -378,7 +378,7 @@ private struct BatteryHealthTab: View {
                     ZStack {
                         SysRing(value: Double(r.percent) / 100, tint: BatteryHealthModule.levelColor(r.percent), lineWidth: 7)
                         VStack(spacing: 0) {
-                            Text("\(r.percent)%").font(.island(.title1, .semibold)).monospacedDigit()
+                            Text("\(r.percent)%").font(.island(.title1, .semibold, design: .rounded)).monospacedDigit()
                             if r.isCharging { Image(systemName: "bolt.fill").font(.island(.footnote)).foregroundStyle(.green) }
                         }
                     }
@@ -420,7 +420,7 @@ private struct BatteryHealthTab: View {
             Text(title).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
             Spacer()
             if let hint { Text(hint).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)) }
-            Text(value).font(.island(.footnote)).monospacedDigit()
+            Text(value).font(.island(.footnote, design: .rounded)).monospacedDigit()
         }
         .lineLimit(1)
         .accessibilityElement(children: .combine)
@@ -438,7 +438,7 @@ private struct BatteryHealthTab: View {
                     ForEach(model.hardware.fans) { f in
                         HStack(spacing: 5) {
                             Image(systemName: "fan").font(.island(.footnote))
-                            Text(f.rpm < 1 ? T("멈춤", "Off") : "\(Int(f.rpm)) rpm").font(.island(.footnote)).monospacedDigit()
+                            Text(f.rpm < 1 ? T("멈춤", "Off") : "\(Int(f.rpm)) rpm").font(.island(.footnote, design: .rounded)).monospacedDigit()
                             Text(verbatim: "\(Int(f.min))–\(Int(f.max))").font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).monospacedDigit()
                         }
                         .accessibilityElement(children: .combine)

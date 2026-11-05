@@ -196,7 +196,7 @@ private struct CountdownRing: View {
             RingGauge(value: engine.state == nil ? 1 : engine.progressRemaining, tint: tint, lineWidth: 7)
             VStack(spacing: 0) {
                 Text(TFFormat.clock(engine.state == nil ? engine.length(of: .focus) : engine.remaining))
-                    .font(.island(.largeTitle))
+                    .font(.island(.largeTitle, design: .rounded))
                     .monospacedDigit()
                 Text(engine.state.map { $0.waiting ? T("준비", "Ready") : (engine.isPaused ? T("일시정지", "Paused") : $0.phase.title) } ?? T("대기", "Idle"))
                     .font(.island(.footnote))
@@ -238,12 +238,12 @@ private struct MascotView: View {
     private var figure: some View {
         ZStack(alignment: .topTrailing) {
             Image(systemName: symbol)
-                .font(.island(.title1))
+                .font(.island(.title1, .regular))
                 .foregroundStyle(tint)
                 .frame(width: 34, height: 34)
                 .background(Circle().fill(Color.black))
             if resting {
-                Text("z").font(.island(.caption, .bold)).foregroundStyle(.white.opacity(0.7))
+                Text("z").font(.island(.caption, .bold, design: .rounded)).foregroundStyle(.white.opacity(0.7))
                     .offset(x: 4, y: -4)
             }
         }
@@ -264,7 +264,7 @@ private struct PomodoroPageView: View {
             VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.map { $0.waiting ? T("\($0.phase.title) 준비됨", "\($0.phase.title) ready") : $0.phase.title } ?? T("집중을 시작해 볼까요", "Ready to focus"))
-                        .font(.island(.title3, .semibold))
+                        .font(.island(.title3, .semibold, design: .rounded))
                     Text(s.map { engine.subtitle($0) } ?? T("집중 \(engine.focusMinutes)분 · 휴식 \(engine.shortBreakMinutes)분 · \(engine.cyclesBeforeLong)세션마다 긴 휴식 \(engine.longBreakMinutes)분",
                                                          "\(engine.focusMinutes)m focus · \(engine.shortBreakMinutes)m break · long \(engine.longBreakMinutes)m every \(engine.cyclesBeforeLong)"))
                         .font(.island(.footnote))
@@ -312,7 +312,7 @@ private struct PomodoroPageView: View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label).font(.island(.caption)).foregroundStyle(.white.opacity(0.5))
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value).font(.island(.subhead, .semibold)).monospacedDigit()
+                Text(value).font(.island(.subhead, .semibold, design: .rounded)).monospacedDigit()
                 if let extra { Text(extra).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)) }
             }
         }
@@ -332,7 +332,7 @@ private struct RepeatPageView: View {
                 RingGauge(value: s == nil ? 1 : engine.progressRemaining, tint: .cyan, lineWidth: 7)
                 VStack(spacing: 0) {
                     Text(TFFormat.clock(s == nil ? Double(minutes * 60) : engine.remaining))
-                        .font(.island(.largeTitle)).monospacedDigit()
+                        .font(.island(.largeTitle, design: .rounded)).monospacedDigit()
                     Text(s.map { T("\($0.repeatCount + 1)회째", "Round \($0.repeatCount + 1)") } ?? T("반복", "Repeat"))
                         .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 }
@@ -342,7 +342,7 @@ private struct RepeatPageView: View {
 
             VStack(alignment: .leading, spacing: 9) {
                 Text(T("끝나면 같은 길이로 다시 시작", "Restarts with the same length when it ends"))
-                    .font(.island(.headline, .semibold))
+                    .font(.island(.headline, .semibold, design: .rounded))
                 HStack(spacing: 5) {
                     ForEach(presets, id: \.self) { m in
                         TFPillButton(title: m >= 60 ? T("\(m / 60)시간", "\(m / 60)h") : T("\(m)분", "\(m)m"),
@@ -448,7 +448,7 @@ struct FocusStatsView: View {
     private func tile(_ label: String, _ value: String, _ extra: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
-            Text(value).font(.island(.headline, .semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+            Text(value).font(.island(.headline, .semibold, design: .rounded)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
             Text(extra).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

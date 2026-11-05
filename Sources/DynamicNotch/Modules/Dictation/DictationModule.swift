@@ -244,7 +244,7 @@ private struct DictationTab: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Button { module.toggle() } label: {
-                        Image(systemName: module.listening ? "stop.fill" : "mic.fill").font(.island(.title2))
+                        Image(systemName: module.listening ? "stop.fill" : "mic.fill").font(.island(.title2, .regular))
                             .frame(width: 44, height: 44)
                             .background(Circle().fill(module.listening ? Color.red.opacity(0.8) : LaunchUI.fill))
                     }

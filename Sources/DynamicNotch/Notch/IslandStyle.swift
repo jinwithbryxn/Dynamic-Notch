@@ -13,18 +13,19 @@ enum Island {
     static func compactRadius(notchHeight: CGFloat) -> CGFloat { (notchHeight / 2).rounded() }
     /// 펼친 카드·확장 화면의 아래쪽 모서리 (44 × 0.873)
     static let expandedRadius: CGFloat = 38
-    /// 펼친 카드 안쪽 여백. 옆과 아래를 같게 둔다 (HIG: 고른 여백).
-    static let cardMargin: CGFloat = 16
     /// 확장 화면 안쪽 여백 (옆·아래 같게)
     static let panelMargin: CGFloat = 22
     /// 바깥 모서리 안쪽에 놓인 요소의 모서리: 여백만큼 줄인 동심 반경
     static func concentric(_ outer: CGFloat, inset: CGFloat) -> CGFloat { max(4, outer - inset) }
-    /// 화면이 어두운 모드일 때 아일랜드 둘레에 보이는 가는 선 (HIG key line)
-    static let keylineOpacity: Double = 0.14
+    /// 화면이 어두운 모드일 때 아일랜드 둘레에 보이는 가는 선 (HIG key line). 머리카락 굵기로 옅게.
+    static let keylineOpacity: Double = 0.07
+    static let keylineWidth: CGFloat = 0.5
 }
 
 /// 글자 크기 단계. iOS 기본 글자 크기(caption2 11pt … large title 34pt)에 `Island.scale`을 곱해 0.5pt 단위로 맞췄다.
 /// HIG: 크고 중간 굵기 이상의 글자를 쓰고, 작은 글자는 아껴 쓴다. 그래서 `Font.island`의 기본 굵기는 medium이다.
+/// 글자는 SF Pro, 숫자(시간·퍼센트·카운터)는 `design: .rounded`(SF Pro Rounded)로 쓴다. SF Pro semibold 숫자는 딱딱하고 투박해 보였다.
+/// 17.5pt 이상의 큰 숫자(스톱워치·세계 시계 등)는 원래의 가는 굵기를 그대로 쓴다.
 enum IslandText: CGFloat, CaseIterable {
     case caption2 = 9.5     // iOS 11
     case caption = 10.5     // iOS 12

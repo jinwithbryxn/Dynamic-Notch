@@ -283,10 +283,10 @@ private struct LauncherWheelView: View {
                         if let icon = item.icon {
                             Image(nsImage: icon).resizable().frame(width: 38, height: 38)
                         } else {
-                            Image(systemName: item.symbol).font(.island(.title2))
+                            Image(systemName: item.symbol).font(.island(.title2, .regular))
                         }
                         if i < 9 {
-                            Text("\(i + 1)").font(.island(.caption2, .bold))
+                            Text("\(i + 1)").font(.island(.caption2, .bold, design: .rounded))
                                 .foregroundStyle(LaunchUI.secondary).offset(x: 22, y: -22)
                         }
                     }

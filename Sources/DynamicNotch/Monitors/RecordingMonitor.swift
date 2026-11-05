@@ -333,7 +333,7 @@ struct RecordingPage: View {
                 .help(T("녹화 중지·저장", "Stop and save recording"))
                 Text(T("화면 녹화 중 · 아이콘을 누르면 저장", "Recording · click to stop and save"))
                     .font(.island(.footnote, .semibold)).foregroundStyle(.white.opacity(0.75))
-                CallDurationText(since: since, font: .island(.title1, .semibold))
+                CallDurationText(since: since, font: .island(.title1, .semibold, design: .rounded))
             }
         } else if let done = monitor.finished {
             VStack(spacing: 10) {

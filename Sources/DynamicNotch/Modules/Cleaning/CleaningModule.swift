@@ -361,7 +361,7 @@ private struct CleaningTab: View {
                         let left = max(0, Int(until.timeIntervalSince(ctx.date).rounded()))
                         VStack(spacing: 4) {
                             Text(String(format: "%d:%02d", left / 60, left % 60))
-                                .font(.island(.largeTitle, .semibold)).monospacedDigit()
+                                .font(.island(.largeTitle, .semibold, design: .rounded)).monospacedDigit()
                             Text(T("키보드 잠김 · ⌘Esc로 해제", "Keyboard locked · ⌘Esc to unlock")).font(.island(.caption))
                                 .foregroundStyle(.white.opacity(0.6))
                             CPPill(symbol: "lock.open.fill", title: T("지금 풀기", "Unlock Now"), tint: .green) { module.unlockKeyboard() }

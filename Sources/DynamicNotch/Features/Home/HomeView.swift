@@ -148,7 +148,7 @@ struct TimerPage: View {
                 ZStack {
                     RingGauge(value: timer.progress, tint: .orange, lineWidth: 5)
                     Text(TimerController.format(timer.remaining))
-                        .font(.island(.title3, .semibold))
+                        .font(.island(.title3, .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                 }
@@ -183,7 +183,7 @@ struct TimerPage: View {
                 HStack(spacing: 2) {
                     ForEach(TimerController.Unit.allCases, id: \.self) { unit in
                         if unit != .hour {
-                            Text(":").font(.island(.title2, .semibold))
+                            Text(":").font(.island(.title2, .semibold, design: .rounded))
                                 .foregroundStyle(.white.opacity(0.4))
                                 .padding(.bottom, 14)
                         }
@@ -216,7 +216,7 @@ struct TimerPage: View {
                     TimerDigitField(timer: timer, unit: unit)
                 } else {
                     RollingText(text: String(format: "%02d", timer.draft[unit.rawValue]), up: timer.lastStepUp)
-                        .font(.island(.title1, .semibold))
+                        .font(.island(.title1, .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                 }

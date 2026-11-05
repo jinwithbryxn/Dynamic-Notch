@@ -282,7 +282,7 @@ private struct ShellActivityTab: View {
                                 Text(URL(fileURLWithPath: r.cwd).lastPathComponent).font(.island(.caption)).foregroundStyle(.white.opacity(0.55))
                             }
                             Spacer()
-                            Text(AIDevFormat.elapsed(ctx.date.timeIntervalSince(r.start))).font(.island(.callout)).monospacedDigit()
+                            Text(AIDevFormat.elapsed(ctx.date.timeIntervalSince(r.start))).font(.island(.callout, design: .rounded)).monospacedDigit()
                         }
                         .padding(6).background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06)))
                     }

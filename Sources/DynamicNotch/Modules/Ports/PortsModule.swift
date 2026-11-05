@@ -261,7 +261,7 @@ private struct PortsTab: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(T("사용 중인 포트", "Listening ports")).font(.island(.callout, .semibold))
-                Text(verbatim: "\(model.ports.count)").font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
+                Text(verbatim: "\(model.ports.count)").font(.island(.footnote, design: .rounded)).foregroundStyle(.white.opacity(0.5))
                 Spacer()
                 if let t = model.lastScan {
                     Text(SysFmt.time(t)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4))

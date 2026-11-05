@@ -113,10 +113,10 @@ struct CalAlertView: View {
                     .padding(.horizontal, 60)
                 TimelineView(.periodic(from: .now, by: 1)) { ctx in
                     Text(Self.whenText(item, now: ctx.date))
-                        .font(.island(.title1)).monospacedDigit()
+                        .font(.island(.title1, design: .rounded)).monospacedDigit()
                         .foregroundStyle(item.color.opacity(0.95))
                 }
-                Text(item.timeText).font(.island(.title3)).foregroundStyle(.white.opacity(0.6))
+                Text(item.timeText).font(.island(.title3, .regular)).foregroundStyle(.white.opacity(0.6))
                 if main {
                     HStack(spacing: 14) {
                         if let join {

@@ -92,7 +92,7 @@ struct NMTab: View {
         VStack(spacing: 8) {
             Spacer(minLength: 0)
             Image(systemName: state.trusted ? "bell" : "bell.slash")
-                .font(.island(.title1)).foregroundStyle(.white.opacity(0.6))
+                .font(.island(.title1, .regular)).foregroundStyle(.white.opacity(0.6))
             Text(T("아직 미러링한 알림이 없음", "No mirrored notifications yet"))
                 .font(.island(.callout, .semibold))
             Text(state.trusted
@@ -123,7 +123,7 @@ struct NMTab: View {
                     Text(lines.0).font(.island(.subhead, .semibold)).lineLimit(1)
                     Spacer(minLength: 4)
                     Text(NMSystemSettings.time(item.date))
-                        .font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
+                        .font(.island(.footnote, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
                 }
                 if let second = lines.1 {
                     Text(second).font(.island(.subhead)).foregroundStyle(.white.opacity(0.65)).lineLimit(2)

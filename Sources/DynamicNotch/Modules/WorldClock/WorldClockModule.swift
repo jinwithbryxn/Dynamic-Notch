@@ -87,13 +87,13 @@ private struct WorldClockTab: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(WorldClockModule.city(zone))
-                                    .font(.island(.callout, .semibold))
+                                    .font(.island(.callout, .semibold, design: .rounded))
                                 Text(WorldClockModule.offsetText(zone, from: .current, at: context.date))
                                     .font(.island(.footnote)).foregroundStyle(.secondary)
                             }
                             Spacer()
                             Text(WorldClockModule.time(context.date, zone))
-                                .font(.island(.title1))
+                                .font(.island(.title1, .regular, design: .rounded))
                                 .monospacedDigit()
                         }
                         .frame(height: 44)

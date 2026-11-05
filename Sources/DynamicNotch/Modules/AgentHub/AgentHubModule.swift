@@ -142,7 +142,7 @@ private struct ApprovalPanel: View {
                     if count > 1 { Text(T("대기 \(count)건", "\(count) waiting")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6)) }
                     TimelineView(.periodic(from: .now, by: 1)) { ctx in
                         Text(AIDevFormat.elapsed(max(0, hub.approvalTimeout - ctx.date.timeIntervalSince(a.created))))
-                            .font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
+                            .font(.island(.caption, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
                     }
                 }
                 if a.hasHidden {

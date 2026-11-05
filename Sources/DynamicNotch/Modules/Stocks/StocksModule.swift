@@ -453,8 +453,8 @@ private struct StocksTab: View {
                 if let q {
                     StockSparkline(quote: q).frame(width: 34, height: 18)
                     VStack(alignment: .trailing, spacing: 1) {
-                        Text(q.priceText()).font(.island(.footnote)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-                        Text(q.changeText).font(.island(.caption2)).monospacedDigit()
+                        Text(q.priceText()).font(.island(.footnote, design: .rounded)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+                        Text(q.changeText).font(.island(.caption2, design: .rounded)).monospacedDigit()
                             .foregroundStyle(StockColors.tint(q))
                     }
                 } else {
@@ -476,7 +476,7 @@ private struct StocksTab: View {
         } else {
             SysCard {
                 VStack(spacing: 8) {
-                    Image(systemName: "chart.line.uptrend.xyaxis").font(.island(.title1)).foregroundStyle(.white.opacity(0.3))
+                    Image(systemName: "chart.line.uptrend.xyaxis").font(.island(.title1, .regular)).foregroundStyle(.white.opacity(0.3))
                     Text(T("종목을 고르면 당일 차트를 보여 줍니다", "Pick a stock to see today's chart"))
                         .font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
                     Text(T("시세: Yahoo Finance", "Quotes: Yahoo Finance")).font(.island(.caption2)).foregroundStyle(.white.opacity(0.35))
@@ -557,9 +557,9 @@ private struct StockDetail: View {
                     Spacer()
                     if let q = quote {
                         VStack(alignment: .trailing, spacing: 1) {
-                            Text(q.priceText()).font(.island(.title3, .semibold)).monospacedDigit()
+                            Text(q.priceText()).font(.island(.title3, .semibold, design: .rounded)).monospacedDigit()
                             Text("\(q.isUp ? "▲" : "▼") \(q.priceText(abs(q.change))) (\(q.changeText))")
-                                .font(.island(.caption)).monospacedDigit().foregroundStyle(StockColors.tint(q))
+                                .font(.island(.caption, design: .rounded)).monospacedDigit().foregroundStyle(StockColors.tint(q))
                         }
                     }
                 }
@@ -654,7 +654,7 @@ private struct StockDetail: View {
                         ForEach(item.alerts) { a in
                             HStack(spacing: 3) {
                                 Text((a.above ? "≥ " : "≤ ") + (quote?.priceText(a.price) ?? String(format: "%.2f", a.price)))
-                                    .font(.island(.caption)).monospacedDigit()
+                                    .font(.island(.caption, design: .rounded)).monospacedDigit()
                                 Button { model.update(item.symbol) { $0.alerts.removeAll { $0.id == a.id } } } label: {
                                     Image(systemName: "xmark").font(.island(.caption2, .bold))
                                 }

@@ -213,7 +213,7 @@ private struct CalculatorTab: View {
                 }
                 Spacer()
                 Text(a.map { $0.value != nil ? "= " + $0.text : $0.text } ?? (model.input.isEmpty ? " " : "…"))
-                    .font(.island(.title1))
+                    .font(.island(.title1, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1).minimumScaleFactor(0.5)
                     .foregroundStyle(a?.value != nil ? Color.white : LaunchUI.secondary)

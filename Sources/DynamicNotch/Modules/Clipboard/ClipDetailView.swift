@@ -96,7 +96,7 @@ struct ClipDetailView: View {
                 if let preview {
                     Image(nsImage: preview).resizable().aspectRatio(contentMode: .fit)
                 } else {
-                    Image(systemName: "photo").font(.island(.largeTitle)).foregroundStyle(.secondary)
+                    Image(systemName: "photo").font(.island(.largeTitle, .regular)).foregroundStyle(.secondary)
                 }
             }
             .frame(width: 220)
@@ -158,7 +158,7 @@ struct ClipDetailView: View {
             VStack(alignment: .leading, spacing: 3) {
                 ForEach(Array((item.parts ?? []).enumerated()), id: \.offset) { i, part in
                     HStack(spacing: 8) {
-                        Text("\(i + 1)").font(.island(.caption)).monospacedDigit()
+                        Text("\(i + 1)").font(.island(.caption, design: .rounded)).monospacedDigit()
                             .foregroundStyle(.white.opacity(0.4)).frame(width: 14)
                         Text(ClipItem.firstLine(part)).font(.island(.subhead)).lineLimit(1).textSelection(.enabled)
                         Spacer()

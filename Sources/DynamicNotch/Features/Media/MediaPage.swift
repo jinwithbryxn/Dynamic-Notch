@@ -33,7 +33,7 @@ struct MediaPage: View {
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
             VStack(spacing: 6) {
-                Image(systemName: "music.note").font(.island(.title2)).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "music.note").font(.island(.title2, .regular)).foregroundStyle(.white.opacity(0.5))
                 Text(T("재생 중인 미디어가 없습니다", "Nothing is playing")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
             }
         }

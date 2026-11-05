@@ -265,11 +265,11 @@ private struct NetUsageTab: View {
                 Text(name(p)).font(.island(.footnote, .semibold))
                 HStack(spacing: 3) {
                     Image(systemName: "arrow.down").font(.island(.caption2, .bold)).foregroundStyle(.cyan)
-                    Text(SysFmt.bytes(Int64(t.rx))).font(.island(.footnote)).monospacedDigit()
+                    Text(SysFmt.bytes(Int64(t.rx))).font(.island(.footnote, design: .rounded)).monospacedDigit()
                 }
                 HStack(spacing: 3) {
                     Image(systemName: "arrow.up").font(.island(.caption2, .bold)).foregroundStyle(.pink)
-                    Text(SysFmt.bytes(Int64(t.tx))).font(.island(.footnote)).monospacedDigit()
+                    Text(SysFmt.bytes(Int64(t.tx))).font(.island(.footnote, design: .rounded)).monospacedDigit()
                 }
                 Text(SysFmt.seconds(t.seconds)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
             }

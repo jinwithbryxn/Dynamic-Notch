@@ -145,7 +145,7 @@ struct CPKeystrokeHUDView: View {
         HStack(spacing: 10) {
             ForEach(hud.entries) { e in
                 Text(e.text)
-                    .font(.island(.largeTitle, .semibold))
+                    .font(.island(.largeTitle, .semibold, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)

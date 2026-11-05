@@ -453,7 +453,7 @@ private struct MixerRow: View {
                          leading: { EmptyView() },
                          trailing: {
                              Text("\(Int(((dragVolume ?? s.volume) * 100).rounded()))%")
-                                 .font(.island(.caption)).monospacedDigit()
+                                 .font(.island(.caption, design: .rounded)).monospacedDigit()
                                  .foregroundStyle((dragVolume ?? s.volume) > 1.001 ? .orange : .white.opacity(0.6))
                                  .frame(width: 36, alignment: .trailing)
                          })
@@ -502,7 +502,7 @@ private struct MixerRow: View {
                          let db = Float(f) * 24 - 12
                          set(abs(db) < 0.6 ? 0 : (db * 2).rounded() / 2)
                      }, onEnd: {}, leading: { EmptyView() },
-                     trailing: { Text(String(format: "%+.0f", value)).font(.island(.caption2)).monospacedDigit()
+                     trailing: { Text(String(format: "%+.0f", value)).font(.island(.caption2, design: .rounded)).monospacedDigit()
                          .foregroundStyle(.white.opacity(0.6)).frame(width: 22, alignment: .trailing) })
         }
         .help(T("\(label) ±12 dB", "\(label) ±12 dB"))

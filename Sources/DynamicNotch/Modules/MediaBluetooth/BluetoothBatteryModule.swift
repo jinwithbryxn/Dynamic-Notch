@@ -309,7 +309,7 @@ private struct BatteryBar: View {
     let warn: Bool
     var body: some View {
         HStack(spacing: 4) {
-            Text("\(level)%").font(.island(.footnote)).monospacedDigit()
+            Text("\(level)%").font(.island(.footnote, design: .rounded)).monospacedDigit()
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2).stroke(Color.white.opacity(0.5), lineWidth: 1).frame(width: 22, height: 10)
                 RoundedRectangle(cornerRadius: 1).fill(warn ? Color.red : Color.green)

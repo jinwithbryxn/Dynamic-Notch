@@ -294,7 +294,7 @@ private struct DRVTab: View {
             }
             if store.listed.isEmpty {
                 VStack(spacing: 5) {
-                    Image(systemName: "externaldrive").font(.island(.title1))
+                    Image(systemName: "externaldrive").font(.island(.title1, .light))
                     Text(T("연결된 외장 드라이브가 없음", "No external drives connected")).font(.island(.subhead))
                     Text(T("USB·SD 카드·디스크 이미지를 연결하면 여기에 보임", "USB drives, SD cards and disk images show up here"))
                         .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))

@@ -140,7 +140,7 @@ struct LockPlayerView: View {
                         .matchedGeometryEffect(id: "title", in: ns)
                     if !hideInfo {
                         Text(media.nowPlaying?.artist ?? "")
-                            .font(.island(.title2))
+                            .font(.island(.title2, .regular))
                             .foregroundStyle(.white.opacity(0.65))
                             .matchedGeometryEffect(id: "artist", in: ns)
                     }

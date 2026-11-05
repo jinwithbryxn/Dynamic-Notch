@@ -402,7 +402,7 @@ struct PIMEmptyState: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: symbol).font(.island(.title2)).foregroundStyle(.white.opacity(0.75))
+            Image(systemName: symbol).font(.island(.title2, .regular)).foregroundStyle(.white.opacity(0.75))
             Text(title).font(.island(.subhead, .semibold)).foregroundStyle(.white.opacity(0.9))
                 .multilineTextAlignment(.center)
             if let detail {

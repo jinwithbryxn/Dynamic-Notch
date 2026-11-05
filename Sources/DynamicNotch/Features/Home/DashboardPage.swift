@@ -92,7 +92,7 @@ struct DashboardPage: View {
                 }
                 .frame(width: 38, height: 38)
                 Text(TimerController.format(timer.remaining))
-                    .font(.island(.title1))
+                    .font(.island(.title1, design: .rounded))
                     .monospacedDigit()
                 Spacer(minLength: 2)
                 iconButton(timer.isPaused ? "play.fill" : "pause.fill", timer.isPaused ? T("계속", "Resume") : T("일시정지", "Pause")) {

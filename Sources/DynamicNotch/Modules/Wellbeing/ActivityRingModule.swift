@@ -367,7 +367,7 @@ private struct ActivityRingTab: View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Circle().fill(tint).frame(width: 7, height: 7)
             Text(label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.7)).frame(width: 54, alignment: .leading)
-            Text(value).font(.island(.title3, .semibold)).monospacedDigit().foregroundStyle(tint)
+            Text(value).font(.island(.title3, .semibold, design: .rounded)).monospacedDigit().foregroundStyle(tint)
             Text(goal).font(.island(.footnote)).foregroundStyle(.white.opacity(0.5))
         }
         .accessibilityElement(children: .combine)

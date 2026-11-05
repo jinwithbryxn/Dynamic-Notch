@@ -41,7 +41,7 @@ struct NotchRootView: View {
                     .overlay {
                         if systemScheme == .dark && state != .idle {
                             shape
-                                .stroke(Color.white.opacity(Island.keylineOpacity), lineWidth: 1)
+                                .stroke(Color.white.opacity(Island.keylineOpacity), lineWidth: Island.keylineWidth)
                                 .frame(width: size.width, height: size.height)
                                 .mask(VStack(spacing: 0) { Color.clear.frame(height: 1.5); Color.black })
                                 .transition(.opacity)
@@ -130,7 +130,7 @@ struct NotchRootView: View {
                 // 노치 없는 화면의 쉬는 알약 가운데 시계
                 TimelineView(.everyMinute) { ctx in
                     Text(ctx.date, format: .dateTime.hour().minute())
-                        .font(.island(.subhead, .semibold))
+                        .font(.island(.subhead, .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white.opacity(0.85))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)

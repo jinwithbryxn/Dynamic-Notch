@@ -429,7 +429,7 @@ private struct AudioDevicesTab: View {
                 ScrubBar(fraction: Double(state.micMuted ? 0 : v), enabled: true, spacing: 6, thickness: 4,
                          onScrub: { state.setInputVolume(Float($0)) }, onEnd: {},
                          leading: { Image(systemName: "mic").font(.island(.caption2)).foregroundStyle(.white.opacity(0.6)) },
-                         trailing: { Text("\(Int((state.micMuted ? 0 : v) * 100))%").font(.island(.caption)).monospacedDigit()
+                         trailing: { Text("\(Int((state.micMuted ? 0 : v) * 100))%").font(.island(.caption, design: .rounded)).monospacedDigit()
                              .foregroundStyle(.white.opacity(0.6)).frame(width: 32, alignment: .trailing) })
                     .help(T("입력 음량", "Input volume"))
             } else {

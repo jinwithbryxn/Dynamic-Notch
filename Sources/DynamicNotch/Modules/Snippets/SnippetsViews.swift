@@ -96,7 +96,7 @@ struct SnippetsTab: View {
         let items = results
         if items.isEmpty {
             VStack(spacing: 6) {
-                Image(systemName: query.isEmpty ? "text.badge.plus" : "magnifyingglass").font(.island(.title1)).foregroundStyle(.secondary)
+                Image(systemName: query.isEmpty ? "text.badge.plus" : "magnifyingglass").font(.island(.title1, .regular)).foregroundStyle(.secondary)
                 Text(query.isEmpty ? T("저장한 스니펫이 없음\n+로 추가하거나 클립보드 내용을 저장", "No snippets yet\nAdd one with + or save the clipboard")
                                    : T("'\(query)' 검색 결과 없음", "No results for '\(query)'"))
                     .font(.island(.subhead)).foregroundStyle(.secondary).multilineTextAlignment(.center)

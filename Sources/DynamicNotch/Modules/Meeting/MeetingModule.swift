@@ -354,7 +354,7 @@ private struct MeetingTab: View {
                 }
             } else {
                 HStack(spacing: 8) {
-                    Image(systemName: "video.bubble").font(.island(.title2)).foregroundStyle(.white.opacity(0.4))
+                    Image(systemName: "video.bubble").font(.island(.title2, .regular)).foregroundStyle(.white.opacity(0.4))
                     Text(T("지금 통화 없음. 회의 앱이 마이크를 쓰기 시작하면 3초 뒤 여기와 노치에 나온다.",
                            "No call now. When a meeting app starts using the microphone, it shows here and in the notch after 3 s."))
                         .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).fixedSize(horizontal: false, vertical: true)

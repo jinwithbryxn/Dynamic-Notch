@@ -273,13 +273,13 @@ struct CalendarPage: View {
     var body: some View {
         if !calendar.authorized {
             VStack(spacing: 6) {
-                Image(systemName: "calendar").font(.island(.title2)).foregroundStyle(.white.opacity(0.8))
+                Image(systemName: "calendar").font(.island(.title2, .regular)).foregroundStyle(.white.opacity(0.8))
                 Button(T("캘린더 허용", "Allow Calendar")) { calendar.requestAccess() }
                     .buttonStyle(.borderedProminent).controlSize(.small)
             }
         } else if calendar.events.isEmpty {
             VStack(spacing: 6) {
-                Image(systemName: "calendar.badge.checkmark").font(.island(.title2)).foregroundStyle(.green)
+                Image(systemName: "calendar.badge.checkmark").font(.island(.title2, .regular)).foregroundStyle(.green)
                 Text(T("오늘 남은 일정 없음", "No more events today")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
             }
         } else {

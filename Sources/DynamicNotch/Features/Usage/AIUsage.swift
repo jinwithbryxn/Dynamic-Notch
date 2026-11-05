@@ -386,7 +386,7 @@ struct UsagePage: View {
                 Spacer(minLength: 0)
                 Button(action: openSettings) {
                     VStack(spacing: 4) {
-                        Image(systemName: "person.crop.circle.badge.plus").font(.island(.title2))
+                        Image(systemName: "person.crop.circle.badge.plus").font(.island(.title2, .regular))
                         Text(T("설정 → 상호작용 → AI 사용량에서 로그인하세요", "Sign in under Settings → Interactions → AI Usage"))
                             .font(.island(.caption))
                             .multilineTextAlignment(.center)
@@ -449,7 +449,7 @@ struct UsagePage: View {
                 Text(label).font(.island(.caption2, .semibold)).foregroundStyle(.white.opacity(0.5))
                 Spacer(minLength: 0)
                 Text(w.map { "\(Int($0.percent.rounded()))%" } ?? "–")
-                    .font(.island(.caption, .semibold)).monospacedDigit()
+                    .font(.island(.caption, .semibold, design: .rounded)).monospacedDigit()
                     .foregroundStyle(.white)
             }
             BarGauge(value: (w?.percent ?? 0) / 100, tint: UsageGlyph.color(w?.percent, tint: tint))

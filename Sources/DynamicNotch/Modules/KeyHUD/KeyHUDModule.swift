@@ -139,7 +139,7 @@ private struct KeyHUDTab: View {
                         Text(T("키보드 백라이트", "Keyboard backlight")).font(.island(.subhead, .semibold))
                         Spacer()
                         if available {
-                            Text(SysFmt.percent(level)).font(.island(.subhead)).monospacedDigit()
+                            Text(SysFmt.percent(level)).font(.island(.subhead, design: .rounded)).monospacedDigit()
                         }
                     }
                     if available {
@@ -163,7 +163,7 @@ private struct KeyHUDTab: View {
             .frame(height: 78)
             SysCard {
                 HStack(spacing: 10) {
-                    Image(systemName: caps ? "capslock.fill" : "capslock").font(.island(.title2))
+                    Image(systemName: caps ? "capslock.fill" : "capslock").font(.island(.title2, .regular))
                         .foregroundStyle(caps ? .green : .white.opacity(0.7))
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Caps Lock HUD").font(.island(.subhead, .semibold))

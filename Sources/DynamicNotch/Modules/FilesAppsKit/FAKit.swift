@@ -276,7 +276,7 @@ struct FAUnsupportedView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: symbol).font(.island(.title1)).foregroundStyle(.white.opacity(0.7))
+            Image(systemName: symbol).font(.island(.title1, .regular)).foregroundStyle(.white.opacity(0.7))
             Text(title).font(.island(.subhead, .semibold))
             Text(reason).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).multilineTextAlignment(.center)
             if let alternative {

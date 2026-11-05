@@ -261,8 +261,7 @@ final class NotchViewModel: ObservableObject {
             if let a = center.displayed, !a.actions.isEmpty {
                 return CGSize(width: max(n.width + 190, 390), height: n.height + 58 + Self.actionRowHeight)
             }
-            // 아일랜드 펼친 모양 폭(371~408pt × 0.873)에 맞춰 노치 옆에 아이콘·값 칸이 생기게
-            return CGSize(width: max(n.width + 170, 356), height: n.height + 58)
+            return CGSize(width: max(n.width + 150, 330), height: n.height + 58)
         case .expanded:
             switch expandedPage {
             case .home:
@@ -475,9 +474,9 @@ final class NotchViewModel: ObservableObject {
             return CGRect(x: topRadius + Island.panelMargin, y: n.height + 10, width: 50, height: 50)
         case .detail:
             guard let a = center.displayed, a.kind == .media, a.artwork != nil else { return nil }
-            // DetailActivityView: 노치 왼쪽 칸(위쪽 오목 모서리 + 카드 여백), 노치 높이 가운데
+            // DetailActivityView: 옆 여백, 노치 아래 남은 높이(58 - 10)의 가운데
             let s = DetailActivityView.artSize
-            return CGRect(x: Self.detailTopRadius + Island.cardMargin, y: (n.height - s) / 2, width: s, height: s)
+            return CGRect(x: DetailActivityView.sideInset, y: n.height + (48 - s) / 2, width: s, height: s)
         case .compact:
             guard let a = center.displayed, a.kind == .media, a.artwork != nil else { return nil }
             let s = min(19, n.height - 11)

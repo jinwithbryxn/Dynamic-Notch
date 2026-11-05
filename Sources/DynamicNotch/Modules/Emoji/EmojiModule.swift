@@ -258,7 +258,7 @@ private struct EmojiTab: View {
 
     private func cell(_ e: String, name: String) -> some View {
         Button { module.insert(e) } label: {
-            Text(EmojiCatalog.applyTone(e, tone: tone)).font(.island(.title1))
+            Text(EmojiCatalog.applyTone(e, tone: tone)).font(.island(.title1, .regular))
                 .frame(width: 34, height: 32)
                 .background(RoundedRectangle(cornerRadius: 7).fill(hovered == name ? LaunchUI.fill : .clear))
         }

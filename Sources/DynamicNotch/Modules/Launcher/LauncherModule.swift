@@ -149,7 +149,7 @@ private struct LauncherTab: View {
                     if let url {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: url.path)).resizable().frame(width: 44, height: 44)
                     } else {
-                        Image(systemName: "questionmark.app.dashed").font(.island(.largeTitle)).frame(width: 44, height: 44)
+                        Image(systemName: "questionmark.app.dashed").font(.island(.largeTitle, .regular)).frame(width: 44, height: 44)
                     }
                     Text(name).font(.island(.caption)).lineLimit(1).truncationMode(.middle)
                         .foregroundStyle(url == nil ? LaunchUI.secondary : .white)

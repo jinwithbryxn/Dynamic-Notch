@@ -295,7 +295,7 @@ private struct ScreenTimeTab: View {
         let maxSec = apps.first?.seconds ?? 1
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text(TFFormat.duration(total)).font(.island(.title1, .semibold)).monospacedDigit()
+                Text(TFFormat.duration(total)).font(.island(.title1, .semibold, design: .rounded)).monospacedDigit()
                 if range != .today {
                     Text(T("하루 평균 \(TFFormat.duration(store.dailyAverage(k)))", "\(TFFormat.duration(store.dailyAverage(k))) daily avg"))
                         .font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))

@@ -219,7 +219,7 @@ private struct DevicesTab: View {
                         Text(T("공인 IP", "Public IP")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
                         Spacer()
                         if let ip = model.publicIP {
-                            Text(ip).font(.island(.footnote)).textSelection(.enabled)
+                            Text(ip).font(.island(.footnote, design: .rounded)).textSelection(.enabled)
                         } else {
                             if let s = model.publicIPState { Text(s).font(.island(.caption)).foregroundStyle(.white.opacity(0.5)) }
                             SysPillButton(title: T("조회", "Look up"),
@@ -282,7 +282,7 @@ private struct DevicesTab: View {
             Text(title).font(.island(.footnote)).foregroundStyle(.white.opacity(0.65))
             Spacer()
             if let hint { Text(hint).font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)) }
-            Text(value).font(.island(.footnote)).monospacedDigit().lineLimit(1)
+            Text(value).font(.island(.footnote, design: .rounded)).monospacedDigit().lineLimit(1)
         }
         .accessibilityElement(children: .combine)
     }
@@ -293,7 +293,7 @@ private struct DevicesTab: View {
                 SysHeader(text: T("USB 장치 · 빠른 순", "USB devices · fastest first"))
                 if model.usb.isEmpty {
                     VStack(spacing: 6) {
-                        Image(systemName: "cable.connector.slash").font(.island(.title1)).foregroundStyle(.white.opacity(0.35))
+                        Image(systemName: "cable.connector.slash").font(.island(.title1, .regular)).foregroundStyle(.white.opacity(0.35))
                         Text(T("연결된 USB 장치 없음", "No USB devices connected")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.55))
                         Text(T("내장 키보드·트랙패드·허브는 목록에서 뺍니다", "Built-in keyboard, trackpad and hubs are not listed"))
                             .font(.island(.caption2)).foregroundStyle(.white.opacity(0.4)).multilineTextAlignment(.center)
@@ -311,7 +311,7 @@ private struct DevicesTab: View {
                                     }
                                     Spacer()
                                     VStack(alignment: .trailing, spacing: 1) {
-                                        Text(d.speedText).font(.island(.footnote)).monospacedDigit()
+                                        Text(d.speedText).font(.island(.footnote, design: .rounded)).monospacedDigit()
                                         Text(d.speedClass).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
                                     }
                                 }

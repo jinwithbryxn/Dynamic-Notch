@@ -204,7 +204,7 @@ private struct StopwatchTab: View {
                                         .foregroundStyle(splits[i] == best ? .green : (splits[i] == worst ? .red : .white))
                                     Text(StopwatchEngine.format(laps[i])).foregroundStyle(.white.opacity(0.45)).frame(width: 70, alignment: .trailing)
                                 }
-                                .font(.island(.footnote)).monospacedDigit()
+                                .font(.island(.footnote, design: .rounded)).monospacedDigit()
                                 .padding(.vertical, 2)
                                 .accessibilityElement(children: .combine)
                             }
@@ -219,7 +219,7 @@ private struct StopwatchTab: View {
 
     private func timeText(_ t: Double) -> some View {
         Text(StopwatchEngine.format(t))
-            .font(.system(size: 44, weight: .medium))
+            .font(.system(size: 44, weight: .light, design: .rounded))
             .monospacedDigit()
             .lineLimit(1)
             .minimumScaleFactor(0.6)

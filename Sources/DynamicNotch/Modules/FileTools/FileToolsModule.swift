@@ -431,7 +431,7 @@ private struct FTTab: View {
 
     private var dropHint: some View {
         VStack(spacing: 6) {
-            Image(systemName: "arrow.down.doc").font(.island(.title1))
+            Image(systemName: "arrow.down.doc").font(.island(.title1, .light))
             Text(T("여기에 파일을 끌어다 놓기", "Drop files here")).font(.island(.subhead))
             Text(T("이미지·PDF·동영상·ZIP·폴더", "Images, PDFs, videos, ZIPs, folders"))
                 .font(.island(.caption)).foregroundStyle(.white.opacity(0.55))

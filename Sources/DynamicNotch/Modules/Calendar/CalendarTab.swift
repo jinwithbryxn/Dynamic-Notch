@@ -219,7 +219,7 @@ private struct CalMonthGrid: View {
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
-                Text(monthTitle).font(.island(.callout, .semibold))
+                Text(monthTitle).font(.island(.callout, .semibold, design: .rounded))
                 Spacer()
                 Button { model.moveMonth(-1) } label: { Image(systemName: "chevron.left") }
                     .buttonStyle(PIMPillStyle()).help(T("이전 달", "Previous month")).accessibilityLabel(T("이전 달", "Previous month"))

@@ -461,7 +461,7 @@ private struct LyricsTab: View {
                 Text(T("싱크", "Sync")).font(.island(.caption)).foregroundStyle(.white.opacity(0.6))
                 MBPillButton(title: "−", symbol: nil) { controller.setOffset(controller.offset - 0.5) }
                     .help(T("가사를 0.5초 늦게", "Lyrics 0.5 s later"))
-                Text(String(format: "%+.1fs", controller.offset)).font(.island(.caption)).monospacedDigit().frame(width: 40)
+                Text(String(format: "%+.1fs", controller.offset)).font(.island(.caption, design: .rounded)).monospacedDigit().frame(width: 40)
                 MBPillButton(title: "+", symbol: nil) { controller.setOffset(controller.offset + 0.5) }
                     .help(T("가사를 0.5초 빨리", "Lyrics 0.5 s earlier"))
             }

@@ -242,7 +242,7 @@ private struct WindowSnapTab: View {
                     HStack(spacing: 8) {
                         ForEach(grid[r]) { pos in
                             Button { WindowSnapper.snapFrontmost(pos, context: module.context) } label: {
-                                Image(systemName: pos.symbol).font(.island(.title2))
+                                Image(systemName: pos.symbol).font(.island(.title2, .regular))
                                     .frame(width: 64, height: 44)
                                     .background(RoundedRectangle(cornerRadius: 10).fill(LaunchUI.fill))
                             }

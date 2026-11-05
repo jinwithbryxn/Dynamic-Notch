@@ -335,7 +335,7 @@ private struct FocusSoundsTab: View {
                 ForEach(FocusSoundPlayer.Sound.allCases) { s in
                     Button { player.toggle(s) } label: {
                         VStack(spacing: 6) {
-                            Image(systemName: s.symbol).font(.island(.title2))
+                            Image(systemName: s.symbol).font(.island(.title2, .regular))
                             Text(s.label).font(.island(.footnote)).lineLimit(1).minimumScaleFactor(0.8)
                         }
                         .foregroundStyle(player.current == s ? Color.black : Color.white)

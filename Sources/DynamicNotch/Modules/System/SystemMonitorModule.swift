@@ -154,7 +154,7 @@ private struct SysMonTab: View {
                 ZStack {
                     SysRing(value: value ?? 0, tint: color(value ?? 0), lineWidth: 4)
                     Text(value.map { "\(Int(($0 * 100).rounded()))" } ?? "–")
-                        .font(.island(.subhead, .semibold)).monospacedDigit()
+                        .font(.island(.subhead, .semibold, design: .rounded)).monospacedDigit()
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 2) {
@@ -180,7 +180,7 @@ private struct SysMonTab: View {
                 ZStack {
                     SysRing(value: m?.fraction ?? 0, tint: tint, lineWidth: 4)
                     Text(m.map { "\(Int(($0.fraction * 100).rounded()))" } ?? "–")
-                        .font(.island(.subhead, .semibold)).monospacedDigit()
+                        .font(.island(.subhead, .semibold, design: .rounded)).monospacedDigit()
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 2) {
@@ -204,7 +204,7 @@ private struct SysMonTab: View {
                 }
                 if let t {
                     Text(SysFmt.temperature(t, fahrenheit: module.fahrenheit))
-                        .font(.island(.title2)).monospacedDigit()
+                        .font(.island(.title2, design: .rounded)).monospacedDigit()
                         .foregroundStyle(t > 90 ? .red : t > 75 ? .orange : .white)
                 } else {
                     Text(T("지원 안 됨", "Unsupported")).font(.island(.footnote))
@@ -222,11 +222,11 @@ private struct SysMonTab: View {
                 Text(T("네트워크", "Network")).font(.island(.footnote, .semibold))
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.down").font(.island(.caption2, .bold)).foregroundStyle(.cyan)
-                    Text(s.netIn.map(SysFmt.rate) ?? "–").font(.island(.footnote)).monospacedDigit()
+                    Text(s.netIn.map(SysFmt.rate) ?? "–").font(.island(.footnote, design: .rounded)).monospacedDigit()
                 }
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up").font(.island(.caption2, .bold)).foregroundStyle(.pink)
-                    Text(s.netOut.map(SysFmt.rate) ?? "–").font(.island(.footnote)).monospacedDigit()
+                    Text(s.netOut.map(SysFmt.rate) ?? "–").font(.island(.footnote, design: .rounded)).monospacedDigit()
                 }
             }
             .lineLimit(1)
@@ -261,10 +261,10 @@ private struct SysMonTab: View {
                         Spacer(minLength: 4)
                         if rankByEnergy, let w = p.watts {
                             Text(w >= 1 ? String(format: "%.1f W", w) : String(format: "%.0f mW", w * 1000))
-                                .font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.75))
+                                .font(.island(.footnote, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.75))
                         }
                         Text(String(format: "%.0f%%", p.cpu))
-                            .font(.island(.footnote)).monospacedDigit()
+                            .font(.island(.footnote, design: .rounded)).monospacedDigit()
                             .foregroundStyle(p.cpu > 80 ? .orange : .white.opacity(0.75))
                             .frame(width: 40, alignment: .trailing)
                     }

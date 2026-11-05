@@ -425,7 +425,7 @@ struct DownloadPage: View {
                     }
                     .frame(height: 6)
                     Text("\(Int((f * 100).rounded()))%")
-                        .font(.island(.subhead, .semibold))
+                        .font(.island(.subhead, .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                         .frame(width: 40, alignment: .trailing)

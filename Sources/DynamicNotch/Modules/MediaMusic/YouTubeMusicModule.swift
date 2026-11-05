@@ -260,8 +260,8 @@ private struct YTMusicTab: View {
                 let pos = s.position(at: ctx.date)
                 ScrubBar(fraction: s.duration > 0 ? pos / s.duration : 0, enabled: true, spacing: 6, thickness: 4,
                          onScrub: { f in client.send("seek-to", body: ["seconds": Int(f * s.duration)]) }, onEnd: {},
-                         leading: { Text(MBStorage.duration(pos)).font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
-                         trailing: { Text(MBStorage.duration(s.duration)).font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
+                         leading: { Text(MBStorage.duration(pos)).font(.island(.caption, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) },
+                         trailing: { Text(MBStorage.duration(s.duration)).font(.island(.caption, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.5)) })
             }
             HStack(spacing: 8) {
                 MBPillButton(title: "", symbol: "shuffle", active: client.shuffle == true, tint: .green) { client.send("shuffle") }

@@ -572,7 +572,7 @@ private struct WeatherHomeCard: View {
         if let s = model.summary {
             HStack(spacing: 10) {
                 Image(systemName: s.symbol).symbolRenderingMode(.multicolor)
-                    .font(.island(.title1)).frame(width: 34)
+                    .font(.island(.title1, .regular)).frame(width: 34)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(s.temperature) \(s.condition)").font(.island(.subhead, .semibold)).lineLimit(1)
                     Text("\(s.place) · \(s.detail)").font(.island(.footnote)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
@@ -627,9 +627,9 @@ private struct WeatherTab: View {
                 Text(model.placeName).font(.island(.subhead, .semibold)).foregroundStyle(.white.opacity(0.75)).lineLimit(1)
                 HStack(alignment: .center, spacing: 8) {
                     Text(WeatherModel.format(f.current.temp, unit: unit))
-                        .font(.system(size: 50, weight: .medium)).monospacedDigit()
+                        .font(.system(size: 50, weight: .light, design: .rounded)).monospacedDigit()
                     Image(systemName: WxCode.symbol(f.current.code, isDay: f.current.isDay))
-                        .symbolRenderingMode(.multicolor).font(.island(.largeTitle))
+                        .symbolRenderingMode(.multicolor).font(.island(.largeTitle, .regular))
                 }
                 Text(WxCode.text(f.current.code)).font(.island(.subhead, .semibold))
                 Text(T("체감 \(WeatherModel.format(f.current.feels, unit: unit)) · 습도 \(Int(f.current.humidity))%",
@@ -685,7 +685,7 @@ private struct WeatherTab: View {
                 VStack(spacing: 3) {
                     Text(i == 0 ? T("지금", "Now") : hourText(h.time, tz: tz)).font(.island(.caption2)).foregroundStyle(.white.opacity(0.65))
                     Image(systemName: WxCode.symbol(h.code, isDay: h.isDay)).symbolRenderingMode(.multicolor).font(.island(.subhead)).frame(height: 16)
-                    Text(WeatherModel.format(h.temp, unit: unit)).font(.island(.footnote)).monospacedDigit()
+                    Text(WeatherModel.format(h.temp, unit: unit)).font(.island(.footnote, design: .rounded)).monospacedDigit()
                     Text((h.pop ?? 0) >= 20 ? "\(h.pop!)%" : " ").font(.island(.caption2)).foregroundStyle(Color(red: 0.55, green: 0.8, blue: 1))
                 }
                 .frame(maxWidth: .infinity)
@@ -713,7 +713,7 @@ private struct WeatherTab: View {
                     Image(systemName: WxCode.symbol(d.code)).symbolRenderingMode(.multicolor).font(.island(.subhead)).frame(width: 20)
                     Text((d.pop ?? 0) >= 20 ? "\(d.pop!)%" : "").font(.island(.caption2)).foregroundStyle(Color(red: 0.55, green: 0.8, blue: 1))
                         .frame(width: 30, alignment: .leading)
-                    Text(WeatherModel.format(d.lo, unit: unit)).font(.island(.footnote)).monospacedDigit()
+                    Text(WeatherModel.format(d.lo, unit: unit)).font(.island(.footnote, design: .rounded)).monospacedDigit()
                         .foregroundStyle(.white.opacity(0.6)).frame(width: 30, alignment: .trailing)
                     GeometryReader { g in
                         let x0 = CGFloat((d.lo - lo) / span) * g.size.width
@@ -726,7 +726,7 @@ private struct WeatherTab: View {
                         }
                     }
                     .frame(height: 4)
-                    Text(WeatherModel.format(d.hi, unit: unit)).font(.island(.footnote)).monospacedDigit().frame(width: 30, alignment: .leading)
+                    Text(WeatherModel.format(d.hi, unit: unit)).font(.island(.footnote, design: .rounded)).monospacedDigit().frame(width: 30, alignment: .leading)
                     Text(d.uv.map { "UV \(Int($0.rounded()))" } ?? "").font(.island(.caption2)).foregroundStyle(.white.opacity(0.5)).frame(width: 34, alignment: .trailing)
                 }
                 .frame(height: 17)

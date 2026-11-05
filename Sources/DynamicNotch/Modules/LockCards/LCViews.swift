@@ -129,7 +129,7 @@ struct LCCardView: View {
                 Text(content.label).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
                 if content.available {
                     Text(content.value)
-                        .font(.island(.title3, .semibold)).monospacedDigit()
+                        .font(.island(.title3, .semibold, design: .rounded)).monospacedDigit()
                         .lineLimit(1).minimumScaleFactor(0.7)
                     if let d = content.detail {
                         Text(d).font(.island(.caption)).foregroundStyle(.white.opacity(0.55)).lineLimit(1)
@@ -169,7 +169,7 @@ struct LCStripView: View {
             ForEach(contents) { c in
                 HStack(spacing: 5) {
                     Image(systemName: c.symbol).foregroundStyle(c.tint).accessibilityHidden(true)
-                    Text(c.value).font(.island(.subhead, .semibold)).monospacedDigit().lineLimit(1)
+                    Text(c.value).font(.island(.subhead, .semibold, design: .rounded)).monospacedDigit().lineLimit(1)
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(c.label + " " + c.value)

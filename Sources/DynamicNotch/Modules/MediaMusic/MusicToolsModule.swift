@@ -381,7 +381,7 @@ private struct MusicToolsTab: View {
                 .help(T("15초 뒤로", "Back 15 seconds")).disabled(!MBPlayer.canSeek(t))
             TimelineView(.periodic(from: .now, by: 1)) { ctx in
                 Text("\(MBStorage.duration(t.position(at: ctx.date))) / \(MBStorage.duration(t.duration))")
-                    .font(.island(.footnote)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
+                    .font(.island(.footnote, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
             }
             MBPillButton(title: T("15초", "15s"), symbol: "goforward.15") { MBPlayer.skip(t, by: 15) }
                 .help(T("15초 앞으로", "Forward 15 seconds")).disabled(!MBPlayer.canSeek(t))

@@ -239,7 +239,7 @@ private struct PkgBrewView: View {
                     ProgressView().controlSize(.small)
                     Text(T("Homebrew 목록 읽는 중", "Reading Homebrew lists")).font(.island(.footnote)).foregroundStyle(.white.opacity(0.6))
                 } else {
-                    Image(systemName: brew.searchedQuery.isEmpty ? "checkmark.circle" : "questionmark.circle").font(.island(.title2))
+                    Image(systemName: brew.searchedQuery.isEmpty ? "checkmark.circle" : "questionmark.circle").font(.island(.title2, .light))
                     Text(!brew.searchedQuery.isEmpty ? T("'\(brew.searchedQuery)' 결과 없음", "No results for '\(brew.searchedQuery)'")
                          : ui.brewList == .outdated ? T("오래된 항목 없음", "Everything is up to date")
                          : T("설치된 항목 없음", "Nothing installed"))
@@ -285,7 +285,7 @@ private struct PkgBrewView: View {
             }
             Spacer(minLength: 4)
             if let v = item.version {
-                Text(item.latest.map { "\(v) → \($0)" } ?? v).font(.island(.caption)).monospacedDigit()
+                Text(item.latest.map { "\(v) → \($0)" } ?? v).font(.island(.caption, design: .rounded)).monospacedDigit()
                     .foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
             actions(item)
@@ -426,7 +426,7 @@ private struct PkgUpdatesView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else if updates.items.isEmpty {
                 VStack(spacing: 4) {
-                    Image(systemName: updates.checking ? "hourglass" : "checkmark.circle").font(.island(.title2))
+                    Image(systemName: updates.checking ? "hourglass" : "checkmark.circle").font(.island(.title2, .light))
                     Text(updates.checking ? T("확인 중", "Checking") : T("모두 최신", "Everything is up to date"))
                         .font(.island(.footnote)).foregroundStyle(.white.opacity(0.7))
                 }
@@ -448,7 +448,7 @@ private struct PkgUpdatesView: View {
             else { Image(systemName: u.brewItem?.isCask == true ? "macwindow" : "terminal").font(.island(.footnote)).frame(width: 18) }
             VStack(alignment: .leading, spacing: 0) {
                 Text(u.name).font(.island(.subhead)).lineLimit(1)
-                Text("\(u.installed) → \(u.latest)").font(.island(.caption)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
+                Text("\(u.installed) → \(u.latest)").font(.island(.caption, design: .rounded)).monospacedDigit().foregroundStyle(.white.opacity(0.6))
             }
             Spacer(minLength: 4)
             Text(u.source.label).font(.island(.caption2)).foregroundStyle(.white.opacity(0.45))
@@ -585,7 +585,7 @@ private struct PkgUninstallView: View {
             }
         } else {
             VStack(spacing: 5) {
-                Image(systemName: "trash").font(.island(.title1))
+                Image(systemName: "trash").font(.island(.title1, .light))
                 Text(T("앱을 고르면 함께 지울 파일을 보여 줌", "Pick an app to see the files that go with it")).font(.island(.footnote))
                 Text(T("번들 ID가 정확히 같은 지원 파일·캐시·환경설정·컨테이너·저장 상태·로그·런치 에이전트. 모두 휴지통으로 옮기며 영구 삭제하지 않음. Apple 앱과 이 앱은 목록에 없음.",
                        "Support files, caches, preferences, containers, saved state, logs and launch agents with the exact bundle ID. Everything goes to the Trash, never deleted. Apple apps and this app aren't listed."))
