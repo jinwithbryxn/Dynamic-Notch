@@ -16,6 +16,8 @@ Live activities, media controls, HUDs, alerts, a file tray and more — all anim
 | **Display** | Best on MacBooks with a notch (14"/16" MacBook Pro 2021+, MacBook Air 2022+). Macs without a notch (M1 MacBook Air/Pro 13", iMac, Mac mini, Mac Studio, external displays) get a virtual notch centered in the menu bar. |
 | **Intel Macs** | Not supported (the build is arm64 only). |
 
+Built and tested on macOS 26 only; macOS 14 and 15 have not been tried.
+
 ## Installation
 
 1. Download `Dynamic-Notch-x.y.z.zip` from [Releases](https://github.com/jinwithbryxn/Dynamic-Notch/releases) and unzip it.
@@ -136,6 +138,10 @@ When several activities run at once (screen recording, timer, AirDrop, download,
 ### Claude Code · Codex
 When a Claude Code or Codex task finishes, the notch shows **Done**; click it to bring up the app it ran in (Terminal, VS Code, Claude, Codex…). Choose Compact (icon and Done) or Detailed ("Claude Code · project" plus the finished task, i.e. your last request). Turn it on in Settings → Interactions → Claude Code · Codex with **Connect**: this adds a Stop hook to `~/.claude/settings.json`, and sets `notify` in `~/.codex/config.toml`. If Codex already had a `notify` command, that command still runs, and Disconnect restores it. A backup (`.dynamicnotch.bak`) is kept before the first change.
 
+Your own scripts can send the same alert through the app:
+`"/Applications/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --send-command="agent:claude|my-project"` (or `agent:codex|…`).
+Since 1.2.3 the app accepts commands only when they are sealed with its own key (`~/Library/Application Support/com.dynamicnotch.app/command.key`), less than 30 seconds old and not seen before, so posting the distributed notification directly no longer works. Programs running as your user outside a sandbox can still read that key file.
+
 ### Lock screen
 - Locking shows a padlock in the notch; unlocking swings the shackle open.
 - While music plays, a **media widget** appears above your profile picture and password field. Click the artwork for a full-screen player with the album art, controls and **lyrics** (Apple Music; time-synced lyrics from LRCLIB are opt-in). Drag the progress and volume bars to seek or change volume, and click the output icon to switch speakers or headphones. Song info can be hidden. The widget is hidden while the screen saver runs.
@@ -174,12 +180,20 @@ Not every module has been tried on a real Mac with its permissions granted. The 
   - **Update checks** (once a day, can be turned off): GitHub's releases API.
   - **Live lyrics** (off by default): the song title, artist and album are sent to [LRCLIB](https://lrclib.net).
   - **Spotify artwork**: the cover image URL that Spotify provides (HTTPS only).
-- Data is stored in `~/Library/Preferences/com.dynamicnotch.app.plist` and `~/Library/Application Support/Dynamic Notch/`. Delete both to reset.
+- Data is stored in:
+  - `~/Library/Preferences/com.dynamicnotch.app.plist` — settings
+  - `~/Library/Application Support/com.dynamicnotch.app/` — extension data and the command key
+  - `~/Library/Application Support/DynamicNotch/Memos/` — memos
+  - `~/Library/Application Support/Dynamic Notch/` — tray copies and the lyrics cache
 
-## Memory
+  The bundle ID and these folders keep the app's earlier name so permissions and saved data carry over. Quit the app and delete them to reset.
+
+## Memory & background work
 
 - Screenshot thumbnails and PNG/JPEG conversion run in a short-lived helper process, so a full-screen image never inflates the app's memory.
 - **Automatic memory cleanup** (Settings → General, on by default): every 5 minutes and after heavy work the app checks its memory. Above the limit you choose (70–150 MB, default 70) it clears its caches, and if that isn't enough it restarts itself quietly while idle (nothing open, playing in the notch or in progress). Music keeps playing in its own app; the notch is back within a second.
+- A feature or extension that is off does no background work. Checks that must repeat run only while they matter: download progress while a download runs, call state during a call, the per-app volume and spectrum while their tab is visible. Network and Focus changes arrive as system notifications instead of polling.
+- The screen-recording check first asks macOS whether anything is capturing the screen and looks at running processes only when something is.
 
 ## Notes & limitations
 
@@ -194,12 +208,15 @@ Requires Xcode Command Line Tools (Swift 5.10+) on an Apple Silicon Mac.
 ```bash
 git clone https://github.com/jinwithbryxn/Dynamic-Notch.git
 cd Dynamic-Notch
-scripts/build.sh --run            # build/Dynamic Notch.app
+scripts/build.sh                  # build/Dynamic Notch.app (SwiftPM)
 scripts/build.sh --zip            # + release zip and SHA-256
-scripts/build.sh --install --run  # install to /Applications
+scripts/install-local.sh install  # back up the installed app and settings, then install to /Applications
+scripts/install-local.sh backups  # list backups; `restore <folder>` puts one back
 ```
 
+`scripts/build.sh --install` replaces `/Applications/Dynamic Notch.app` without a backup; prefer `install-local.sh`.
 `--dev` builds a development version that also accepts test commands from `scripts/notchctl` (never ship it).
+Built-in checks: `"build/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --module-selftest=all` (or `core`, `permissions`, or one extension's id). Verification records are in [docs/notchy-parity/VERIFICATION.md](docs/notchy-parity/VERIFICATION.md).
 
 
 ---
@@ -218,6 +235,8 @@ scripts/build.sh --install --run  # install to /Applications
 | **macOS** | macOS 14 Sonoma 이상 (Sonoma 14, Sequoia 15, Tahoe 26 이후) |
 | **화면** | 노치가 있는 맥북(14·16형 MacBook Pro 2021 이후, MacBook Air 2022 이후)에 최적화. 노치가 없는 Mac(M1 MacBook Air/Pro 13형, iMac, Mac mini, Mac Studio, 외장 모니터)에서는 메뉴바 가운데에 가상 노치로 동작합니다. |
 | **Intel Mac** | 지원하지 않습니다 (arm64 전용 빌드). |
+
+macOS 26에서만 빌드·시험했습니다. macOS 14·15에서는 실행해 보지 않았습니다.
 
 ## 설치
 
@@ -339,6 +358,10 @@ iPhone 전화(연속성)와 FaceTime 오디오 통화가 노치에 나타납니�
 ### Claude Code · Codex
 Claude Code·Codex 작업이 끝나면 노치에 **완료**가 뜨고, 누르면 그 작업이 돌던 앱(터미널·VS Code·Claude·Codex 등)이 열립니다. 컴팩트(아이콘·완료) 또는 상세("Claude Code · 프로젝트"와 끝난 작업 = 마지막으로 보낸 요청)를 고를 수 있습니다. 설정 → 상호작용 → Claude Code · Codex에서 **연결**을 누르면 `~/.claude/settings.json`에 작업 완료(Stop) 훅을, `~/.codex/config.toml`의 `notify`에 이 앱을 넣습니다. Codex에 원래 notify가 있었다면 그 명령도 그대로 실행되고, 연결 해제 시 원래대로 돌아갑니다. 처음 바꾸기 전 원본은 `.dynamicnotch.bak`으로 남깁니다.
 
+직접 만든 스크립트에서도 앱을 통해 같은 알림을 보낼 수 있습니다:
+`"/Applications/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --send-command="agent:claude|내-프로젝트"` (Codex는 `agent:codex|…`).
+1.2.3부터 앱은 자기 열쇠(`~/Library/Application Support/com.dynamicnotch.app/command.key`)로 봉인했고 만든 지 30초 안이며 처음 보는 명령만 받습니다. 분산 알림을 직접 보내는 방식은 더 이상 동작하지 않습니다. 같은 사용자 권한으로 도는 샌드박스 밖 프로그램은 이 열쇠 파일을 읽을 수 있습니다.
+
 ### 잠금화면
 - 잠그면 노치에 자물쇠가, 풀면 고리가 열리는 애니메이션이 나옵니다.
 - 음악 재생 중에는 프로필 사진·암호 입력란 위에 **미디어 위젯**이 뜹니다. 앨범아트를 누르면 전체화면 플레이어(앨범아트, 조작 버튼, **가사**: Apple Music, LRCLIB 실시간 가사는 선택)로 커집니다. 진행 바·음량 바를 끌어 이동·조절하고, 출력 아이콘을 눌러 스피커·이어폰을 바꿀 수 있습니다. 곡 정보 숨기기 가능. 화면 보호기가 도는 동안에는 숨겨집니다.
@@ -377,12 +400,20 @@ Claude Code·Codex 작업이 끝나면 노치에 **완료**가 뜨고, 누르면
   - **업데이트 확인**(하루 한 번, 끌 수 있음): GitHub 릴리스 API.
   - **실시간 가사**(기본 꺼짐): 곡 제목·아티스트·앨범을 [LRCLIB](https://lrclib.net)로 보냅니다.
   - **Spotify 앨범아트**: Spotify가 알려 주는 표지 이미지 주소(HTTPS만).
-- 저장 위치: `~/Library/Preferences/com.dynamicnotch.app.plist`, `~/Library/Application Support/Dynamic Notch/`. 둘 다 지우면 초기화됩니다.
+- 저장 위치:
+  - `~/Library/Preferences/com.dynamicnotch.app.plist` — 설정
+  - `~/Library/Application Support/com.dynamicnotch.app/` — 확장 기능 데이터, 명령 열쇠
+  - `~/Library/Application Support/DynamicNotch/Memos/` — 메모
+  - `~/Library/Application Support/Dynamic Notch/` — 트레이 복사본, 가사 캐시
 
-## 메모리
+  번들 ID와 이 폴더들은 권한과 저장한 데이터가 그대로 이어지도록 앱의 예전 이름을 씁니다. 초기화하려면 앱을 종료하고 모두 지우세요.
+
+## 메모리·백그라운드 작업
 
 - 스크린샷 썸네일과 PNG·JPEG 변환은 잠깐 떴다 끝나는 도우미 프로세스가 처리해, 전체 화면 이미지 때문에 앱 메모리가 늘지 않습니다.
 - **메모리 자동 최적화**(설정 → 일반, 기본 켬): 5분마다, 그리고 큰 작업 뒤에 앱의 메모리를 확인합니다. 정한 기준(70~150MB, 기본 70)을 넘으면 캐시를 비우고, 그래도 넘으면 쉬는 동안(노치가 닫혀 있고 진행 중인 작업이 없을 때) 조용히 다시 시작합니다. 음악은 원래 앱에서 계속 재생되고, 노치는 1초 안에 돌아옵니다.
+- 꺼 둔 기능·확장 기능은 백그라운드 작업을 하지 않습니다. 반복 확인이 필요한 것도 필요한 동안만 돕니다: 다운로드 진행률은 다운로드 중에만, 통화 상태는 통화 중에만, 앱별 볼륨·스펙트럼은 그 탭이 보일 때만. 네트워크·집중 모드 변화는 주기 확인 대신 시스템 알림으로 받습니다.
+- 화면 녹화 감지는 먼저 화면을 캡처하는 쪽이 있는지 macOS에 묻고, 있을 때만 실행 중인 프로세스를 봅니다.
 
 ## 참고 및 제한
 
@@ -397,9 +428,12 @@ Apple Silicon Mac과 Xcode Command Line Tools(Swift 5.10 이상)가 필요합니
 ```bash
 git clone https://github.com/jinwithbryxn/Dynamic-Notch.git
 cd Dynamic-Notch
-scripts/build.sh --run            # build/Dynamic Notch.app
+scripts/build.sh                  # build/Dynamic Notch.app (SwiftPM)
 scripts/build.sh --zip            # + 배포용 zip과 SHA-256
-scripts/build.sh --install --run  # /Applications 에 설치
+scripts/install-local.sh install  # 설치된 앱과 설정을 백업한 뒤 /Applications 에 설치
+scripts/install-local.sh backups  # 백업 목록, `restore <폴더>`로 되돌리기
 ```
 
+`scripts/build.sh --install`은 백업 없이 `/Applications/Dynamic Notch.app`을 바꿉니다. `install-local.sh`를 쓰세요.
 `--dev`는 `scripts/notchctl` 테스트 명령을 받는 개발용 빌드입니다 (배포하지 마세요).
+자체 검사: `"build/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --module-selftest=all` (또는 `core`, `permissions`, 확장 기능 id 하나). 검증 기록은 [docs/notchy-parity/VERIFICATION.md](docs/notchy-parity/VERIFICATION.md)에 있습니다.
