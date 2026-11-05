@@ -1,6 +1,6 @@
 import Foundation
 
-/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기).
+/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지).
 /// 네트워크 확인은 DMN_SELFTEST_NETWORK=1 일 때만.
 enum CoreSelfTest {
     static func run() -> [String] {
@@ -9,7 +9,39 @@ enum CoreSelfTest {
         lines.append(contentsOf: powerSources())
         lines.append(mediaRemoteFeed())
         lines.append(contentsOf: httpFetch())
+        lines.append(contentsOf: recordingCheck())
         return lines
+    }
+
+    /// 녹화 도구 이름 거르기가 ps와 같은지, 평소 확인(화면 캡처 여부)이 프로세스 목록 읽기보다 가벼운지
+    private static func recordingCheck() -> [String] {
+        guard let watcher = RecordingMonitor.screenWatcherPresent else {
+            return ["WARN screen watcher call missing: the recording check reads the process list every time"]
+        }
+        func ms(_ count: Int, _ body: () -> Void) -> Double {
+            let start = DispatchTime.now().uptimeNanoseconds
+            for _ in 0..<count { body() }
+            return Double(DispatchTime.now().uptimeNanoseconds - start) / Double(count) / 1_000_000
+        }
+        var procs = (ui: false, cliVideo: false)
+        let listMs = ms(50) { procs = RecordingMonitor.recorderProcesses() }
+        var watched = false
+        let watcherMs = ms(200) { watched = watcher() }
+        let uid = String(getuid())
+        let names = (ps("uid=,comm=") ?? "").split(separator: "\n").compactMap { line -> String? in
+            let parts = line.split(separator: " ", maxSplits: 1)
+            guard parts.count == 2, parts[0] == uid else { return nil }
+            return (String(parts[1]) as NSString).lastPathComponent
+        }
+        let tool = names.contains("screencaptureui") || names.contains("QuickTime Player")
+        return [
+            String(format: "recording check: screen watched %@, watcher call %.3f ms, process list %.3f ms",
+                   watched ? "yes" : "no", watcherMs, listMs),
+            procs.ui == tool ? "PASS recorder process filter agrees with ps (capture tool \(tool ? "running" : "not running"))"
+                             : "FAIL recorder process filter says \(procs.ui), ps says \(tool)",
+            watcherMs < listMs ? "PASS the screen watcher check is cheaper than reading the process list"
+                               : "WARN the screen watcher check is not cheaper than reading the process list",
+        ]
     }
 
     /// 권한이 필요 없는 스크립트로, 큐 안에서 다시 불러도 멈추지 않는지 본다
@@ -82,19 +114,26 @@ enum CoreSelfTest {
 
     /// 이 프로세스가 띄운 mr_run.pl 개수
     private static func adapterChildren() -> Int {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/bin/ps")
-        p.arguments = ["-axo", "ppid=,command="]
-        let out = Pipe()
-        p.standardOutput = out
-        p.standardError = FileHandle.nullDevice
-        guard (try? p.run()) != nil else { return -1 }
-        let data = out.fileHandleForReading.readDataToEndOfFile()
-        p.waitUntilExit()
+        guard let out = ps("ppid=,command=") else { return -1 }
         let me = String(getpid())
-        return String(decoding: data, as: UTF8.self).split(separator: "\n").filter { line in
+        return out.split(separator: "\n").filter { line in
             let parts = line.split(separator: " ", maxSplits: 1)
             return parts.first.map(String.init) == me && line.contains("mr_run.pl")
         }.count
+    }
+
+    /// 모든 프로세스의 `ps -axo <fields>` 출력 (앞 공백은 지운다)
+    private static func ps(_ fields: String) -> String? {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/ps")
+        p.arguments = ["-axo", fields]
+        let out = Pipe()
+        p.standardOutput = out
+        p.standardError = FileHandle.nullDevice
+        guard (try? p.run()) != nil else { return nil }
+        let data = out.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        return String(decoding: data, as: UTF8.self).split(separator: "\n")
+            .map { $0.drop(while: { $0 == " " }) }.joined(separator: "\n")
     }
 }

@@ -23,8 +23,8 @@ final class RecordingMonitor: ObservableObject {
     /// 이 앱이 정지시켰는지 (끝났을 때 '저장됨'으로 알림)
     private var stopRequested = false
 
-    private typealias WatcherFn = @convention(c) () -> Bool
-    private static let screenWatcherPresent: WatcherFn? = {
+    typealias WatcherFn = @convention(c) () -> Bool
+    static let screenWatcherPresent: WatcherFn? = {
         guard let h = dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_LAZY),
               let sym = dlsym(h, "SLSIsScreenWatcherPresent") else { return nil }
         return unsafeBitCast(sym, to: WatcherFn.self)
@@ -94,6 +94,14 @@ final class RecordingMonitor: ObservableObject {
     private var positiveStreak = 0
 
     private func poll() {
+        // 화면을 캡처하는 쪽이 없으면 녹화일 수 없다(systemIsRecording도 이 조건을 본다). 이때는 프로세스 목록을 읽지 않는다.
+        // 평소 확인은 대부분 여기서 끝난다 (SkyLight 호출 약 0.04ms, 프로세스 목록 읽기는 약 1ms).
+        // 녹화 중이거나 스크린샷 직후 억제 중이면 끝·억제 해제를 놓치지 않게 아래에서 모두 확인한다.
+        if startedAt == nil, !suppressedAfterScreenshot, Self.screenWatcherPresent?() == false {
+            positiveStreak = 0
+            schedule(interval: 1.5)
+            return
+        }
         let procs = Self.recorderProcesses()
         schedule(interval: procs.ui || procs.cliVideo || startedAt != nil ? 0.4 : 1.5)
         if suppressedAfterScreenshot {
@@ -259,6 +267,9 @@ final class RecordingMonitor: ObservableObject {
         guard sysctl(&mib, 4, &procs, &size, nil, 0) == 0 else { return (false, false) }
         var ui = false, cli = false
         for p in procs.prefix(size / stride) {
+            // 찾는 이름은 모두 's' 또는 'Q'로 시작한다: 나머지 수백 개는 문자열을 만들지 않고 넘긴다
+            let first = UInt8(bitPattern: p.kp_proc.p_comm.0)
+            guard first == UInt8(ascii: "s") || first == UInt8(ascii: "Q") else { continue }
             let name = withUnsafeBytes(of: p.kp_proc.p_comm) { String(cString: $0.bindMemory(to: CChar.self).baseAddress!) }
             switch name {
             case "screencaptureui", "QuickTime Player": ui = true

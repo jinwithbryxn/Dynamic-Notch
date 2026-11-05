@@ -58,6 +58,8 @@ final class TextSelectionModule: NotchModule {
     private var downPoint: CGPoint = .zero
     private var downCommand = false
     private var bar: TextActionBar?
+    /// 막대가 떠 있는 동안만 받는 스크롤·키 입력 (막대를 숨기는 데만 쓴다. 평소에는 받지 않아 스크롤할 때 깨어나지 않는다)
+    private var barMonitor: Any?
     private var hideWork: DispatchWorkItem?
     private var axWait: Timer?
 
@@ -92,7 +94,7 @@ final class TextSelectionModule: NotchModule {
             }
             return
         }
-        if let m = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .scrollWheel, .keyDown], handler: { [weak self] e in
+        if let m = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp], handler: { [weak self] e in
             self?.handle(e)
         }) { monitors.append(m) }
     }
@@ -109,8 +111,6 @@ final class TextSelectionModule: NotchModule {
             guard !downCommand, dragged || e.clickCount >= 2 else { return }
             // 앱이 선택을 반영할 시간을 잠깐 준다
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in self?.readSelection(at: up) }
-        case .scrollWheel, .keyDown:
-            hideBar()
         default: break
         }
     }
@@ -146,6 +146,7 @@ final class TextSelectionModule: NotchModule {
         let b = TextActionBar(actions: actions) { [weak self] in self?.hideBar() }
         bar = b
         b.show(near: point)
+        barMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.scrollWheel, .keyDown]) { [weak self] _ in self?.hideBar() }
         let w = DispatchWorkItem { [weak self] in self?.hideBar() }
         hideWork = w
         DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: w)
@@ -154,6 +155,8 @@ final class TextSelectionModule: NotchModule {
     private func hideBar() {
         hideWork?.cancel()
         hideWork = nil
+        if let m = barMonitor { NSEvent.removeMonitor(m) }
+        barMonitor = nil
         bar?.orderOut(nil)
         bar = nil
     }
@@ -226,6 +229,15 @@ final class TextSelectionModule: NotchModule {
             out.append("\(s) -> \(d.isEmpty ? "copy/search/look up/translate only" : d.joined(separator: "; "))")
         }
         out.append("bar actions for 'hello': \(barActions(for: "hello").map(\.id).joined(separator: ","))")
+        // 막대를 만드는 시간 (화면에 띄우지 않음): 글을 고를 때마다 주 스레드에서 이만큼 걸린다
+        _ = NSApplication.shared
+        NSApp.setActivationPolicy(.prohibited)
+        let ms = (0..<4).map { _ -> Double in
+            let start = DispatchTime.now().uptimeNanoseconds
+            _ = TextActionBar(actions: barActions(for: "hello")) {}
+            return Double(DispatchTime.now().uptimeNanoseconds - start) / 1_000_000
+        }
+        out.append(String(format: "bar build (not shown): first %.1f ms, then %.1f / %.1f / %.1f ms", ms[0], ms[1], ms[2], ms[3]))
         out.append("selection read in self test: no")
         return out
     }
