@@ -22,7 +22,7 @@ Built and tested on macOS 26 only; macOS 14 and 15 have not been tried.
 
 1. Download `Dynamic-Notch-x.y.z.zip` from [Releases](https://github.com/jinwithbryxn/Dynamic-Notch/releases) and unzip it.
 2. Move **Dynamic Notch.app** to your **Applications** folder.
-3. The app is ad-hoc signed and not notarized by Apple, so macOS blocks it the first time:
+3. The app is not notarized by Apple (since 1.2.7 it is signed with the developer's own self-signed certificate; earlier releases are ad-hoc signed), so macOS blocks it the first time:
    - Open it once, then go to **System Settings → Privacy & Security** and click **Open Anyway**, **or**
    - run `xattr -dr com.apple.quarantine "/Applications/Dynamic Notch.app"` in Terminal.
 4. On first launch the **Welcome / Permissions** window opens. Allow the permissions for the features you want (see below).
@@ -33,6 +33,8 @@ To verify the download, compare it with the `.sha256` file attached to the relea
 This build **does not replace itself**. It is marked as a custom build, so **right-click the notch → Check for Updates…** only tells you when a newer release is on GitHub. Download it from [Releases](https://github.com/jinwithbryxn/Dynamic-Notch/releases) and replace the app by hand.
 To update by hand, quit the app, replace it in Applications, and open it again.
 If Accessibility or Input Monitoring stop working after an update, remove Dynamic Notch from that list in System Settings (−) and allow it again.
+
+**Coming from 1.2.4–1.2.6:** 1.2.7 is signed with a certificate instead of ad hoc. Settings and permissions carry over, except Location Services, which asks again. The permissions you already allowed stay tied to the bundle ID alone until you remove them and allow them again (see **Signing** under Building from source).
 
 **Coming from 1.2.3 or earlier:** since 1.2.4 the bundle ID is `com.dynamicnotch.app`, so macOS treats 1.2.4 as a new app. Before replacing the old app, turn off Long-Running Commands if you use it (that removes the block it added to your shell config). After replacing it, allow the permissions again (Permissions → allow the remaining ones in turn), turn Open at Login back on, and connect Claude Code · Codex again if you connected them in the app. Settings, memos and tray items from 1.2.3 or earlier are not carried over. The old entries can be removed from the System Settings privacy lists (−). If Dynamic Notch does not show up in the Screen & System Audio Recording list after you allow it, click + under that list and pick it from Applications, or log out and back in once: until then macOS can keep treating the app at the same path as the old one.
 
@@ -247,7 +249,7 @@ macOS 26에서만 빌드·시험했습니다. macOS 14·15에서는 실행해 �
 
 1. [Releases](https://github.com/jinwithbryxn/Dynamic-Notch/releases)에서 `Dynamic-Notch-x.y.z.zip`을 받아 압축을 풉니다.
 2. **Dynamic Notch.app**을 **응용 프로그램** 폴더로 옮깁니다.
-3. Apple 공증을 받지 않은 애드혹 서명 앱이라 처음에는 macOS가 실행을 막습니다.
+3. Apple 공증을 받지 않은 앱이라(1.2.7부터 개발자의 자체 서명 인증서로 서명, 그 전 릴리스는 애드혹 서명) 처음에는 macOS가 실행을 막습니다.
    - 한 번 실행한 뒤 **시스템 설정 → 개인정보 보호 및 보안**에서 **그래도 열기**를 누르거나,
    - 터미널에서 `xattr -dr com.apple.quarantine "/Applications/Dynamic Notch.app"`을 실행하세요.
 4. 처음 실행하면 **환영 / 권한 관리** 창이 열립니다. 쓰려는 기능의 권한을 허용하세요.
@@ -258,6 +260,8 @@ macOS 26에서만 빌드·시험했습니다. macOS 14·15에서는 실행해 �
 이 빌드는 **스스로 업데이트하지 않습니다**. 개인 빌드로 표시돼 있어, **노치 우클릭 → 업데이트 확인…**을 누르면 GitHub에 새 릴리스가 있는지만 알려 줍니다. 새 버전은 [Releases](https://github.com/jinwithbryxn/Dynamic-Notch/releases)에서 받아 직접 바꿔 주세요.
 직접 업데이트하려면 앱을 종료하고 응용 프로그램 폴더의 앱을 새 버전으로 바꾼 뒤 다시 실행합니다.
 업데이트 후 손쉬운 사용·입력 모니터링이 허용돼 있는데도 동작하지 않으면, 시스템 설정의 해당 목록에서 Dynamic Notch를 지우고(−) 다시 허용하세요.
+
+**1.2.4–1.2.6에서 올릴 때:** 1.2.7은 애드혹 대신 인증서로 서명합니다. 설정과 권한은 그대로 이어지고, 위치 서비스만 다시 묻습니다. 이미 허용한 권한은 지우고 다시 허용할 때까지 번들 ID에만 묶여 있습니다(소스에서 빌드의 **서명** 참고).
 
 **1.2.3 이하에서 올릴 때:** 1.2.4부터 번들 ID가 `com.dynamicnotch.app`이라 macOS는 1.2.4를 새 앱으로 봅니다. 옛 앱을 바꾸기 전에 오래 걸리는 명령 알림을 쓰고 있었다면 꺼 주세요(셸 설정 파일에 넣은 블록을 지웁니다). 바꾼 뒤에는 권한을 다시 허용하고(권한 → 남은 항목 차례로 허용), 로그인 시 열기를 다시 켜고, 앱에서 Claude Code · Codex를 연결했었다면 다시 연결하세요. 1.2.3 이하의 설정·메모·트레이 항목은 옮겨지지 않습니다. 시스템 설정의 개인정보 목록에 남은 옛 항목은 지워도 됩니다(−). 허용을 눌러도 '화면 및 시스템 오디오 녹음' 목록에 Dynamic Notch가 나타나지 않으면, 그 목록 아래 + 버튼으로 응용 프로그램 폴더에서 고르거나 한 번 로그아웃했다 다시 로그인하세요. 그 전까지 macOS가 같은 위치의 앱을 옛 앱으로 볼 수 있습니다.
 
