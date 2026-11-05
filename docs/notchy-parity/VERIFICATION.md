@@ -230,7 +230,9 @@
 - 시도: `launchctl kickstart -k`로 그 프로세스를 다시 시작하려 했으나 SIP 때문에 거부됐다("Operation not permitted while System Integrity Protection is engaged"). 다른 방법으로 끄지 않았다. 다시 요청해도 같은 결과였다.
 - 해결 방법: 시스템 설정의 그 목록 아래 + 버튼으로 앱을 직접 추가하거나, 한 번 로그아웃했다 다시 로그인한다(그 프로세스가 새로 뜬다). 둘 다 사용자가 한다. README의 1.2.3 이하 업데이트 안내와 1.2.4 릴리스 설명에 적었다.
 - 바꾼 것: 차례로 허용 안내 창의 화면 녹화·입력 모니터링 문구에 "목록에 없으면 + 버튼으로 추가"와 "앱을 다시 시작해야 반영"을 넣었다. 진단용 `--request-screen=cg|sck|app`을 더했다(허용 창이 뜰 수 있다). 검토용 앱 `--module-selftest=all` PASS 154 FAIL 0, `core` PASS 14 FAIL 0, `permissions` PASS 4 FAIL 0. 15:08에 설치했다(백업 `backups/20261105-150823`).
-- 확인하지 못한 것: + 버튼으로 추가한 뒤 앱 쪽 상태가 허용으로 바뀌는지, 로그아웃 뒤 허용 버튼만으로 목록에 오르는지, ScreenCaptureKit 경로(`--request-screen=sck`)는 시험하지 않았다.
+- 이어서 해 본 것: 설치본을 다른 폴더에 복사해(서명과 CDHash가 같다) 같은 요청을 `open`으로 실행했다. 셸에서 실행 파일을 바로 띄우면 요청이 셸을 띄운 앱의 이름으로 가서 아무 일도 일어나지 않는다. 처음 보는 위치라 `universalAccessAuthWarn`이 번들 정보를 새로 읽었고, `client`가 새 번들 ID로 기록돼(Denied, System Set) 목록에 Dynamic Notch가 올랐다. 7초 뒤 시스템 설정의 개인정보 확장이 `/Applications/Dynamic Notch.app` 기준으로 허용(Allowed)으로 바꿨다. 스위치는 사용자가 켰다. 복사본은 LaunchServices 등록을 지우고 삭제했다.
+- 결과: 설치본으로 `--module-selftest=permissions`를 다시 돌려 `screenRecording=granted`를 확인했다. 권한을 켠 뒤 본 앱이 꺼져 있어(권한을 반영하려고 macOS가 끈 것으로 보인다) 15:18에 다시 띄웠다. CPU 0.1%, 메모리 약 71MB.
+- 확인하지 못한 것: 로그아웃 경로, ScreenCaptureKit 경로(`--request-screen=sck`), 권한을 받은 뒤 화면 녹화가 필요한 기능의 실제 동작.
 
 ## 5. 확인하지 못한 것
 
