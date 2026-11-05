@@ -1,4 +1,5 @@
 import AppKit
+import ScreenCaptureKit
 import ServiceManagement
 import SwiftUI
 
@@ -13,6 +14,8 @@ import SwiftUI
 ///   --render-permissions --out=<png> [--wait=<초>] [--height=<pt>]
 ///                                          권한 관리 창을 밝은 배경에 그려 PNG로 저장 (이 앱의 실제 권한 상태로)
 ///   --login-item=off|on                    이 앱 번들의 '로그인 시 열기' 등록을 지우거나 넣는다 (검토용 앱 정리, 설치본 옮기기용)
+///   --request-screen=cg|sck|app            화면 녹화 권한을 실제로 요청한다 (허용 창이 뜰 수 있다). cg = CGRequestScreenCaptureAccess,
+///                                          sck = ScreenCaptureKit 창 목록, app = 권한 화면의 허용 버튼과 같은 경로. 6초 뒤 상태를 출력
 enum ModuleDevTools {
     static func handle(_ arguments: [String]) {
         func value(_ name: String) -> String? {
@@ -34,6 +37,21 @@ enum ModuleDevTools {
             } catch {
                 print("login item: \(error.localizedDescription) (status \(SMAppService.mainApp.status.rawValue))")
             }
+            exit(0)
+        }
+        if let how = value("request-screen") {
+            print("screen recording before: \(CGPreflightScreenCaptureAccess() ? "granted" : "not granted")")
+            switch how {
+            case "cg": print("CGRequestScreenCaptureAccess: \(CGRequestScreenCaptureAccess())")
+            case "sck":
+                SCShareableContent.getExcludingDesktopWindows(false, onScreenWindowsOnly: true) { content, error in
+                    print("SCShareableContent: \(content.map { "\($0.windows.count) windows" } ?? "error \(error?.localizedDescription ?? "?")")")
+                }
+            case "app": PermissionsManager.shared.request(.screenRecording)
+            default: print("unknown: \(how) (cg|sck|app)"); exit(2)
+            }
+            RunLoop.main.run(until: Date().addingTimeInterval(6))
+            print("screen recording after: \(CGPreflightScreenCaptureAccess() ? "granted" : "not granted")")
             exit(0)
         }
         if arguments.contains("--list-modules") {

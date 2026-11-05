@@ -56,6 +56,9 @@ enum PermissionGuideText {
         case .systemAudio where kind.grantedInSettings || PermissionsManager.shared.status(kind) == .denied:
             return T("열린 화면 아래쪽 '시스템 오디오 녹음만' 목록에서 '\(appName)' 스위치를 켜 주세요. 위쪽 '화면 및 시스템 오디오 녹음' 목록과는 따로 허용합니다.",
                      "Turn on '\(appName)' in the 'System Audio Recording Only' list at the bottom. It is separate from the 'Screen & System Audio Recording' list above it.")
+        case .screenRecording, .inputMonitoring:
+            return T("열린 시스템 설정 목록에서 '\(appName)' 스위치를 켜 주세요. 목록에 없으면 + 버튼을 눌러 응용 프로그램 폴더에서 고릅니다. 켜지면 다음으로 넘어가고, 앱을 다시 시작해야 반영됩니다.",
+                     "In the System Settings list that opened, turn on '\(appName)'. If it isn't listed, click + and pick it from Applications. It moves on once it's on; restart the app for it to take effect.")
         case _ where kind.grantedInSettings:
             return T("열린 시스템 설정 목록에서 '\(appName)' 스위치를 켜 주세요. 켜지면 다음으로 넘어갑니다.",
                      "In the System Settings list that opened, turn on '\(appName)'. It moves on once it's on.")

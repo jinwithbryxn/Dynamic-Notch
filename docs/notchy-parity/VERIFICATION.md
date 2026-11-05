@@ -222,6 +222,16 @@
 - 설치본: 4.17의 설치본과 같은 소스다(설치본은 `install-local.sh`의 swiftc 빌드, 릴리스는 SwiftPM 빌드). 다시 설치하지 않았다.
 - 확인하지 못한 것: 4.17의 목록과 같다. 릴리스 zip을 다른 Mac에서 받아 처음 실행하는 과정, 1.2.3 이하 설치본의 업데이트 확인이 1.2.4를 알려 주는지는 해 보지 않았다.
 
+### 4.19 새 번들 ID가 화면 녹화 목록에 오르지 않음
+
+- 증상: 2026-11-05 사용자가 1.2.4 설치본의 권한을 다시 허용하다가, '입력 모니터링' 목록에 Dynamic Notch가 없고 '화면 및 시스템 오디오 녹음'에는 아래쪽 '시스템 오디오 녹음만'에만 있다고 알렸다.
+- 입력 모니터링: 앱 쪽 상태(`CGPreflightListenEventAccess`)는 허용이다. 손쉬운 사용을 허용한 앱은 따로 목록에 오르지 않아도 키 입력 감시가 허용된다. 고칠 것이 없다.
+- 화면 녹화 원인: `--request-screen=cg`(권한 화면의 허용 버튼과 같은 `CGRequestScreenCaptureAccess`)를 설치본으로 실행하고 tccd 기록을 실시간으로 받았다. tccd는 "Service kTCCServiceScreenCapture does not allow prompting; returning denied"로 답하고, 이어서 `universalAccessAuthWarn`이 앱을 목록에 올리려고 `TCCAccessSetInternal`을 보냈다. 그런데 이 요청의 `bundle_url`은 `/Applications/Dynamic Notch.app/`인데 `client`는 옛 번들 ID였다. 10월 24일부터 떠 있던 `universalAccessAuthWarn`이 같은 위치의 옛 앱 정보를 기억하고 있어서, 새 앱의 요청을 옛 ID로 기록한 것이다. 옛 ID의 앱은 없으므로 목록에 보이지 않는다.
+- 시도: `launchctl kickstart -k`로 그 프로세스를 다시 시작하려 했으나 SIP 때문에 거부됐다("Operation not permitted while System Integrity Protection is engaged"). 다른 방법으로 끄지 않았다. 다시 요청해도 같은 결과였다.
+- 해결 방법: 시스템 설정의 그 목록 아래 + 버튼으로 앱을 직접 추가하거나, 한 번 로그아웃했다 다시 로그인한다(그 프로세스가 새로 뜬다). 둘 다 사용자가 한다. README의 1.2.3 이하 업데이트 안내와 1.2.4 릴리스 설명에 적었다.
+- 바꾼 것: 차례로 허용 안내 창의 화면 녹화·입력 모니터링 문구에 "목록에 없으면 + 버튼으로 추가"와 "앱을 다시 시작해야 반영"을 넣었다. 진단용 `--request-screen=cg|sck|app`을 더했다(허용 창이 뜰 수 있다). 검토용 앱 `--module-selftest=all` PASS 154 FAIL 0, `core` PASS 14 FAIL 0, `permissions` PASS 4 FAIL 0. 15:08에 설치했다(백업 `backups/20261105-150823`).
+- 확인하지 못한 것: + 버튼으로 추가한 뒤 앱 쪽 상태가 허용으로 바뀌는지, 로그아웃 뒤 허용 버튼만으로 목록에 오르는지, ScreenCaptureKit 경로(`--request-screen=sck`)는 시험하지 않았다.
+
 ## 5. 확인하지 못한 것
 
 - 실제 화면 캡처: 셸에 화면 기록 권한이 없고, 화면 조작 도구는 메뉴 막대 전용인 이 앱을 대상으로 잡지 못했다. 화면 모양은 2절의 자체 그리기 PNG로 확인했고, 7절의 실기 결과는 사용자가 화면에서 본 것이다.
