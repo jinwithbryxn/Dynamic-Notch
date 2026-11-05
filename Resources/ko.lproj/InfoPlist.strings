@@ -11,7 +11,6 @@
 "CFBundleDisplayName" = "Dynamic Notch";
 "NSRemindersFullAccessUsageDescription" = "노치에서 미리 알림을 보고 추가하는 데 사용합니다.";
 "NSRemindersUsageDescription" = "노치에서 미리 알림을 보고 추가하는 데 사용합니다.";
-"NSContactsUsageDescription" = "전화가 올 때 상대 이름과 사진을 표시하는 데 사용합니다.";
 "NSMicrophoneUsageDescription" = "입력 레벨 표시와 기기 내 받아쓰기를 켰을 때 사용합니다.";
 "NSSpeechRecognitionUsageDescription" = "기기 내 받아쓰기와 텔레프롬프터 음성 추적을 켰을 때 사용합니다.";
 "NSAudioCaptureUsageDescription" = "오디오 스펙트럼과 앱별 볼륨을 켰을 때 사용합니다.";

@@ -71,7 +71,7 @@ enum CommandEnvelope {
     static func openCommand(_ text: String) -> String? { open(text)?["c"] as? String }
 
     /// `--send-command=<명령>`: 명령을 봉투에 넣어 본 앱에 보내고 끝나는 짧은 실행.
-    /// 앱 밖의 알림 스크립트(예: ~/.local/bin/notch-agent-done)는 이것으로 `agent:<claude|codex>|<프로젝트>`를 보낸다.
+    /// 앱 밖의 알림 스크립트(예: ~/.local/bin/notch-agent-done)는 이것으로 `agent:<claude|codex>|<프로젝트>[|<세션 주소나 번들 ID>]`를 보낸다.
     static func sendCommand(from arguments: [String]) -> String? {
         arguments.first { $0.hasPrefix("--send-command=") }.map { String($0.dropFirst("--send-command=".count)) }
     }

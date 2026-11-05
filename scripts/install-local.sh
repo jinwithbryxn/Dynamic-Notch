@@ -8,9 +8,10 @@
 #   restore   백업 폴더의 앱(과 settings.plist)으로 되돌린다
 #   backups   백업 목록
 #
-# 설정(UserDefaults)·권한(TCC)·키체인 항목은 번들 ID와 서명 요구사항(식별자 고정)이 같아 그대로 이어진다.
+# 설정(UserDefaults)·권한(TCC)·키체인 항목은 번들 ID와 서명 요구사항(번들 ID, 인증서가 있으면 번들 ID + 인증서)이 같아 그대로 이어진다 (scripts/sign.sh).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+source scripts/sign.sh
 
 NAME="Dynamic Notch"
 EXE="DynamicNotch"
@@ -38,8 +39,7 @@ build() {
     -install_name @rpath/libMRAdapter.dylib \
     -o "$BUILT/Contents/Resources/libMRAdapter.dylib" Sources/MediaRemoteAdapter/adapter.m
   cp Sources/MediaRemoteAdapter/run.pl "$BUILT/Contents/Resources/mr_run.pl"
-  codesign --force --deep --sign - --requirements "=designated => identifier \"$BUNDLE_ID\"" "$BUILT"
-  codesign --verify --deep --strict "$BUILT"
+  sign_app "$BUILT" "$BUNDLE_ID"
   echo "built: $BUILT ($(git rev-parse --short HEAD))"
 }
 

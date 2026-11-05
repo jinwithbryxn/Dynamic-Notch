@@ -13,6 +13,8 @@ import SwiftUI
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
 ///   --render-permissions --out=<png> [--wait=<초>] [--height=<pt>]
 ///                                          권한 관리 창을 밝은 배경에 그려 PNG로 저장 (이 앱의 실제 권한 상태로)
+///   --access-check[=<이름,…>]              허용된 권한으로 실제 자원(마이크 소리·카메라 화면·위치·일정 등)에 닿는지 본다.
+///                                          허용 창은 띄우지 않고, 마이크·카메라 표시등이 잠깐 켜진다 (AccessCheck.swift)
 ///   --login-item=off|on                    이 앱 번들의 '로그인 시 열기' 등록을 지우거나 넣는다 (검토용 앱 정리, 설치본 옮기기용)
 ///   --request-screen=cg|sck|app            화면 녹화 권한을 실제로 요청한다 (허용 창이 뜰 수 있다). cg = CGRequestScreenCaptureAccess,
 ///                                          sck = ScreenCaptureKit 창 목록, app = 권한 화면의 허용 버튼과 같은 경로. 6초 뒤 상태를 출력
@@ -80,6 +82,14 @@ enum ModuleDevTools {
                 print("== core")
                 for line in CoreSelfTest.run() { print("  \(line)") }
             }
+            exit(0)
+        }
+        if arguments.contains("--access-check") || value("access-check") != nil {   // 허용된 권한으로 실제 자원에 닿는지 (마이크·카메라가 잠깐 켜진다)
+            AppSettings.isHelper = true
+            _ = NSApplication.shared
+            NSApp.setActivationPolicy(.prohibited)
+            let only = value("access-check").map { Set($0.split(separator: ",").map(String.init)) }
+            for line in AccessCheck.run(only: only) { print(line) }
             exit(0)
         }
         if let state = value("render-notch"), let out = value("out") {

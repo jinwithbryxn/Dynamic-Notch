@@ -1,6 +1,6 @@
 #!/bin/bash
-# Dynamic Notch.app 빌드 + 애드혹 서명 (Apple Developer 인증서 불필요)
-# Builds "Dynamic Notch.app" and ad-hoc signs it (no Apple Developer certificate needed).
+# Dynamic Notch.app 빌드 + 서명 (실행 보호 켬, Apple Developer 인증서 불필요)
+# Builds "Dynamic Notch.app" and signs it with the hardened runtime (no Apple Developer certificate needed).
 #
 # 사용법 / Usage: scripts/build.sh [--dev] [--zip] [--install] [--run]
 #   --dev      개발용 명령(scripts/notchctl)·진단 로그 포함 / include dev commands & diagnostics
@@ -9,6 +9,7 @@
 #   --run      빌드한(또는 설치한) 앱 실행 / launch the app
 set -euo pipefail
 cd "$(dirname "$0")/.."
+source scripts/sign.sh
 
 NAME="Dynamic Notch"
 EXE="DynamicNotch"
@@ -49,11 +50,9 @@ cp -R Resources/en.lproj Resources/ko.lproj "$APP/Contents/Resources/"
 clang -dynamiclib -fobjc-arc -O2 -arch arm64 -mmacosx-version-min="$MIN_OS" -framework Foundation \
   -o "$APP/Contents/Resources/libMRAdapter.dylib" Sources/MediaRemoteAdapter/adapter.m
 cp Sources/MediaRemoteAdapter/run.pl "$APP/Contents/Resources/mr_run.pl"
-# 지정 요구사항을 번들 ID로 고정해, 업데이트해도 macOS 권한(TCC)이 유지되게 한다.
-# Pin the designated requirement to the bundle ID so permissions survive updates.
-codesign --force --deep --sign - \
-  --requirements "=designated => identifier \"$BUNDLE_ID\"" "$APP"
-codesign --verify --deep --strict "$APP"
+# 실행 보호를 켜고 서명한다. 인증서가 없으면 애드혹으로 서명하고 지정 요구사항을 번들 ID로 고정한다 (scripts/sign.sh).
+# Sign with the hardened runtime; without a certificate, sign ad hoc and pin the requirement to the bundle ID.
+sign_app "$APP" "$BUNDLE_ID"
 echo "빌드 완료 / built: $APP"
 
 if [ "$ZIP" = 1 ]; then

@@ -9,11 +9,14 @@ enum AgentSource: String, CaseIterable, Identifiable {
     var name: String { self == .claude ? "Claude Code" : "Codex" }
     var symbol: String { self == .claude ? "sparkle" : "chevron.left.forwardslash.chevron.right" }
     var tint: Color { self == .claude ? Color(red: 0.85, green: 0.47, blue: 0.34) : Color(red: 0.55, green: 0.62, blue: 1.0) }
+    /// 에이전트의 데스크톱 앱 (Codex는 ChatGPT 앱 안에 있다)
+    var appBundleID: String { self == .claude ? "com.anthropic.claudefordesktop" : "com.openai.codex" }
 }
 
 /// 작업 완료 알림.
 /// Claude Code(Stop 훅)·Codex(notify)가 작업을 끝내면 이 앱 실행 파일을 `--agent-done=<에이전트>`로 잠깐 실행하고,
 /// 그 짧은 프로세스가 분산 알림으로 본 앱에 알린 뒤 바로 끝난다. 알림을 누르면 에이전트가 돌던 앱(터미널·Claude·Codex 등)을 연다.
+/// 에이전트가 자기 데스크톱 앱 안에서 돌았으면 그 세션 주소(`sessionLink`)를 열어, 앱이 그 세션·스레드 화면으로 바뀐 채 앞에 온다.
 /// 알림 내용(프로젝트, 끝난 작업 문구)은 CommandEnvelope로 봉인해 다른 프로세스가 엿보거나 꾸밀 수 없다.
 enum AgentNotify {
     static let notification = Notification.Name("com.dynamicnotch.app.agent")
@@ -66,16 +69,61 @@ enum AgentNotify {
             }
         }
         let app = guiAncestor()
+        let link = sessionLink(source, hostBundle: app?.bundleIdentifier,
+                               environment: ProcessInfo.processInfo.environment, payload: codexPayload(payloadArgs))
         let payload: [String: Any] = ["source": source.rawValue,
                                       "project": URL(fileURLWithPath: folder).lastPathComponent,
                                       "task": oneLine(task, limit: 80),
                                       "bundle": app?.bundleIdentifier ?? "",
-                                      "pid": Int(app?.processIdentifier ?? 0)]
+                                      "pid": Int(app?.processIdentifier ?? 0),
+                                      "link": link ?? ""]
         if let envelope = CommandEnvelope.seal(payload) {
             DistributedNotificationCenter.default().postNotificationName(notification, object: envelope,
                                                                          userInfo: nil, deliverImmediately: true)
         }
         exit(0)
+    }
+
+    /// Codex notify가 마지막 인자로 넘긴 JSON (Claude 훅이면 빈 값)
+    private static func codexPayload(_ args: [String]) -> [String: Any] {
+        guard let last = args.last, let data = last.data(using: .utf8),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
+        return obj
+    }
+
+    // MARK: 세션 주소
+
+    /// 알림을 누르면 열 세션 주소. 에이전트 앱이 받아 주는 형식만 통과시키고 다른 주소는 버린다.
+    ///   Claude 데스크톱 앱: claude://code/continue?session=local_<id> (세션 프로세스의 CLAUDE_CODE_HOST_SESSION_ID)
+    ///   Codex(ChatGPT 앱): codex://threads/<스레드 UUID> (notify JSON의 thread-id)
+    /// 두 앱 모두 이 주소를 받으면 그 세션·스레드 화면으로 바꾼다. Claude는 로그인해 있고 관리 정책이 링크를 막지 않을 때만 받는다.
+    static func sessionLink(_ text: String) -> URL? {
+        let allowed = [#"^claude://code/continue\?session=local_[A-Za-z0-9-]{1,64}$"#,
+                       #"^codex://threads/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"#]
+        guard allowed.contains(where: { text.range(of: $0, options: .regularExpression) != nil }) else { return nil }
+        return URL(string: text)
+    }
+
+    /// 훅 프로세스가 아는 세션 주소. 에이전트가 자기 데스크톱 앱 안에서 돌 때만 만든다.
+    /// 터미널·편집기에서 돌았으면 nil이고, 알림을 누르면 그 앱만 앞으로 온다 (탭·창까지 고르지는 못한다).
+    static func sessionLink(_ source: AgentSource, hostBundle: String?, environment: [String: String],
+                            payload: [String: Any]) -> String? {
+        guard hostBundle == source.appBundleID else { return nil }
+        switch source {
+        case .claude:
+            return environment["CLAUDE_CODE_HOST_SESSION_ID"].flatMap { sessionLink("claude://code/continue?session=\($0)") }?.absoluteString
+        case .codex:
+            return (payload["thread-id"] as? String).flatMap { sessionLink("codex://threads/\($0)") }?.absoluteString
+        }
+    }
+
+    /// 세션 주소를 받는 앱의 번들 ID
+    static func bundleID(for link: URL) -> String? {
+        switch link.scheme {
+        case "claude": return AgentSource.claude.appBundleID
+        case "codex": return AgentSource.codex.appBundleID
+        default: return nil
+        }
     }
 
     /// 대화 기록(JSONL)에서 사용자가 마지막으로 보낸 요청. 파일 끝 512KB만 읽는다.
@@ -131,7 +179,7 @@ enum AgentNotify {
 
     // MARK: 본 앱 쪽
 
-    /// 알림을 받아 노치에 띄운다. 누르면 열 앱은 activity.targetApp("번들ID|pid")에 담는다.
+    /// 알림을 받아 노치에 띄운다. 누르면 열 곳은 activity.targetApp("번들ID|pid|세션 주소")에 담는다.
     static func observe(center: ActivityCenter) -> NSObjectProtocol {
         DistributedNotificationCenter.default().addObserver(forName: notification, object: nil, queue: .main) { note in
             guard AppSettings.shared.agentAlerts, let raw = note.object as? String,
@@ -141,7 +189,8 @@ enum AgentNotify {
             let bundle = info["bundle"] as? String ?? ""
             let pid = info["pid"] as? Int ?? 0
             let task = info["task"] as? String ?? ""
-            center.post(activity(source, project: project, task: task, target: bundle.isEmpty ? nil : "\(bundle)|\(pid)"))
+            let link = (info["link"] as? String).flatMap(sessionLink)?.absoluteString ?? ""
+            center.post(activity(source, project: project, task: task, target: bundle.isEmpty ? nil : "\(bundle)|\(pid)|\(link)"))
         }
     }
 
@@ -159,10 +208,14 @@ enum AgentNotify {
                              value: .text(T("완료", "Done")), title: title, subtitle: subtitle, targetApp: target)
     }
 
-    /// 알림을 눌렀을 때: 에이전트가 돌던 앱을 앞으로 (같은 창이 남아 있으면 그 앱 그대로)
+    /// 알림을 눌렀을 때: 세션 주소가 있으면 그 세션을 열고, 없으면 에이전트가 돌던 앱을 앞으로 (같은 창이 남아 있으면 그 앱 그대로)
     static func open(_ target: String?) {
         guard let target else { return }
-        let parts = target.split(separator: "|").map(String.init)
+        let parts = target.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
+        if parts.count > 2, let link = sessionLink(parts[2]) {
+            openSession(link)
+            return
+        }
         let running = parts.count > 1 ? NSRunningApplication(processIdentifier: pid_t(Int(parts[1]) ?? 0)) : nil
         let url = running?.bundleURL
             ?? NSWorkspace.shared.urlForApplication(withBundleIdentifier: parts.first ?? "")
@@ -170,6 +223,39 @@ enum AgentNotify {
         let config = NSWorkspace.OpenConfiguration()
         config.activates = true
         NSWorkspace.shared.openApplication(at: url, configuration: config)
+    }
+
+    /// 세션 주소를 열어 에이전트 앱이 그 세션으로 바뀌게 하고, 앱 창을 맨 앞으로 꺼낸다.
+    /// macOS 14부터는 앞에 있는 앱이 양보해야 다른 앱이 앞으로 오므로, 누른 순간 이 앱이 받은 차례를 그 앱에 넘긴다.
+    private static func openSession(_ link: URL) {
+        let bundle = bundleID(for: link)
+        if let bundle { NSApp.yieldActivation(toApplicationWithBundleIdentifier: bundle) }
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = true
+        NSWorkspace.shared.open(link, configuration: config) { app, _ in
+            guard let app else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { bringForward(app) }
+        }
+    }
+
+    /// 앱을 맨 앞으로: 숨겼으면 다시 보이고, 창이 모두 Dock에 내려가 있으면 손쉬운 사용 권한으로 하나를 올린다.
+    /// (주소를 받은 앱은 화면만 바꾸고, 내려 둔 창은 그대로 둘 수 있다)
+    static func bringForward(_ app: NSRunningApplication) {
+        if app.isHidden { app.unhide() }
+        app.activate()
+        guard AXIsProcessTrusted() else { return }
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(AXUIElementCreateApplication(app.processIdentifier),
+                                            kAXWindowsAttribute as CFString, &value) == .success,
+              let windows = value as? [AXUIElement], let first = windows.first else { return }
+        let minimized = windows.allSatisfy { window in
+            var flag: CFTypeRef?
+            AXUIElementCopyAttributeValue(window, kAXMinimizedAttribute as CFString, &flag)
+            return (flag as? Bool) ?? false
+        }
+        guard minimized else { return }
+        AXUIElementSetAttributeValue(first, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
+        AXUIElementPerformAction(first, kAXRaiseAction as CFString)
     }
 }
 

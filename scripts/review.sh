@@ -13,6 +13,7 @@
 # SwiftPM 매니페스트 링크가 깨진 Mac에서도 되도록 swiftc로 직접 빌드한다.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+source scripts/sign.sh
 
 NAME="Dynamic Notch Review"
 EXE="DynamicNotchReview"
@@ -48,8 +49,7 @@ build() {
     -install_name @rpath/libMRAdapter.dylib \
     -o "$APP/Contents/Resources/libMRAdapter.dylib" Sources/MediaRemoteAdapter/adapter.m
   cp Sources/MediaRemoteAdapter/run.pl "$APP/Contents/Resources/mr_run.pl"
-  codesign --force --deep --sign - --requirements "=designated => identifier \"$BUNDLE_ID\"" "$APP"
-  codesign --verify --deep --strict "$APP"
+  sign_app "$APP" "$BUNDLE_ID"
   echo "built: $APP"
 }
 

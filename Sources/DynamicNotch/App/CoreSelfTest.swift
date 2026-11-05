@@ -1,6 +1,6 @@
 import Foundation
 
-/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지).
+/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지, 에이전트 세션 주소).
 /// 네트워크 확인은 DMN_SELFTEST_NETWORK=1 일 때만.
 enum CoreSelfTest {
     static func run() -> [String] {
@@ -11,7 +11,33 @@ enum CoreSelfTest {
         lines.append(contentsOf: httpFetch())
         lines.append(contentsOf: recordingCheck())
         lines.append(islandScale())
+        lines.append(agentSessionLinks())
         return lines
+    }
+
+    /// 완료 알림을 누르면 여는 세션 주소: 에이전트 앱이 받는 두 형식만 통과하고, 훅 쪽은 자기 데스크톱 앱 안에서 돌 때만 만드는지
+    private static func agentSessionLinks() -> String {
+        let accepted = ["claude://code/continue?session=local_0f1e2d3c-4b5a-4968-8776-a5b4c3d2e1f0",
+                        "codex://threads/019a2b3c-4d5e-7f60-8a1b-2c3d4e5f6a7b"]
+        let refused = ["claude://code/continue?session=last", "claude://code/new?folder=/tmp",
+                       "claude://code/continue?session=local_x&q=hi", "codex://threads/new",
+                       "codex://threads/019a2b3c-4d5e-7f60-8a1b-2c3d4e5f6a7b?prompt=hi", "https://example.com",
+                       "file:///Applications/Calculator.app", "claude://code/continue?session=local_a\nb",
+                       "codex://threads/019a2b3c-4d5e-7f60-8a1b-2c3d4e5f6a7b\n"]
+        let wrongIn = accepted.filter { AgentNotify.sessionLink($0) == nil }
+        let wrongOut = refused.filter { AgentNotify.sessionLink($0) != nil }
+        let env = ["CLAUDE_CODE_HOST_SESSION_ID": "local_0f1e2d3c-4b5a-4968-8776-a5b4c3d2e1f0"]
+        let thread = ["thread-id": "019a2b3c-4d5e-7f60-8a1b-2c3d4e5f6a7b"]
+        let hook = [
+            AgentNotify.sessionLink(.claude, hostBundle: "com.anthropic.claudefordesktop", environment: env, payload: [:]) == accepted[0],
+            AgentNotify.sessionLink(.claude, hostBundle: "com.apple.Terminal", environment: env, payload: [:]) == nil,
+            AgentNotify.sessionLink(.codex, hostBundle: "com.openai.codex", environment: [:], payload: thread) == accepted[1],
+            AgentNotify.sessionLink(.codex, hostBundle: "com.googlecode.iterm2", environment: [:], payload: thread) == nil,
+        ]
+        guard wrongIn.isEmpty, wrongOut.isEmpty, !hook.contains(false) else {
+            return "FAIL agent session links: refused \(wrongIn), let through \(wrongOut), hook cases \(hook)"
+        }
+        return "PASS agent session links (\(accepted.count) accepted, \(refused.count) refused, \(hook.count) hook cases)"
     }
 
     /// 아일랜드 글자 단계가 iOS 글자 크기 × 환산 비율(0.5pt 단위)과 같고, 작은 것부터 커지는지

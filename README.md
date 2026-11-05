@@ -138,10 +138,11 @@ Every alert can be **compact or detailed**, and durations are configurable. **Lo
 When several activities run at once (screen recording, timer, AirDrop, download, music, hotspot, Focus), the one highest in **Settings → Priority** is shown. Reorder with the arrows. Long-press it to open its popup, then use the dots or a two-finger swipe to page through the other live activities (on the music player, the swipe skips songs; use the dots instead). When it closes, the notch again shows the highest-priority one.
 
 ### Claude Code · Codex
-When a Claude Code or Codex task finishes, the notch shows **Done**; click it to bring up the app it ran in (Terminal, VS Code, Claude, Codex…). Choose Compact (icon and Done) or Detailed ("Claude Code · project" plus the finished task, i.e. your last request). Turn it on in Settings → Interactions → Claude Code · Codex with **Connect**: this adds a Stop hook to `~/.claude/settings.json`, and sets `notify` in `~/.codex/config.toml`. If Codex already had a `notify` command, that command still runs, and Disconnect restores it. A backup (`.dynamicnotch.bak`) is kept before the first change.
+When a Claude Code or Codex task finishes, the notch shows **Done**; click it to bring up the app it ran in (Terminal, VS Code, Claude, Codex…). If the task ran in the Claude desktop app or the Codex app, the click opens that session or thread (`claude://code/continue?session=local_…`, `codex://threads/<id>`) and brings its window to the front; a terminal or editor only comes to the front, without picking the tab. Choose Compact (icon and Done) or Detailed ("Claude Code · project" plus the finished task, i.e. your last request). Turn it on in Settings → Interactions → Claude Code · Codex with **Connect**: this adds a Stop hook to `~/.claude/settings.json`, and sets `notify` in `~/.codex/config.toml`. If Codex already had a `notify` command, that command still runs, and Disconnect restores it. A backup (`.dynamicnotch.bak`) is kept before the first change.
 
 Your own scripts can send the same alert through the app:
 `"/Applications/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --send-command="agent:claude|my-project"` (or `agent:codex|…`).
+An optional third field says what a click opens: one of the two session links above, or the bundle ID of a running app (for example `agent:claude|my-project|com.apple.Terminal`). Anything else is ignored.
 Since 1.2.3 the app accepts commands only when they are sealed with its own key (`~/Library/Application Support/com.dynamicnotch.app/command.key`), less than 30 seconds old and not seen before, so posting the distributed notification directly no longer works. Programs running as your user outside a sandbox can still read that key file.
 
 ### Lock screen
@@ -217,8 +218,10 @@ scripts/install-local.sh backups  # list backups; `restore <folder>` puts one ba
 ```
 
 `scripts/build.sh --install` replaces `/Applications/Dynamic Notch.app` without a backup; prefer `install-local.sh`.
+
+**Signing.** All three scripts sign through `scripts/sign.sh` with the hardened runtime, so other programs cannot load code into the app (for example with `DYLD_INSERT_LIBRARIES`) and borrow its permissions. The app gets only the entitlements in `Resources/DynamicNotch.entitlements` (camera, microphone, location, calendars, Apple Events). Without a certificate the app is signed ad hoc and its designated requirement is the bundle ID alone, as before. To tie it to a certificate, run `scripts/make-signing-cert.sh` once: it puts a self-signed "Dynamic Notch Local Signing" certificate in your login keychain (no trust settings are changed), and later builds are signed with it, so the requirement becomes the bundle ID plus that certificate. The first build may ask for your login password to let codesign use the key (**Always Allow**). Permissions carry over from the ad hoc app except Location Services, which asks again. The permissions you had already allowed keep the old bundle-ID-only requirement until you remove them and allow them again (for example `tccutil reset All com.dynamicnotch.app`, then allow them in the Permissions window). If the certificate is deleted, a build signed with a new one needs the permissions again. `DMN_SIGN_IDENTITY` picks another identity.
 `--dev` builds a development version that also accepts test commands from `scripts/notchctl` (never ship it).
-Built-in checks: `"build/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --module-selftest=all` (or `core`, `permissions`, or one extension's id). Verification records are in [docs/notchy-parity/VERIFICATION.md](docs/notchy-parity/VERIFICATION.md).
+Built-in checks: `"build/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --module-selftest=all` (or `core`, `permissions`, or one extension's id). `--access-check` reads the microphone, camera, location, calendars and the other allowed resources once, without prompts, and prints only whether it worked (the microphone and camera lights turn on briefly). Verification records are in [docs/notchy-parity/VERIFICATION.md](docs/notchy-parity/VERIFICATION.md).
 
 
 ---
@@ -360,10 +363,11 @@ iPhone 전화(연속성)와 FaceTime 오디오 통화가 노치에 나타납니�
 여러 활동(화면 녹화, 타이머, 에어드랍, 다운로드, 음악, 핫스팟, 집중 모드)이 동시에 진행되면 **설정 → 우선순위**에서 위에 있는 것이 표시됩니다. 화살표로 순서를 바꿉니다. 길게 눌러 팝업을 열면 아래 점이나 두 손가락 좌우로 다른 상시 항목을 넘겨 볼 수 있습니다(음악 팝업에서는 좌우가 곡 넘기기라 점을 누르세요). 닫으면 다시 우선순위가 가장 높은 항목이 표시됩니다.
 
 ### Claude Code · Codex
-Claude Code·Codex 작업이 끝나면 노치에 **완료**가 뜨고, 누르면 그 작업이 돌던 앱(터미널·VS Code·Claude·Codex 등)이 열립니다. 컴팩트(아이콘·완료) 또는 상세("Claude Code · 프로젝트"와 끝난 작업 = 마지막으로 보낸 요청)를 고를 수 있습니다. 설정 → 상호작용 → Claude Code · Codex에서 **연결**을 누르면 `~/.claude/settings.json`에 작업 완료(Stop) 훅을, `~/.codex/config.toml`의 `notify`에 이 앱을 넣습니다. Codex에 원래 notify가 있었다면 그 명령도 그대로 실행되고, 연결 해제 시 원래대로 돌아갑니다. 처음 바꾸기 전 원본은 `.dynamicnotch.bak`으로 남깁니다.
+Claude Code·Codex 작업이 끝나면 노치에 **완료**가 뜨고, 누르면 그 작업이 돌던 앱(터미널·VS Code·Claude·Codex 등)이 열립니다. Claude 데스크톱 앱이나 Codex 앱에서 돈 작업이면 그 세션·스레드(`claude://code/continue?session=local_…`, `codex://threads/<id>`)를 열고 창을 맨 앞으로 꺼냅니다. 터미널·편집기는 앱만 앞으로 오고 탭까지 고르지는 않습니다. 컴팩트(아이콘·완료) 또는 상세("Claude Code · 프로젝트"와 끝난 작업 = 마지막으로 보낸 요청)를 고를 수 있습니다. 설정 → 상호작용 → Claude Code · Codex에서 **연결**을 누르면 `~/.claude/settings.json`에 작업 완료(Stop) 훅을, `~/.codex/config.toml`의 `notify`에 이 앱을 넣습니다. Codex에 원래 notify가 있었다면 그 명령도 그대로 실행되고, 연결 해제 시 원래대로 돌아갑니다. 처음 바꾸기 전 원본은 `.dynamicnotch.bak`으로 남깁니다.
 
 직접 만든 스크립트에서도 앱을 통해 같은 알림을 보낼 수 있습니다:
 `"/Applications/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --send-command="agent:claude|내-프로젝트"` (Codex는 `agent:codex|…`).
+세 번째 칸을 붙이면 눌렀을 때 열 곳을 정합니다: 위의 세션 주소 두 형식 중 하나, 또는 실행 중인 앱의 번들 ID(예: `agent:claude|내-프로젝트|com.apple.Terminal`). 다른 값은 무시합니다.
 1.2.3부터 앱은 자기 열쇠(`~/Library/Application Support/com.dynamicnotch.app/command.key`)로 봉인했고 만든 지 30초 안이며 처음 보는 명령만 받습니다. 분산 알림을 직접 보내는 방식은 더 이상 동작하지 않습니다. 같은 사용자 권한으로 도는 샌드박스 밖 프로그램은 이 열쇠 파일을 읽을 수 있습니다.
 
 ### 잠금화면
@@ -439,5 +443,7 @@ scripts/install-local.sh backups  # 백업 목록, `restore <폴더>`로 되돌�
 ```
 
 `scripts/build.sh --install`은 백업 없이 `/Applications/Dynamic Notch.app`을 바꿉니다. `install-local.sh`를 쓰세요.
+
+**서명.** 세 스크립트 모두 `scripts/sign.sh`로 실행 보호(hardened runtime)를 켜고 서명합니다. 그래서 다른 프로그램이 `DYLD_INSERT_LIBRARIES` 같은 방법으로 앱에 코드를 끼워 넣어 앱의 권한을 빌려 쓰지 못합니다. 앱이 받는 허가는 `Resources/DynamicNotch.entitlements`에 적은 것(카메라, 마이크, 위치, 캘린더, Apple Events)뿐입니다. 인증서가 없으면 지금처럼 애드혹으로 서명하고 지정 요구사항은 번들 ID만입니다. 인증서에 묶으려면 `scripts/make-signing-cert.sh`를 한 번 실행하세요. 로그인 키체인에 자체 서명 인증서 "Dynamic Notch Local Signing"을 넣고(신뢰 설정은 바꾸지 않음), 이후 빌드는 이 인증서로 서명해 요구사항이 '번들 ID + 이 인증서'가 됩니다. 첫 빌드에서 codesign이 키를 써도 되는지 로그인 암호를 물을 수 있습니다(**항상 허용**). 애드혹 앱의 권한은 위치 서비스만 빼고 그대로 이어지고, 위치는 다시 묻습니다. 이미 허용한 권한은 지우고 다시 허용할 때까지 예전 요구사항(번들 ID만)으로 남습니다(예: `tccutil reset All com.dynamicnotch.app` 뒤 권한 창에서 다시 허용). 인증서를 지우면 새 인증서로 서명한 빌드는 권한을 다시 받아야 합니다. 다른 신원은 `DMN_SIGN_IDENTITY`로 고릅니다.
 `--dev`는 `scripts/notchctl` 테스트 명령을 받는 개발용 빌드입니다 (배포하지 마세요).
-자체 검사: `"build/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --module-selftest=all` (또는 `core`, `permissions`, 확장 기능 id 하나). 검증 기록은 [docs/notchy-parity/VERIFICATION.md](docs/notchy-parity/VERIFICATION.md)에 있습니다.
+자체 검사: `"build/Dynamic Notch.app/Contents/MacOS/DynamicNotch" --module-selftest=all` (또는 `core`, `permissions`, 확장 기능 id 하나). `--access-check`는 허용된 마이크·카메라·위치·캘린더 등을 창 없이 한 번씩 읽어 되는지만 출력합니다(마이크·카메라 표시등이 잠깐 켜짐). 검증 기록은 [docs/notchy-parity/VERIFICATION.md](docs/notchy-parity/VERIFICATION.md)에 있습니다.

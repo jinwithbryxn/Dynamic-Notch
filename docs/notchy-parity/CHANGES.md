@@ -14,6 +14,8 @@
 | 상세 카드 버튼(`ActivityAction`) — 에이전트 승인 허용·거부 등 | `Activity/NotchActivity.swift`, `ActivityViews.swift` | M-K-018 |
 | 두 번째 라이브 활동을 노치 오른쪽에 떨어진 동그라미로 (다이나믹 아일랜드 minimal) | `Notch/IslandExtras.swift`, `NotchRootView.swift`, `NotchController.swift` | M-A-008, M-A-010 |
 | 다이내믹 아일랜드 모양 맞추기 (1.2.5): 연속 곡률 아래 모서리, 작은 표시 양끝 반원, 펼친 카드·확장 반경 38pt, 어두운 모드 둘레 선(0.5pt, 7%), 글자 단계(`IslandText`)와 medium 이상 굵기, SF Pro | `Notch/IslandStyle.swift`, `NotchShape.swift`, `NotchViewModel.swift`, `NotchRootView.swift`, `Activity/ActivityViews.swift`, 노치 화면 96개 파일의 글자 크기 | M-A-008, M-A-010 |
+| 실행 보호와 서명: 세 빌드 스크립트가 `scripts/sign.sh`로 hardened runtime을 켜고 허가 5개(카메라, 마이크, 위치, 캘린더, Apple Events)만 준다. 키체인의 "Dynamic Notch Local Signing" 인증서(`scripts/make-signing-cert.sh`)가 있으면 그것으로 서명해 지정 요구사항이 번들 ID + 인증서가 된다. 쓰지 않는 연락처 사용 설명을 Info.plist에서 뺐다. `--access-check`로 허용된 자원을 실제로 한 번씩 읽는다 | `scripts/sign.sh`, `scripts/make-signing-cert.sh`, `scripts/build.sh`, `install-local.sh`, `review.sh`, `Resources/DynamicNotch.entitlements`, `Resources/Info.plist`, `Permissions/AccessCheck.swift` | — |
+| 에이전트 완료 알림을 누르면 그 세션으로: Claude 데스크톱 앱은 `claude://code/continue?session=local_…`, Codex 앱은 `codex://threads/<id>`를 열고 창을 앞으로 꺼낸다(내려 둔 창은 손쉬운 사용으로 올림). `agent:` 명령의 세 번째 칸(세션 주소 또는 실행 중인 앱 번들 ID), 두 형식만 받는 검사 | `Features/Agent/AgentNotify.swift`, `App/AppDelegate.swift`, `App/CoreSelfTest.swift` | M-K-018 |
 | 음악 호버 미리보기(미니 플레이어), 지연 설정 | `Notch/IslandExtras.swift`, `NotchController.swift` | M-A-005 |
 | 더 중요한 알림에 밀려난 알림을 대기열로 되돌림 | `Activity/ActivityCenter.swift` | M-A-007 |
 | 노치 없는 화면에서 메뉴바 아래 떠 있는 알약 | `Notch/NotchRootView.swift`, `NotchViewModel.swift` | M-A-002 |

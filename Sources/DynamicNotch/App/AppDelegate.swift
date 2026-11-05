@@ -268,16 +268,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return list + fixed.filter { a in ([a.title, a.subtitle ?? ""] + a.keywords).contains { $0.lowercased().contains(q) } }
     }
 
-    /// 코딩 에이전트(Claude Code·Codex) 작업 완료 알림. 형식: "agent:<claude|codex>|<프로젝트 이름>"
+    /// 코딩 에이전트(Claude Code·Codex) 작업 완료 알림. 형식: "agent:<claude|codex>|<프로젝트 이름>[|<누르면 열 곳>]"
     /// ~/.local/bin/notch-agent-done 이 상위 작업·하위 에이전트·백그라운드 작업이 모두 끝났을 때만 보낸다.
     /// 보낸 쪽을 확인할 수 없으므로 제목·아이콘은 정해진 값만 쓰고, 프로젝트 이름은 한 줄 40자까지만 받는다.
+    /// 누르면 열 곳은 세션 주소(AgentNotify.sessionLink가 받는 두 형식)나, 지금 실행 중인 앱의 번들 ID(터미널 등)만 받는다.
     /// 모양(컴팩트·상세)과 켜고 끄기는 앱 설정의 에이전트 알림 항목을 따른다.
     private func postAgentDone(_ payload: String) {
         guard settings.agentAlerts else { return }
-        let parts = payload.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
+        let parts = payload.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
         guard let source = parts.first.flatMap({ AgentSource(rawValue: String($0)) }) else { return }
         let project = parts.count > 1 ? String(parts[1].filter { !$0.isNewline }.prefix(40)) : ""
-        var activity = AgentNotify.activity(source, project: project, task: "", target: nil)
+        var target: String?
+        if parts.count > 2 {
+            let open = String(parts[2])
+            if let link = AgentNotify.sessionLink(open), let bundle = AgentNotify.bundleID(for: link) {
+                target = "\(bundle)|0|\(link.absoluteString)"
+            } else if open.range(of: #"^[A-Za-z0-9][A-Za-z0-9.-]{0,199}$"#, options: .regularExpression) != nil,
+                      !NSRunningApplication.runningApplications(withBundleIdentifier: open).isEmpty {
+                target = "\(open)|0"
+            }
+        }
+        var activity = AgentNotify.activity(source, project: project, task: "", target: target)
         activity.artwork = agentIcon(source.rawValue)
         center.post(activity)
     }
