@@ -16,6 +16,7 @@ import SwiftUI
 ///                                          권한 관리 창을 밝은 배경에 그려 PNG로 저장 (이 앱의 실제 권한 상태로)
 ///   --render-settings=<id> --out=<png> [--wait=<초>] [--height=<pt>]
 ///                                          기능 설정 화면을 밝은 배경에 그려 PNG로 저장 (이 Mac의 실제 설정값으로)
+///   --nm-dump[=<초>]                       알림 센터의 손쉬운 사용 구조를 글자 내용 없이 출력 (배너가 뜰 때까지 기다림, NMDump.swift)
 ///   --access-check[=<이름,…>]              허용된 권한으로 실제 자원(마이크 소리·카메라 화면·위치·일정 등)에 닿는지 본다.
 ///                                          허용 창은 띄우지 않고, 마이크·카메라 표시등이 잠깐 켜진다 (AccessCheck.swift)
 ///   --login-item=off|on                    이 앱 번들의 '로그인 시 열기' 등록을 지우거나 넣는다 (검토용 앱 정리, 설치본 옮기기용)
@@ -93,6 +94,13 @@ enum ModuleDevTools {
             NSApp.setActivationPolicy(.prohibited)
             let only = value("access-check").map { Set($0.split(separator: ",").map(String.init)) }
             for line in AccessCheck.run(only: only) { print(line) }
+            exit(0)
+        }
+        if arguments.contains("--nm-dump") || value("nm-dump") != nil {   // 알림 센터 구조 (글자 내용 없이)
+            AppSettings.isHelper = true
+            _ = NSApplication.shared
+            NSApp.setActivationPolicy(.prohibited)
+            for line in NMDump.run(wait: Double(value("nm-dump") ?? "") ?? 0) { print(line) }
             exit(0)
         }
         if let state = value("render-notch"), let out = value("out") {

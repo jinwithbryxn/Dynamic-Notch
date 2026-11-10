@@ -523,9 +523,33 @@ enum NMSelfTest {
         check("call banner flagged", sd.banners.first?.isCall == true)
 
         // ⑤ 알림 센터 목록(위젯 포함)이 열리면 미러링하지 않는다
-        let widget = NMNode(role: "AXGroup", identifier: "widget-calendar")
+        var widget = NMNode(role: "AXGroup", identifier: "widget-calendar")
+        widget.size = CGSize(width: 164, height: 164)
         let se = NMBannerReader.parse([NMNode(role: "AXWindow", children: [widget, a])])
         check("panel open detected", se.panelOpen)
+        // ⑤-2 바탕화면 위젯(따로 된 창)과 배너 창의 크기 0 위젯 자리는 목록이 열린 것이 아니다 (macOS 26.5)
+        var desktopWidget = NMNode(role: "AXGroup", identifier: "widget-local:calendar")
+        desktopWidget.size = CGSize(width: 164, height: 164)
+        let overlay = NMNode(role: "AXGroup", identifier: "widgets-overlay-view")
+        let bannerWindow = NMNode(role: "AXWindow", subrole: "AXSystemDialog", children: [
+            NMNode(role: "AXGroup", children: [NMNode(role: "AXScrollArea", children: [a, overlay])]),
+        ])
+        let sw = NMBannerReader.parse([NMNode(role: "AXWindow", subrole: "AXUnknown", children: [desktopWidget]), bannerWindow])
+        check("desktop widgets are not the panel", !sw.panelOpen && sw.banners.count == 1)
+
+        // ⑤-3 macOS 26 설명: "앱 제목, 본문" (앱 이름과 제목이 띄어쓰기로 붙음)
+        let closeActions = ["Name:세부사항 보기\nTarget:0x0\nSelector:(null)", "Name:보기\nTarget:0x0\nSelector:(null)",
+                            "Name:닫기\nTarget:0x0\nSelector:(null)"]
+        let s26 = NMNode(role: "AXGroup", subrole: "AXNotificationCenterBanner", desc: "Slack 김하나, 시안 올렸어요", actions: closeActions,
+                         children: [text("김하나", id: "title"), text("시안 올렸어요", id: "body")])
+        let s26b = NMNode(role: "AXGroup", subrole: "AXNotificationCenterBanner", desc: "스크립트 편집기 노치 시험, 본문", actions: closeActions,
+                          children: [text("노치 시험", id: "title"), text("본문", id: "body")])
+        let p26 = NMBannerReader.parse([NMNode(role: "AXWindow", children: [s26, s26b])])
+        check("macOS 26 description layout", p26.banners.count == 2
+              && p26.banners[0].appName == "Slack" && p26.banners[0].title == "김하나" && p26.banners[0].body == "시안 올렸어요"
+              && p26.banners[1].appName == "스크립트 편집기")
+        check("app name keeps a word equal to the title",
+              NMBannerReader.appName(fromDescription: "Google Chrome Chrome, 다운로드 완료", title: "Chrome") == "Google Chrome")
 
         // ⑥ 시각 글자 판별
         check("timestamps", ["now", "5분 전", "3m ago", "오후 3:12", "9:41 AM"].allSatisfy { NMBannerReader.isTimestamp(text($0)) }

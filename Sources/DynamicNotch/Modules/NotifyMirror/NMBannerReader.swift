@@ -11,6 +11,8 @@ struct NMNode {
     var value = ""
     var actions: [String] = []
     var children: [NMNode] = []
+    /// 크기 (위젯 요소만 읽는다. 나머지는 0)
+    var size = CGSize.zero
     /// 실제 요소 (자체 검사용 트리에서는 nil)
     var element: AXUIElement? = nil
 }
@@ -99,6 +101,15 @@ enum NMBannerReader {
         return ""
     }
 
+    private static func size(_ el: AXUIElement) -> CGSize {
+        var v: CFTypeRef?
+        var s = CGSize.zero
+        if AXUIElementCopyAttributeValue(el, kAXSizeAttribute as CFString, &v) == .success, let v {
+            AXValueGetValue(v as! AXValue, .cgSize, &s)
+        }
+        return s
+    }
+
     /// 요소 하나와 그 아래를 값 트리로 읽는다.
     static func snapshot(element: AXUIElement, maxNodes: Int = 300) -> NMNode {
         var budget = maxNodes
@@ -113,6 +124,7 @@ enum NMBannerReader {
         node.identifier = string(el, "AXIdentifier")
         node.title = string(el, kAXTitleAttribute)
         node.desc = string(el, kAXDescriptionAttribute)
+        if isWidget(node) { node.size = size(el) }
         if node.role == kAXStaticTextRole as String || node.role == "AXTextArea" || node.role == "AXTextField" {
             node.value = string(el, kAXValueAttribute)
         }
@@ -164,23 +176,33 @@ enum NMBannerReader {
         return n.children.contains { hasText($0) }
     }
 
+    static func isWidget(_ n: NMNode) -> Bool {
+        n.identifier.lowercased().contains("widget") || n.subrole.contains("Widget")
+    }
+
     /// 트리에서 배너 묶음을 찾는다.
     static func parse(_ roots: [NMNode]) -> NMScan {
         var scan = NMScan()
-        var widgetSeen = false
-        func walk(_ n: NMNode) {
-            let id = n.identifier.lowercased()
-            if id.contains("widget") || n.subrole.contains("Widget") { widgetSeen = true }
-            if isBannerRole(n) || (n.role == kAXGroupRole as String && hasCloseAction(n) && hasText(n)) {
-                let b = banner(from: n)
-                if !b.isEmpty { scan.banners.append(b) }
-                return   // 배너 안쪽은 더 내려가지 않는다
+        var listWithWidgets = false
+        for root in roots {
+            var widgetShown = false
+            let before = scan.banners.count
+            func walk(_ n: NMNode) {
+                if isWidget(n), n.size.width > 1, n.size.height > 1 { widgetShown = true }
+                if isBannerRole(n) || (n.role == kAXGroupRole as String && hasCloseAction(n) && hasText(n)) {
+                    let b = banner(from: n)
+                    if !b.isEmpty { scan.banners.append(b) }
+                    return   // 배너 안쪽은 더 내려가지 않는다
+                }
+                n.children.forEach(walk)
             }
-            n.children.forEach(walk)
+            walk(root)
+            if widgetShown, scan.banners.count > before { listWithWidgets = true }
         }
-        roots.forEach(walk)
-        // 위젯이 보이거나 한 번에 배너가 많으면 사용자가 알림 센터 목록을 연 것으로 본다
-        scan.panelOpen = widgetSeen || scan.banners.count > 4
+        // 알림과 크기가 있는 위젯이 한 창에 보이거나, 한 번에 배너가 많으면 사용자가 알림 센터 목록을 연 것으로 본다.
+        // 바탕화면 위젯은 NotificationCenter 프로세스의 따로 된 창이고, 배너 창의 위젯 자리(widgets-overlay-view)는
+        // 크기가 0이다 (macOS 26.5에서 확인). 위젯만 보고 판단하면 바탕화면에 위젯을 둔 Mac에서는 배너를 하나도 띄우지 못한다.
+        scan.panelOpen = listWithWidgets || scan.banners.count > 4
         return scan
     }
 
@@ -274,11 +296,16 @@ enum NMBannerReader {
     }
 
     /// 설명이 "앱, 제목, …"이면 앱 이름을 돌려준다.
+    /// macOS 26은 "앱 제목, 본문"처럼 앱 이름과 제목을 띄어쓰기로 붙이므로, 첫 칸에 " 제목"이 있으면 그 앞까지만 쓴다.
     static func appName(fromDescription desc: String, title: String) -> String? {
         let parts = desc.components(separatedBy: ", ")
-        guard parts.count >= 2, let first = parts.first?.trimmingCharacters(in: .whitespaces), !first.isEmpty else { return nil }
+        guard parts.count >= 2, var first = parts.first?.trimmingCharacters(in: .whitespaces), !first.isEmpty else { return nil }
         if first == title { return nil }
         if !title.isEmpty, !desc.contains(title) { return nil }
+        if !title.isEmpty, let r = first.range(of: " " + title, options: .backwards) {
+            first = String(first[..<r.lowerBound]).trimmingCharacters(in: .whitespaces)
+            if first.isEmpty { return nil }
+        }
         return first.count <= 40 ? first : nil
     }
 
