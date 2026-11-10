@@ -68,5 +68,7 @@
 
 - `--list-modules`, `--module-selftest=<id|all>`: 기능 목록·자체 검사.
 - `--render-tab=<id>`: 탭 화면만 PNG로.
+- `--render-settings=<id>`: 기능 설정 화면을 PNG로.
+- `--nm-dump[=<초>]`: 알림 센터의 손쉬운 사용 구조를 글자 내용 없이(길이만) 출력한다. 배너가 보일 때까지 기다릴 수 있다.
 - `--render-notch=<home|dashboard|palette|module:id|compact|compact-two|compact-bubble|detail|detail-actions>`: 노치 전체를 실제 뷰로 PNG로. `DMN_NO_NOTCH=1`이면 노치 없는 화면.
 - 화면 녹화 권한 없이 앱이 스스로 그리므로, 실제 화면 캡처와는 다르다(창 그림자·블러·실제 노치 위치는 확인 못 함).
