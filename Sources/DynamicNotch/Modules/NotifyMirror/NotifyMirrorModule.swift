@@ -56,13 +56,23 @@ final class NotifyMirrorModule: NotchModule {
 
     // MARK: 설정
 
-    var privacy: NMPrivacy { NMPrivacy(rawValue: defaults.int("privacy", default: 1)) ?? .sender }
+    /// 공개 범위 기본값: 본문까지 (macOS 기본 알림처럼 잠금이 풀려 있을 때는 내용을 보인다)
+    static let defaultPrivacy = NMPrivacy.full
+    var privacy: NMPrivacy { NMPrivacy(rawValue: defaults.int("privacy", default: Self.defaultPrivacy.rawValue)) ?? .sender }
     var notchOnly: Bool { defaults.string("delivery", default: "alongside") == "notchOnly" }
     var compactStyle: Bool { defaults.string("style", default: "card") == "compact" }
     var saveHistory: Bool { defaults.bool("saveHistory", default: true) }
     var retentionDays: Int { defaults.int("retentionDays", default: 7) }
     var unreadBadge: Bool { defaults.bool("unreadBadge", default: false) }
     var muted: [String] { defaults.strings("muted", default: []) }
+    /// 받을 앱: "all" = 모든 앱(음소거한 앱은 노치에 띄우지 않음), "only" = onlyApps에 적은 앱만
+    var onlyChosen: Bool { defaults.string("appFilter", default: "all") == "only" }
+    var onlyApps: [String] { defaults.strings("onlyApps", default: []) }
+
+    /// '고른 앱만'이면 목록에 있는 앱만 받는다 (앱 이름은 대소문자를 가리지 않는다)
+    static func accepts(_ app: String, onlyChosen: Bool, onlyApps: [String]) -> Bool {
+        !onlyChosen || onlyApps.contains { $0.caseInsensitiveCompare(app) == .orderedSame }
+    }
 
     private var lastOpenedKey: String { "module.\(id).lastOpened" }
     private var lastOpened: Date {
@@ -249,6 +259,8 @@ final class NotifyMirrorModule: NotchModule {
     // MARK: 새 알림
 
     private func handleNew(_ b: NMBanner, at date: Date) {
+        // '고른 앱만'이면 다른 앱의 알림은 노치에 띄우지도 기록하지도 않는다 (macOS 배너는 그대로 둔다)
+        guard Self.accepts(b.appName, onlyChosen: onlyChosen, onlyApps: onlyApps) else { return }
         let item = NMItem.make(app: b.appName, title: b.title, subtitle: b.subtitle, body: b.body, date: date, privacy: privacy)
         state.items.insert(item, at: 0)
         if state.items.count > NMStore.maxItems { state.items.removeLast(state.items.count - NMStore.maxItems) }
@@ -434,6 +446,7 @@ final class NotifyMirrorModule: NotchModule {
         out.append(contentsOf: NMSelfTest.parserChecks())
         out.append(contentsOf: NMSelfTest.cryptoChecks())
         out.append(contentsOf: NMSelfTest.privacyChecks())
+        out.append(contentsOf: NMSelfTest.filterChecks())
         out.append("history file present: \(store.fileExists) (key not read in self test)")
         return out
     }
@@ -547,5 +560,15 @@ enum NMSelfTest {
         let full = NMItem.make(app: "A", title: "T", subtitle: "S", body: "B", date: d, privacy: .full)
         let ok = appOnly.title.isEmpty && appOnly.body.isEmpty && sender.title == "T" && sender.body.isEmpty && full.body == "B"
         return ["privacy levels store only allowed fields: \(ok ? "ok" : "FAIL")"]
+    }
+
+    static func filterChecks() -> [String] {
+        let allApps = NotifyMirrorModule.accepts("Mail", onlyChosen: false, onlyApps: ["Slack"])
+        let chosen = NotifyMirrorModule.accepts("slack", onlyChosen: true, onlyApps: ["Slack"])
+        let other = !NotifyMirrorModule.accepts("Mail", onlyChosen: true, onlyApps: ["Slack"])
+        let empty = !NotifyMirrorModule.accepts("Slack", onlyChosen: true, onlyApps: [])
+        let ok = allApps && chosen && other && empty
+        return ["chosen apps filter (all apps, case, other app, empty list): \(ok ? "ok" : "FAIL")",
+                "default privacy is full body: \(NotifyMirrorModule.defaultPrivacy == .full ? "ok" : "FAIL")"]
     }
 }

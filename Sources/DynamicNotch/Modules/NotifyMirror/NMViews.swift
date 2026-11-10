@@ -288,7 +288,7 @@ struct NMTab: View {
 
 struct NMSettings: View {
     let module: NotifyMirrorModule
-    @State private var privacy = 1
+    @State private var privacy = NotifyMirrorModule.defaultPrivacy.rawValue
     @State private var delivery = "alongside"
     @State private var style = "card"
     @State private var saveHistory = true
@@ -296,6 +296,9 @@ struct NMSettings: View {
     @State private var badge = false
     @State private var muted: [String] = []
     @State private var newMute = ""
+    @State private var appFilter = "all"
+    @State private var onlyApps: [String] = []
+    @State private var newOnly = ""
     @State private var trusted = AXIsProcessTrusted()
     @State private var fullDisk = PermissionsManager.hasFullDiskAccess()
 
@@ -351,23 +354,20 @@ struct NMSettings: View {
             Toggle(T("노치 옆 읽지 않은 개수", "Unread count beside the notch"), isOn: $badge)
                 .onChange(of: badge) { _, v in d.set(v, "unreadBadge") }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(T("음소거한 앱 (노치에 띄우지 않음)", "Muted apps (not shown in the notch)")).font(.subheadline)
-                ForEach(muted, id: \.self) { name in
-                    HStack {
-                        Text(name)
-                        Spacer()
-                        Button(T("빼기", "Remove")) { muted.removeAll { $0 == name }; d.set(muted, "muted") }
-                    }
-                }
-                HStack {
-                    TextField(T("앱 이름 (예: Slack)", "App name (e.g. Slack)"), text: $newMute)
-                    Button(T("더하기", "Add")) {
-                        let n = newMute.trimmingCharacters(in: .whitespaces)
-                        guard !n.isEmpty, !muted.contains(n) else { return }
-                        muted.append(n); d.set(muted, "muted"); newMute = ""
-                    }
-                }
+            Picker(T("받을 앱", "Apps"), selection: $appFilter) {
+                Text(T("모든 앱", "All apps")).tag("all")
+                Text(T("고른 앱만", "Only chosen apps")).tag("only")
+            }
+            .onChange(of: appFilter) { _, v in d.set(v, "appFilter") }
+            if appFilter == "only" {
+                appList(T("고른 앱 (이 앱들의 알림만 노치에 띄우고 기록)", "Chosen apps (only these are shown and recorded)"),
+                        apps: $onlyApps, newName: $newOnly, key: "onlyApps")
+                Text(T("목록에 없는 앱의 알림은 macOS 배너로만 뜨고 이 앱에 남지 않는다. 앱 이름은 알림에 보이는 이름 그대로 적는다.",
+                       "Other apps' notifications stay as macOS banners and are not recorded here. Use the app name shown in the notification."))
+                    .font(.caption).foregroundStyle(.secondary)
+            } else {
+                appList(T("음소거한 앱 (노치에 띄우지 않음)", "Muted apps (not shown in the notch)"),
+                        apps: $muted, newName: $newMute, key: "muted")
             }
 
             Button(T("기록 지우기 (휴지통으로)", "Clear history (to Trash)")) {
@@ -390,15 +390,39 @@ struct NMSettings: View {
                         alternative: T("기본 통화 표시의 이름·번호", "Name or number in the built-in call island"))
         }
         .onAppear {
-            privacy = d.int("privacy", default: 1)
+            privacy = d.int("privacy", default: NotifyMirrorModule.defaultPrivacy.rawValue)
             delivery = d.string("delivery", default: "alongside")
             style = d.string("style", default: "card")
             saveHistory = d.bool("saveHistory", default: true)
             retention = d.int("retentionDays", default: 7)
             badge = d.bool("unreadBadge", default: false)
             muted = d.strings("muted", default: [])
+            appFilter = d.string("appFilter", default: "all")
+            onlyApps = d.strings("onlyApps", default: [])
             trusted = AXIsProcessTrusted()
             fullDisk = PermissionsManager.hasFullDiskAccess()
+        }
+    }
+
+    /// 앱 이름 목록 (더하기·빼기). 바뀔 때마다 설정 key에 저장한다
+    private func appList(_ title: String, apps: Binding<[String]>, newName: Binding<String>, key: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.subheadline)
+            ForEach(apps.wrappedValue, id: \.self) { name in
+                HStack {
+                    Text(name)
+                    Spacer()
+                    Button(T("빼기", "Remove")) { apps.wrappedValue.removeAll { $0 == name }; d.set(apps.wrappedValue, key) }
+                }
+            }
+            HStack {
+                TextField(T("앱 이름 (예: Slack)", "App name (e.g. Slack)"), text: newName)
+                Button(T("더하기", "Add")) {
+                    let n = newName.wrappedValue.trimmingCharacters(in: .whitespaces)
+                    guard !n.isEmpty, !apps.wrappedValue.contains(n) else { return }
+                    apps.wrappedValue.append(n); d.set(apps.wrappedValue, key); newName.wrappedValue = ""
+                }
+            }
         }
     }
 

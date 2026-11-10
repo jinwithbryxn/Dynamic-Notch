@@ -7,12 +7,15 @@ import SwiftUI
 ///
 ///   --list-modules                         기능 목록
 ///   --module-selftest=<id|all|permissions|core>  기능 자체 검사 (실제 macOS 기능 호출). core = 명령 봉투·AppleScript 큐·공통 부품
-///   --render-notch=<home|dashboard|palette|module:id|compact|compact-two|compact-bubble|detail|detail-actions> --out=<png> [--wait=<초>]
+///   --render-notch=<home|dashboard|palette|module:id|compact|compact-two|compact-bubble|detail|detail-actions|
+///                   notification|notification-sender|notification-compact> --out=<png> [--wait=<초>]
 ///                                          노치 전체를 실제 뷰로 그려 PNG로 저장
 ///   --render-tab=<id> --out=<png> [--start] [--wait=<초>] [--size=<폭>x<높이>]
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
 ///   --render-permissions --out=<png> [--wait=<초>] [--height=<pt>]
 ///                                          권한 관리 창을 밝은 배경에 그려 PNG로 저장 (이 앱의 실제 권한 상태로)
+///   --render-settings=<id> --out=<png> [--wait=<초>] [--height=<pt>]
+///                                          기능 설정 화면을 밝은 배경에 그려 PNG로 저장 (이 Mac의 실제 설정값으로)
 ///   --access-check[=<이름,…>]              허용된 권한으로 실제 자원(마이크 소리·카메라 화면·위치·일정 등)에 닿는지 본다.
 ///                                          허용 창은 띄우지 않고, 마이크·카메라 표시등이 잠깐 켜진다 (AccessCheck.swift)
 ///   --login-item=off|on                    이 앱 번들의 '로그인 시 열기' 등록을 지우거나 넣는다 (검토용 앱 정리, 설치본 옮기기용)
@@ -109,6 +112,18 @@ enum ModuleDevTools {
                    to: URL(fileURLWithPath: out), light: true)
             exit(0)
         }
+        if let id = value("render-settings"), let out = value("out") {
+            AppSettings.isHelper = true
+            _ = NSApplication.shared
+            NSApp.setActivationPolicy(.prohibited)
+            guard let m = ModuleCatalog.makeAll().first(where: { $0.id == id }), let view = m.settingsView() else {
+                print("unknown module or no settings: \(id)"); exit(2)
+            }
+            let height = Double(value("height") ?? "") ?? 900
+            render(AnyView(view.padding(20)), contentSize: CGSize(width: 560, height: height),
+                   wait: Double(value("wait") ?? "") ?? 1.0, to: URL(fileURLWithPath: out), light: true)
+            exit(0)
+        }
         if let id = value("render-tab"), let out = value("out") {
             AppSettings.isHelper = true
             _ = NSApplication.shared
@@ -132,6 +147,7 @@ enum ModuleDevTools {
 
     /// 노치 전체(도형·독·카드)를 실제 뷰 그대로 회색 바탕에 그린다.
     ///   home | dashboard | palette | module:<id> | compact | compact-two | compact-bubble | detail | detail-actions
+    ///   | notification | notification-sender | notification-compact (알림 미러링 카드, Slack 예시)
     private static func renderNotch(_ state: String, wait: TimeInterval, to url: URL) {
         let center = ActivityCenter()
         let vm = NotchViewModel(center: center)
@@ -169,6 +185,23 @@ enum ModuleDevTools {
                                         ActivityAction(id: "deny", title: T("거부", "Deny"), role: .destructive, run: {}),
                                         ActivityAction(id: "allow", title: T("허용", "Allow"), role: .primary, run: {}),
                                       ]))
+        case "notification", "notification-sender", "notification-compact":
+            // 알림 미러링이 Slack 배너를 노치에 띄울 때와 같은 카드 (NotifyMirrorModule.present). 내용은 지어낸 예시
+            let privacy: NMPrivacy = state == "notification-sender" ? .sender : NotifyMirrorModule.defaultPrivacy
+            let compact = state == "notification-compact"
+            let item = NMItem.make(app: "Slack", title: "김하나", subtitle: "#디자인팀",
+                                   body: T("시안 올렸어요. 오늘 안에 한 번 봐 주세요!", "Mockups are up. Please take a look today!"),
+                                   date: Date(), privacy: privacy)
+            let lines = item.lines(privacy)
+            center.post(NotchActivity(
+                kind: .notification, priority: ActivityPriority.info, presentation: compact ? .compact : .detail, duration: 60,
+                symbol: "bell.badge.fill", tint: .white, value: compact ? .text(item.app) : .none,
+                title: lines.0, subtitle: lines.1, wing: NotchActivity.compactWing,
+                artwork: NMAppIcons.icon(for: item.app), actions: compact ? [] : [
+                    ActivityAction(id: "open", title: T("열기", "Open"), role: .primary, run: {}),
+                    ActivityAction(id: "reply", title: T("답장", "Reply"), run: {}),
+                    ActivityAction(id: "dismiss", title: T("닫기", "Dismiss"), run: {}),
+                ]))
         case "compact-two":
             center.setPersistent(NotchActivity(kind: .timer, priority: ActivityPriority.timer, symbol: "timer", tint: .orange,
                                                value: .text("24:12")))
