@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 
 /// 스크린샷 미리보기 (가이드라인 5.11). 스크린샷이 클립보드(또는 파일)로 들어오면
 /// 노치가 상세 카드로 커지며 썸네일과 [복사] [저장] [삭제]를 보여 준다. 썸네일은 끌어서 첨부할 수 있다.
+/// '캡처하면 바로 복사'가 켜져 있으면 파일로 저장된 캡처를 카드를 띄우면서 클립보드에도 넣는다.
 final class ScreenshotMonitor: ObservableObject {
     struct Shot {
         var thumb: CGImage?     // 카드에 그리는 작은 썸네일 (NSImage를 거치지 않아 AppKit 이미지 캐시에 남지 않음)
@@ -15,6 +16,8 @@ final class ScreenshotMonitor: ObservableObject {
         var pasteboardCount: Int?
         /// 설정 → 테스트의 미리보기 (복사·저장·삭제가 실제로 일어나지 않음)
         var isPreview = false
+        /// 캡처하자마자 클립보드에 넣었는지 ([복사] 버튼이 "복사됨"으로 보인다)
+        var copied = false
     }
 
     @Published private(set) var shot: Shot?
@@ -222,6 +225,7 @@ final class ScreenshotMonitor: ObservableObject {
         // 썸네일은 도우미 프로세스가 만들어 작은 PNG로 돌려준다 (본 앱 메모리가 늘지 않음).
         self.shot = s
         if !s.isPreview { onCapture?() }
+        if Self.shouldAutoCopy(s, enabled: settings.screenshotAutoCopy) { autoCopy(s) }
         let date = s.date
         ImageTool.process(.thumb, s.data) { [weak self] png in
             guard let self, self.shot?.date == date, let png else { return }
@@ -271,8 +275,8 @@ final class ScreenshotMonitor: ObservableObject {
         return true
     }
 
-    /// 설정 → 테스트: 가짜 이미지로 스크린샷 카드를 띄운다.
-    func presentPreview() {
+    /// 설정 → 테스트: 가짜 이미지로 스크린샷 카드를 띄운다. copied를 주지 않으면 '캡처하면 바로 복사' 설정을 따른다.
+    func presentPreview(copied: Bool? = nil) {
         let size = 320
         var pixels = [UInt8](repeating: 255, count: size * 200 * 4)
         for y in 0..<200 {
@@ -288,7 +292,8 @@ final class ScreenshotMonitor: ObservableObject {
                                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
                                provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent),
               let png = NSBitmapImageRep(cgImage: cg).representation(using: .png, properties: [:]) else { return }
-        present(Shot(thumb: nil, data: png, date: Date(), fileURL: nil, pasteboardCount: nil, isPreview: true))
+        present(Shot(thumb: nil, data: png, date: Date(), fileURL: nil, pasteboardCount: nil, isPreview: true,
+                     copied: copied ?? settings.screenshotAutoCopy))
     }
 
     /// 미리보기 카드가 떠 있으면 바로 닫는다.
@@ -302,17 +307,43 @@ final class ScreenshotMonitor: ObservableObject {
     func copy() {
         if previewOnly(T("복사됨", "Copied")) { return }
         guard let s = shot else { return }
+        writePasteboard(s) { [weak self] _ in
+            self?.status = T("복사됨", "Copied")
+            self?.dismiss()
+        }
+    }
+
+    /// 캡처하면 바로 복사: 파일로 저장된 실제 캡처만. 클립보드 캡처는 이미 클립보드에 있고, 설정의 미리보기는 클립보드를 건드리지 않는다.
+    static func shouldAutoCopy(_ s: Shot, enabled: Bool) -> Bool {
+        enabled && !s.isPreview && s.fileURL != nil
+    }
+
+    private func autoCopy(_ s: Shot) {
+        writePasteboard(s) { [weak self] count in
+            guard let self, self.shot?.date == s.date else { return }
+            self.shot?.copied = true
+            // 카드에서 [삭제]하면 클립보드에서도 지운다 (그 사이 다른 것을 복사했으면 그대로 둔다)
+            self.shot?.pasteboardCount = count
+        }
+    }
+
+    /// 클립보드에 파일 주소와 PNG를 한 항목으로 넣는다 (파인더에는 파일로, 채팅·문서 앱에는 이미지로 붙는다).
+    /// 이 앱이 쓴 변경은 클립보드 스크린샷 감지에서 뺀다.
+    private func writePasteboard(_ s: Shot, completion: @escaping (Int) -> Void) {
         withPNG(s) { [weak self] png in
             guard let self else { return }
             let pb = NSPasteboard.general
-            pb.clearContents()
-            if let url = s.fileURL { pb.writeObjects([url as NSURL]) }
-            pb.setData(png, forType: .png)
+            Self.write(png: png, fileURL: s.fileURL, to: pb)
             self.ownChangeCount = pb.changeCount
             self.lastChangeCount = pb.changeCount
-            self.status = T("복사됨", "Copied")
-            self.dismiss()
+            completion(pb.changeCount)
         }
+    }
+
+    static func write(png: Data, fileURL: URL?, to pb: NSPasteboard) {
+        pb.clearContents()
+        if let url = fileURL { pb.writeObjects([url as NSURL]) }
+        pb.setData(png, forType: .png)
     }
 
     func save() {
@@ -416,7 +447,8 @@ struct ScreenshotCard: View {
                         .transition(.scale.combined(with: .opacity))
                 } else {
                     HStack(spacing: 10) {
-                        action("doc.on.doc", T("복사", "Copy")) { monitor.copy() }
+                        let copied = monitor.shot?.copied == true
+                        action(copied ? "checkmark" : "doc.on.doc", copied ? T("복사됨", "Copied") : T("복사", "Copy")) { monitor.copy() }
                         action("square.and.arrow.down", T("저장", "Save")) { monitor.save() }
                         action("trash", T("삭제", "Delete"), tint: .red) { monitor.delete() }
                     }

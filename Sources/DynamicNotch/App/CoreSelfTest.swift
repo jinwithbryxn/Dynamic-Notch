@@ -1,9 +1,10 @@
 import Foundation
+import AppKit
 import CoreGraphics
 import ImageIO
 import UniformTypeIdentifiers
 
-/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지, 에이전트 세션 주소, 스크린샷 파일 판별).
+/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지, 에이전트 세션 주소, 스크린샷 파일 판별, 캡처 자동 복사).
 /// 네트워크 확인은 DMN_SELFTEST_NETWORK=1 일 때만.
 enum CoreSelfTest {
     static func run() -> [String] {
@@ -16,7 +17,30 @@ enum CoreSelfTest {
         lines.append(islandScale())
         lines.append(agentSessionLinks())
         lines.append(screenshotMarker())
+        lines.append(screenshotAutoCopy())
         return lines
+    }
+
+    /// 캡처하면 바로 복사: 파일로 저장된 실제 캡처만 대상이고, 클립보드에는 파일 주소와 PNG가 한 항목으로 들어가는지.
+    /// 사용자의 클립보드 대신 이름을 붙인 임시 클립보드에 쓴다.
+    private static func screenshotAutoCopy() -> String {
+        let file = URL(fileURLWithPath: "/tmp/selftest-capture.png")
+        let png = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        func shot(_ file: URL?, preview: Bool = false) -> ScreenshotMonitor.Shot {
+            ScreenshotMonitor.Shot(data: png, date: Date(), fileURL: file, pasteboardCount: nil, isPreview: preview)
+        }
+        let decisions = [ScreenshotMonitor.shouldAutoCopy(shot(file), enabled: true),
+                         ScreenshotMonitor.shouldAutoCopy(shot(file), enabled: false),
+                         ScreenshotMonitor.shouldAutoCopy(shot(nil), enabled: true),
+                         ScreenshotMonitor.shouldAutoCopy(shot(file, preview: true), enabled: true)]
+        guard decisions == [true, false, false, false] else { return "FAIL screenshot auto copy: \(decisions)" }
+        let pb = NSPasteboard(name: NSPasteboard.Name("com.dynamicnotch.selftest.\(UUID().uuidString)"))
+        defer { pb.releaseGlobally() }
+        ScreenshotMonitor.write(png: png, fileURL: file, to: pb)
+        let items = pb.pasteboardItems?.map { Set($0.types.map(\.rawValue)) } ?? []
+        guard items == [["public.file-url", "public.png"]], pb.data(forType: .png) == png,
+              pb.string(forType: .string) == nil else { return "FAIL screenshot auto copy: \(items)" }
+        return "PASS screenshot auto copy (file captures only; file link and PNG in one item, no text)"
     }
 
     /// 스크린샷 파일 판별: 확장 속성이 없어도 이미지 안의 EXIF 사용자 설명 "Screenshot"으로 알아보고, 다른 이미지는 거르는지

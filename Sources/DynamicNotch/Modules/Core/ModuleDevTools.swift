@@ -8,7 +8,7 @@ import SwiftUI
 ///   --list-modules                         기능 목록
 ///   --module-selftest=<id|all|permissions|core>  기능 자체 검사 (실제 macOS 기능 호출). core = 명령 봉투·AppleScript 큐·공통 부품
 ///   --render-notch=<home|dashboard|palette|module:id|compact|compact-two|compact-bubble|detail|detail-actions|
-///                   notification|notification-sender|notification-compact> --out=<png> [--wait=<초>]
+///                   notification|notification-sender|notification-compact|screenshot|screenshot-copied> --out=<png> [--wait=<초>]
 ///                                          노치 전체를 실제 뷰로 그려 PNG로 저장
 ///   --render-tab=<id> --out=<png> [--start] [--wait=<초>] [--size=<폭>x<높이>]
 ///                                          탭 화면을 노치 모양 배경에 그려 PNG로 저장 (화면 녹화 권한 불필요)
@@ -156,6 +156,7 @@ enum ModuleDevTools {
     /// 노치 전체(도형·독·카드)를 실제 뷰 그대로 회색 바탕에 그린다.
     ///   home | dashboard | palette | module:<id> | compact | compact-two | compact-bubble | detail | detail-actions
     ///   | notification | notification-sender | notification-compact (알림 미러링 카드, Slack 예시)
+    ///   | screenshot | screenshot-copied (스크린샷 카드, 캡처하면 바로 복사가 된 상태)
     private static func renderNotch(_ state: String, wait: TimeInterval, to url: URL) {
         let center = ActivityCenter()
         let vm = NotchViewModel(center: center)
@@ -186,6 +187,9 @@ enum ModuleDevTools {
             center.post(NotchActivity(kind: .bluetooth, priority: ActivityPriority.info, presentation: .detail, duration: 60,
                                       symbol: "airpodspro", tint: .green, value: .ringPercent(0.82),
                                       title: "AirPods Pro", subtitle: T("연결됨", "Connected")))
+        case "screenshot", "screenshot-copied":
+            // 설정 → 테스트와 같은 가짜 이미지 카드 (클립보드·파일은 건드리지 않음)
+            features.screenshot.presentPreview(copied: state == "screenshot-copied")
         case "detail-actions":
             center.post(NotchActivity(kind: .agentApproval, priority: ActivityPriority.call, presentation: .detail, duration: 60,
                                       symbol: "terminal.fill", tint: .orange, title: "Claude Code",

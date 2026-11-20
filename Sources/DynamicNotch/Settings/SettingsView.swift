@@ -691,6 +691,10 @@ struct SettingsView: View {
                     ForEach(ScreenshotSource.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
+                Toggle(T("캡처하면 바로 복사", "Copy on capture"), isOn: $settings.screenshotAutoCopy)
+                    .disabled(settings.screenshotSource == .clipboard)
+                footnote(T("파일로 저장된 캡처를 클립보드에도 넣습니다. ⌃를 함께 눌러 클립보드로 찍은 캡처는 원래 클립보드에 들어갑니다.",
+                           "Also puts captures saved as files on the clipboard. Captures taken with ⌃ already go to the clipboard."))
                 FolderSetting(title: T("저장 폴더", "Save Folder"), path: $settings.screenshotFolder,
                               defaultPath: AppSettings.defaultRecordingFolder)
                 Toggle(T("JPEG로 저장", "Save as JPEG"), isOn: $settings.screenshotJPEG)

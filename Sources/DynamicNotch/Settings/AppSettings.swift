@@ -230,6 +230,8 @@ final class AppSettings: ObservableObject {
     @Published var screenshotFolder: String { didSet { save(screenshotFolder, "screenshotFolder") } }
     @Published var screenshotJPEG: Bool { didSet { save(screenshotJPEG, "screenshotJPEG") } }
     @Published var screenshotAutoClose: Double { didSet { save(screenshotAutoClose, "screenshotAutoClose") } }
+    /// 파일로 저장된 캡처를 클립보드에도 넣는다
+    @Published var screenshotAutoCopy: Bool { didSet { save(screenshotAutoCopy, "screenshotAutoCopy") } }
 
     // 화면 녹화·카메라·캘린더
     @Published var recordingEnabled: Bool { didSet { save(recordingEnabled, "recordingEnabled") } }
@@ -392,6 +394,7 @@ final class AppSettings: ObservableObject {
         screenshotFolder = value("screenshotFolder", "")
         screenshotJPEG = value("screenshotJPEG", false)
         screenshotAutoClose = value("screenshotAutoClose", 10.0)
+        screenshotAutoCopy = value("screenshotAutoCopy", false)
 
         recordingEnabled = value("recordingEnabled", true)
         callEnabled = value("callEnabled", true)
@@ -509,6 +512,7 @@ final class AppSettings: ObservableObject {
         screenshotFolder = value("screenshotFolder", "")
         screenshotJPEG = value("screenshotJPEG", false)
         screenshotAutoClose = value("screenshotAutoClose", 10.0)
+        screenshotAutoCopy = value("screenshotAutoCopy", false)
 
         recordingEnabled = value("recordingEnabled", true)
         callEnabled = value("callEnabled", true)
