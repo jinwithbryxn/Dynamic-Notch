@@ -149,11 +149,11 @@ final class ScreenshotMonitor: ObservableObject {
     }
 
     /// 스크린샷 도구가 저장한 이미지 파일을 카드로 띄운다. 폴더 감시와 색인 감지가 같은 파일을 두 번 띄우지 않으며,
-    /// 막 생긴 파일은 스크린샷 표시(확장 속성)나 내용이 아직 덜 써졌을 수 있어 잠깐씩 다시 확인한다.
+    /// 막 생긴 파일은 내용이 아직 덜 써졌을 수 있어 잠깐씩 다시 확인한다. 다 써진 뒤 스크린샷 표시가 없으면 띄우지 않는다.
     private func presentFile(_ url: URL, date: Date, attempt: Int = 0) {
         guard !presentedFiles.contains(url.path),
               let type = UTType(filenameExtension: url.pathExtension), type.conforms(to: .image) else { return }
-        guard Self.isScreenCapture(url), let data = try? Data(contentsOf: url), Self.isComplete(data) else {
+        guard let data = try? Data(contentsOf: url), Self.isComplete(data) else {
             if attempt < 15 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                     self?.presentFile(url, date: date, attempt: attempt + 1)
@@ -161,14 +161,26 @@ final class ScreenshotMonitor: ObservableObject {
             }
             return
         }
+        guard Self.isScreenCapture(url) || Self.hasScreenshotMarker(data) else { return }
         if presentedFiles.count > 100 { presentedFiles.removeAll() }
         presentedFiles.insert(url.path)
         present(Shot(data: data, date: date, fileURL: url, pasteboardCount: nil))
     }
 
-    /// 스크린샷 도구는 저장하는 파일에 kMDItemIsScreenCapture 확장 속성을 붙인다.
+    /// 스크린샷 도구가 저장한 파일에는 시스템 메타데이터 서비스가 kMDItemIsScreenCapture 확장 속성을 붙인다.
     private static func isScreenCapture(_ url: URL) -> Bool {
         getxattr(url.path, "com.apple.metadata:kMDItemIsScreenCapture", nil, 0, 0, 0) > 0
+    }
+
+    /// 스크린샷 도구가 이미지 안에 넣는 표시: EXIF 사용자 설명 "Screenshot" (언어 설정과 관계없이 영어).
+    /// 확장 속성은 메타데이터 서비스가 따로 붙이는데, 그 서비스가 한동안 붙이지 않는 일이 있어(macOS 26.5.2) 이것도 본다.
+    /// 메타데이터만 읽고 픽셀은 풀지 않는다.
+    static func hasScreenshotMarker(_ data: Data) -> Bool {
+        let options = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let source = CGImageSourceCreateWithData(data as CFData, options),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, options) as? [CFString: Any],
+              let exif = properties[kCGImagePropertyExifDictionary] as? [CFString: Any] else { return false }
+        return (exif[kCGImagePropertyExifUserComment] as? String) == "Screenshot"
     }
 
     /// PNG는 IEND 덩어리, JPEG는 FFD9로 끝나야 다 써진 파일이다 (다른 형식은 그대로 둔다).

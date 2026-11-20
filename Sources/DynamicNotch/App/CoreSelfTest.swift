@@ -1,6 +1,9 @@
 import Foundation
+import CoreGraphics
+import ImageIO
+import UniformTypeIdentifiers
 
-/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지, 에이전트 세션 주소).
+/// `--module-selftest=core`: 여러 기능이 함께 쓰는 부품 검사 (명령 봉투, AppleScript 큐, 전원 목록, 미디어 어댑터, HTTP 받기, 녹화 감지, 에이전트 세션 주소, 스크린샷 파일 판별).
 /// 네트워크 확인은 DMN_SELFTEST_NETWORK=1 일 때만.
 enum CoreSelfTest {
     static func run() -> [String] {
@@ -12,7 +15,30 @@ enum CoreSelfTest {
         lines.append(contentsOf: recordingCheck())
         lines.append(islandScale())
         lines.append(agentSessionLinks())
+        lines.append(screenshotMarker())
         return lines
+    }
+
+    /// 스크린샷 파일 판별: 확장 속성이 없어도 이미지 안의 EXIF 사용자 설명 "Screenshot"으로 알아보고, 다른 이미지는 거르는지
+    private static func screenshotMarker() -> String {
+        func png(comment: String?) -> Data? {
+            guard let context = CGContext(data: nil, width: 4, height: 4, bitsPerComponent: 8, bytesPerRow: 0,
+                                          space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+                  let image = context.makeImage() else { return nil }
+            let out = NSMutableData()
+            guard let destination = CGImageDestinationCreateWithData(out, UTType.png.identifier as CFString, 1, nil) else { return nil }
+            var properties: [CFString: Any] = [:]
+            if let comment { properties[kCGImagePropertyExifDictionary] = [kCGImagePropertyExifUserComment: comment] }
+            CGImageDestinationAddImage(destination, image, properties as CFDictionary)
+            return CGImageDestinationFinalize(destination) ? out as Data : nil
+        }
+        guard let shot = png(comment: "Screenshot"), let plain = png(comment: nil), let other = png(comment: "Holiday") else {
+            return "FAIL screenshot marker: could not make test images"
+        }
+        let results = [ScreenshotMonitor.hasScreenshotMarker(shot), ScreenshotMonitor.hasScreenshotMarker(plain),
+                        ScreenshotMonitor.hasScreenshotMarker(other), ScreenshotMonitor.hasScreenshotMarker(Data("not an image".utf8))]
+        guard results == [true, false, false, false] else { return "FAIL screenshot marker: \(results)" }
+        return "PASS screenshot marker (EXIF comment found, plain, other comment and non-image refused)"
     }
 
     /// 완료 알림을 누르면 여는 세션 주소: 에이전트 앱이 받는 두 형식만 통과하고, 훅 쪽은 자기 데스크톱 앱 안에서 돌 때만 만드는지
